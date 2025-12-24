@@ -16,7 +16,7 @@ class Transaction(UUIDModel, TimestampedModel, SoftDeleteModel):
     """
 
     portfolio = models.ForeignKey(
-        "investments.Portfolio", on_delete=models.CASCADE, related_name="transactions"
+        "portfolios.Portfolio", on_delete=models.CASCADE, related_name="transactions"
     )
     holding = models.ForeignKey(
         Holding,
@@ -27,7 +27,7 @@ class Transaction(UUIDModel, TimestampedModel, SoftDeleteModel):
     )
     transaction_type = models.ForeignKey(TransactionType, on_delete=models.PROTECT)
     asset = models.ForeignKey(
-        "investments.Asset", on_delete=models.PROTECT, null=True, blank=True
+        "assets.Asset", on_delete=models.PROTECT, null=True, blank=True
     )
     date = models.DateTimeField(db_index=True)
     quantity = models.DecimalField(
