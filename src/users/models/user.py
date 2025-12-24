@@ -6,12 +6,8 @@ from django.contrib.auth.models import (
 )
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-import uuid
 
-from users.models.account_type import AccountType
-from users.models.role import Role
 from users.models.user_manager import UserManager
-from users.models.user_status import UserStatus
 from utils.helpers.soft_delete_model import SoftDeleteModel
 
 from django.core.validators import EmailValidator
@@ -43,22 +39,26 @@ class User(
     )
 
     # Status & Type
+    # Status & Type → use strings
     status = models.ForeignKey(
-        UserStatus,
+        "UserStatus",
         on_delete=models.PROTECT,
         related_name="users",
         help_text="Current account status",
     )
     account_type = models.ForeignKey(
-        AccountType,
+        "AccountType",
         on_delete=models.PROTECT,
         related_name="users",
         help_text="Account type/tier",
     )
 
-    # Roles & Permissions
+    # Roles
     roles = models.ManyToManyField(
-        Role, related_name="users", blank=True, help_text="User's assigned roles"
+        "Role",
+        related_name="users",
+        blank=True,
+        help_text="User's assigned roles",
     )
 
     # Verification & Security
@@ -136,7 +136,7 @@ class User(
     objects = UserManager()
 
     USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["username", "email"]
+    REQUIRED_FIELDS = ["email"]
 
     class Meta:
         db_table = "users"
@@ -196,12 +196,10 @@ class User(
 
     def get_permissions(self):
         """Get all permissions for this user"""
+        from users.models.permission import Permission
+
         if self.is_superuser:
-            from .role import Permission
-
             return Permission.objects.filter(is_active=True)
-
-        from .role import Permission
 
         return Permission.objects.filter(
             roles__users=self, roles__is_active=True, is_active=True

@@ -1,6 +1,5 @@
 from django.db import models
 
-from users.models.user import User
 from utils.helpers.timestamped_model import TimestampedModel
 from utils.helpers.uuid_model import UUIDModel
 from django.utils import timezone
@@ -10,7 +9,7 @@ class UserSession(UUIDModel, TimestampedModel):
     """Active user session tracking"""
 
     user = models.ForeignKey(
-        User,
+        "users.User",
         on_delete=models.CASCADE,
         related_name="sessions",
         help_text="Associated user",
