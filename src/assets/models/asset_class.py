@@ -1,11 +1,26 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 class AssetClass(models.Model):
-    """Reference table: e.g., 'Equity', 'Fixed Income', 'Commodity', 'Crypto'"""
+    """
+    High-level classification: Equity, Crypto, Fixed Income, Real Estate, etc.
+    """
 
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
+    icon = models.CharField(max_length=100, blank=True)
+    risk_level = models.PositiveSmallIntegerField(
+        help_text="1 (lowest) to 10 (highest)",
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True,
+    )
 
     class Meta:
-        db_table = "asset_classes"
+        verbose_name = "Asset Class"
+        verbose_name_plural = "Asset Classes"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
