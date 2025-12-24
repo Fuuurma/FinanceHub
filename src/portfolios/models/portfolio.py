@@ -34,7 +34,7 @@ class Portfolio(UUIDModel, TimestampedModel, SoftDeleteModel):
     def current_value(self):
         """Calculate current total value (cached or computed via service later)"""
         # We'll implement this properly in a service with caching
-        from .holding import Holding
+        from .holdings import Holding
 
         return sum(
             holding.current_value for holding in self.holdings.filter(is_deleted=False)
