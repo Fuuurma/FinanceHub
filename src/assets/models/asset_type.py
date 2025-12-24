@@ -2,7 +2,6 @@ from django.db import models
 
 
 from assets.models.asset_class import AssetClass
-from users import models
 
 
 class AssetType(models.Model):
