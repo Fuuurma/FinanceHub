@@ -8,6 +8,10 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from users.models.user_manager import UserManager
+from utils.helpers.get_defaults_user import (
+    get_default_account_type,
+    get_default_user_status,
+)
 from utils.helpers.soft_delete_model import SoftDeleteModel
 
 from django.core.validators import EmailValidator
@@ -44,12 +48,14 @@ class User(
         "UserStatus",
         on_delete=models.PROTECT,
         related_name="users",
+        default=get_default_user_status,
         help_text="Current account status",
     )
     account_type = models.ForeignKey(
         "AccountType",
         on_delete=models.PROTECT,
         related_name="users",
+        default=get_default_account_type,
         help_text="Account type/tier",
     )
 
