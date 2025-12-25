@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
+from pydantic import BaseModel, EmailStr, Field, field_validator
+import re
 
 
 class RegisterIn(BaseModel):
@@ -51,14 +52,36 @@ class UserOut(BaseModel):
 class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, max_length=150)
     last_name: Optional[str] = Field(None, max_length=150)
-    # Add more fields later if needed (e.g., preferences)
+
+    class Config:
+        schema_extra = {"example": {"first_name": "Sergi", "last_name": "Updated"}}
 
 
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str = Field(..., min_length=8)
-    confirm_password: str
+    confirm_new_password: str
 
-    def validate(self):
-        if self.new_password != self.confirm_password:
+    @field_validator("confirm_new_password")
+    @classmethod
+    def passwords_match(cls, v, values):
+        if "new_password" in values and v != values["new_password"]:
             raise ValueError("New passwords do not match")
+        return v
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_strength(cls, v):
+        # Reuse same strong password logic
+        errors = []
+        if not re.search(r"[A-Z]", v):
+            errors.append("uppercase letter")
+        if not re.search(r"[a-z]", v):
+            errors.append("lowercase letter")
+        if not re.search(r"[0-9]", v):
+            errors.append("digit")
+        if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;':\",./<>?]", v):
+            errors.append("special character")
+        if errors:
+            raise ValueError(f"Password must contain: {', '.join(errors)}")
+        return v
