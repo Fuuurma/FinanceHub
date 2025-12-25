@@ -1,213 +1,166 @@
-"""Global error handler for Django Ninja API"""
-
 import traceback
-import jwt
 import sys
-from typing import Any, Dict
+import jwt
 from django.http import HttpRequest, JsonResponse
 from django.core.exceptions import ValidationError, PermissionDenied, ObjectDoesNotExist
 from django.db import DatabaseError, IntegrityError
 from pydantic import ValidationError as PydanticValidationError
-from utils.helpers.error_handler.exceptions import (
-    AuthenticationException,
-    BaseAPIException,
-    DatabaseException,
-    PermissionDeniedException,
-    ResourceNotFoundException,
-    ValidationException,
-)
+from ninja.errors import ValidationError as NinjaValidationError
+from django.conf import settings
+from utils.helpers.logger.logger import get_logger
 
 logger = get_logger(__name__)
 
 
 class GlobalErrorHandler:
-    """Global error handler for all API exceptions"""
-
     @staticmethod
-    def handle_base_api_exception(
-        request: HttpRequest, exc: BaseAPIException
-    ) -> JsonResponse:
-        """Handle custom API exceptions"""
-        logger.warning(
-            f"API Exception: {exc.code}",
+    def _log_error(request: HttpRequest, exc: Exception, extra: dict | None = None):
+        logger.error(
+            f"{exc.__class__.__name__}: {str(exc)}",
             extra={
-                "status_code": exc.status_code,
-                "message": str(exc.message),
-                "details": exc.details,
+                "request_id": getattr(request, "request_id", None),
                 "path": request.path,
                 "method": request.method,
-                "user": getattr(request, "user", None),
+                "user_id": (
+                    getattr(request.user, "id", None)
+                    if request.user.is_authenticated
+                    else None
+                ),
+                **(extra or {}),
             },
+            exc_info=True,
         )
 
-        return JsonResponse(exc.to_dict(), status=exc.status_code)
+    @staticmethod
+    def handle_validation_error(request: HttpRequest, exc: Exception) -> JsonResponse:
+        details = {}
+
+        if isinstance(exc, (ValidationError, NinjaValidationError)):
+            details = {
+                "validation_errors": [
+                    str(e)
+                    for e in exc.errors()
+                    if isinstance(exc, NinjaValidationError)
+                ]
+                or exc.messages()
+            }
+        elif isinstance(exc, PydanticValidationError):
+            details = {
+                "validation_errors": [
+                    {
+                        "field": ".".join(map(str, e["loc"])),
+                        "message": e["msg"],
+                        "type": e["type"],
+                    }
+                    for e in exc.errors()
+                ]
+            }
+
+        response_data = {
+            "error": {
+                "code": "validation_error",
+                "message": "Validation failed",
+                "status": 422,
+                "details": details,
+            }
+        }
+        return JsonResponse(response_data, status=422)
 
     @staticmethod
-    def handle_authentication_exception(
-        request: HttpRequest, exc: Exception
-    ) -> JsonResponse:
-        """Handle authentication-related exceptions"""
+    def handle_auth_error(request: HttpRequest, exc: Exception) -> JsonResponse:
         if isinstance(exc, jwt.ExpiredSignatureError):
-            exception = AuthenticationException(
-                message="Token has expired", code="token_expired"
-            )
+            code, message = "token_expired", "Token has expired"
         elif isinstance(exc, jwt.InvalidTokenError):
-            exception = AuthenticationException(
-                message="Invalid token", code="invalid_token"
-            )
+            code, message = "invalid_token", "Invalid token"
         else:
-            exception = AuthenticationException(
-                message=str(exc), code="authentication_failed"
-            )
+            code, message = "authentication_failed", "Authentication failed"
 
-        return GlobalErrorHandler.handle_base_api_exception(request, exception)
+        GlobalErrorHandler._log_error(request, exc)
+        return JsonResponse(
+            {"error": {"code": code, "message": message, "status": 401}}, status=401
+        )
 
     @staticmethod
     def handle_permission_denied(
         request: HttpRequest, exc: PermissionDenied
     ) -> JsonResponse:
-        """Handle Django permission denied exceptions"""
-        exception = PermissionDeniedException(message=str(exc) if str(exc) else None)
-
-        return GlobalErrorHandler.handle_base_api_exception(request, exception)
-
-    @staticmethod
-    def handle_validation_error(request: HttpRequest, exc: Exception) -> JsonResponse:
-        """Handle validation errors"""
-        details = {}
-
-        if isinstance(exc, ValidationError):
-            if hasattr(exc, "error_dict"):
-                details = {
-                    field: [str(error) for error in errors]
-                    for field, errors in exc.error_dict.items()
+        GlobalErrorHandler._log_error(request, exc)
+        return JsonResponse(
+            {
+                "error": {
+                    "code": "permission_denied",
+                    "message": "Permission denied",
+                    "status": 403,
                 }
-            elif hasattr(exc, "error_list"):
-                details = {"non_field_errors": [str(e) for e in exc.error_list]}
-            else:
-                details = {"non_field_errors": [str(exc)]}
-
-        elif isinstance(exc, PydanticValidationError):
-            details = {
-                "validation_errors": [
-                    {
-                        "field": ".".join(str(loc) for loc in error["loc"]),
-                        "message": error["msg"],
-                        "type": error["type"],
-                    }
-                    for error in exc.errors()
-                ]
-            }
-
-        exception = ValidationException(message="Validation failed", details=details)
-
-        return GlobalErrorHandler.handle_base_api_exception(request, exception)
-
-    @staticmethod
-    def handle_object_not_found(
-        request: HttpRequest, exc: ObjectDoesNotExist
-    ) -> JsonResponse:
-        """Handle Django ObjectDoesNotExist exceptions"""
-        exception = ResourceNotFoundException(
-            message=str(exc) if str(exc) else "Resource not found"
+            },
+            status=403,
         )
 
-        return GlobalErrorHandler.handle_base_api_exception(request, exception)
+    @staticmethod
+    def handle_not_found(request: HttpRequest, exc: ObjectDoesNotExist) -> JsonResponse:
+        return JsonResponse(
+            {
+                "error": {
+                    "code": "resource_not_found",
+                    "message": "Resource not found",
+                    "status": 404,
+                }
+            },
+            status=404,
+        )
 
     @staticmethod
     def handle_database_error(request: HttpRequest, exc: Exception) -> JsonResponse:
-        """Handle database-related exceptions"""
-        logger.error(
-            f"Database error: {str(exc)}",
-            extra={
-                "path": request.path,
-                "method": request.method,
-                "user": getattr(request, "user", None),
+        GlobalErrorHandler._log_error(request, exc, {"db_error": str(exc)})
+        return JsonResponse(
+            {
+                "error": {
+                    "code": "database_error",
+                    "message": "Database error",
+                    "status": 500,
+                }
             },
-            exc_info=True,
+            status=500,
         )
-
-        if isinstance(exc, IntegrityError):
-            message = "Database integrity error. Resource may already exist."
-            code = "integrity_error"
-        else:
-            message = "Database error occurred"
-            code = "database_error"
-
-        exception = DatabaseException(message=message, code=code)
-
-        return GlobalErrorHandler.handle_base_api_exception(request, exception)
 
     @staticmethod
-    def handle_generic_exception(request: HttpRequest, exc: Exception) -> JsonResponse:
-        """Handle unexpected exceptions"""
-        # Log full traceback for debugging
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        tb_lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    def handle_unexpected(request: HttpRequest, exc: Exception) -> JsonResponse:
+        tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+        GlobalErrorHandler._log_error(request, exc, {"traceback": tb})
 
-        logger.error(
-            f"Unhandled exception: {str(exc)}",
-            extra={
-                "traceback": "".join(tb_lines),
-                "path": request.path,
-                "method": request.method,
-                "user": getattr(request, "user", None),
-            },
-            exc_info=True,
+        message = "Internal server error" if not settings.DEBUG else str(exc)
+        return JsonResponse(
+            {"error": {"code": "internal_error", "message": message, "status": 500}},
+            status=500,
         )
-
-        # Don't expose internal errors to users in production
-        from django.conf import settings
-
-        if settings.DEBUG:
-            message = f"{exc.__class__.__name__}: {str(exc)}"
-        else:
-            message = "An unexpected error occurred. Please try again later."
-
-        exception = BaseAPIException(
-            message=message, code="internal_server_error", status_code=500
-        )
-
-        return GlobalErrorHandler.handle_base_api_exception(request, exception)
 
     @staticmethod
     def register_handlers(api):
-        """Register all error handlers with Django Ninja API"""
+        from ninja import NinjaAPI
 
-        # Custom API exceptions
-        @api.exception_handler(BaseAPIException)
-        def handle_api_exception(request: HttpRequest, exc: BaseAPIException):
-            return GlobalErrorHandler.handle_base_api_exception(request, exc)
-
-        # Authentication exceptions
-        @api.exception_handler(jwt.ExpiredSignatureError)
-        @api.exception_handler(jwt.InvalidTokenError)
-        def handle_jwt_exception(request: HttpRequest, exc: Exception):
-            return GlobalErrorHandler.handle_authentication_exception(request, exc)
-
-        # Permission exceptions
-        @api.exception_handler(PermissionDenied)
-        def handle_permission_exception(request: HttpRequest, exc: PermissionDenied):
-            return GlobalErrorHandler.handle_permission_denied(request, exc)
-
-        # Validation exceptions
-        @api.exception_handler(ValidationError)
         @api.exception_handler(PydanticValidationError)
-        def handle_validation_exception(request: HttpRequest, exc: Exception):
+        @api.exception_handler(NinjaValidationError)
+        @api.exception_handler(ValidationError)
+        def validation(request, exc):
             return GlobalErrorHandler.handle_validation_error(request, exc)
 
-        # Not found exceptions
-        @api.exception_handler(ObjectDoesNotExist)
-        def handle_not_found_exception(request: HttpRequest, exc: ObjectDoesNotExist):
-            return GlobalErrorHandler.handle_object_not_found(request, exc)
+        @api.exception_handler(jwt.ExpiredSignatureError)
+        @api.exception_handler(jwt.InvalidTokenError)
+        def auth_errors(request, exc):
+            return GlobalErrorHandler.handle_auth_error(request, exc)
 
-        # Database exceptions
-        @api.exception_handler(DatabaseError)
-        @api.exception_handler(IntegrityError)
-        def handle_db_exception(request: HttpRequest, exc: Exception):
+        @api.exception_handler(PermissionDenied)
+        def permission(request, exc):
+            return GlobalErrorHandler.handle_permission_denied(request, exc)
+
+        @api.exception_handler(ObjectDoesNotExist)
+        def not_found(request, exc):
+            return GlobalErrorHandler.handle_not_found(request, exc)
+
+        @api.exception_handler((DatabaseError, IntegrityError))
+        def db_error(request, exc):
             return GlobalErrorHandler.handle_database_error(request, exc)
 
-        # Generic exceptions (catch-all)
         @api.exception_handler(Exception)
-        def handle_generic_exception(request: HttpRequest, exc: Exception):
-            return GlobalErrorHandler.handle_generic_exception(request, exc)
+        def unexpected(request, exc):
+            return GlobalErrorHandler.handle_unexpected(request, exc)

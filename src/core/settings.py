@@ -15,7 +15,10 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+from utils.helpers.logger.logger import setup_logging
+
 load_dotenv()
+setup_logging()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,6 +39,13 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
+
+LOG_JSON = not DEBUG
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+LOG_FILE = BASE_DIR / "logs" / "errors.json" if not DEBUG else None
+
+# Create logs dir
+os.makedirs(BASE_DIR / "logs", exist_ok=True)
 
 # Application definition
 
@@ -67,6 +77,7 @@ MIDDLEWARE = [
     # "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.middleware.RequestLoggingMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
