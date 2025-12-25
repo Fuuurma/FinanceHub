@@ -5,35 +5,25 @@ from ninja import Schema
 import re
 
 
-class UserRegisterSchema(Schema):
-    """User registration schema"""
-
-    email: EmailStr
-    username: str = Field(..., min_length=3, max_length=150)
-    password: str = Field(..., min_length=8, max_length=128)
-    password_confirm: str
+class RegisterIn(BaseModel):
+    username: str = Field(
+        ..., min_length=3, max_length=150, description="Unique username"
+    )
+    email: EmailStr = Field(..., description="Valid email address")
+    password: str = Field(..., min_length=8, description="Minimum 8 characters")
+    password_confirm: str = Field(..., description="Confirm your password")
     first_name: Optional[str] = Field(None, max_length=150)
     last_name: Optional[str] = Field(None, max_length=150)
 
-    @field_validator("username")
-    @classmethod
-    def validate_username(cls, v):
-        if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            raise ValueError(
-                "Username can only contain letters, numbers, hyphens, and underscores"
-            )
-        return v
-
     @field_validator("password")
-    @classmethod
-    def validate_password(cls, v):
+    def strong_password(cls, v):
         if not re.search(r"[A-Z]", v):
             raise ValueError("Password must contain at least one uppercase letter")
         if not re.search(r"[a-z]", v):
             raise ValueError("Password must contain at least one lowercase letter")
-        if not re.search(r"\d", v):
+        if not re.search(r"[0-9]", v):
             raise ValueError("Password must contain at least one digit")
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
+        if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;':\",./<>?]", v):
             raise ValueError("Password must contain at least one special character")
         return v
 
@@ -43,3 +33,24 @@ class UserRegisterSchema(Schema):
         if "password" in values and v != values["password"]:
             raise ValueError("Passwords do not match")
         return v
+
+
+class RegisterOut(BaseModel):
+    id: str
+    username: str
+    email: EmailStr
+    first_name: Optional[str]
+    last_name: Optional[str]
+    message: str = "User successfully registered. Please log in."
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": "a1b2c3d4-...",
+                "username": "sergi",
+                "email": "sergi@example.com",
+                "first_name": "Sergi",
+                "last_name": "Finance",
+                "message": "User successfully registered. Please log in.",
+            }
+        }
