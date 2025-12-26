@@ -5,6 +5,7 @@ from investments.models.benchmark import Benchmark
 from investments.models.benchmark_price_history import BenchmarkPriceHistory
 from investments.models.corporate_action import CorporateAction
 from investments.models.currency import Currency
+from investments.models.data_provider import DataProviderConfig
 from investments.models.dividend import Dividend
 from investments.models.exchange_rate import ExchangeRate
 from investments.models.transaction import Transaction
@@ -21,3 +22,4 @@ admin.site.register(Benchmark)
 admin.site.register(BenchmarkPriceHistory)
 admin.site.register(Alert)
 admin.site.register(Watchlist)
+admin.site.register(DataProviderConfig)
