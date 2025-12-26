@@ -77,11 +77,10 @@ MIDDLEWARE = [
     # "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "core.middleware.RequestLoggingMiddleware",
+    "utils.helpers.logger.middleware.RequestLoggingMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
 ROOT_URLCONF = "core.urls"
 
 TEMPLATES = [
