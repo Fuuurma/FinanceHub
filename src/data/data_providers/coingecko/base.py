@@ -6,9 +6,8 @@ from typing import List, Dict, Optional
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from django.core.cache import cache
+from utils.helpers.logger.logger import get_logger
 
-from apps.assets.models import Asset, AssetPrice, DataSource
-from apps.core.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -245,7 +244,7 @@ from typing import List, Dict, Optional
 from datetime import datetime, date
 from decimal import Decimal
 
-from apps.core.logger import get_logger
+from utils.helpers.logger.logger import get_logger
 
 logger = get_logger(__name__)
 
