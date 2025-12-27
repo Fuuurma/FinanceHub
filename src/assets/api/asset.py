@@ -3,6 +3,8 @@ from ninja import Router, Query, Schema
 from django.db.models import Q
 
 from assets.models.asset import Asset
+from assets.models.price_history import PriceHistory
+from portfolios.schemas.schemas import AssetOut
 
 router = Router(tags=["Assets"])
 
@@ -31,6 +33,4 @@ def list_assets(
 @router.get("/{asset_id}/prices", response=List[PriceHistoryOut])
 def get_price_history(request, asset_id: str, days: int = 30):
     """Returns price data for charts"""
-    return AssetPriceHistory.objects.filter(asset_id=asset_id).order_by("-timestamp")[
-        :days
-    ]
+    return PriceHistory.objects.filter(asset_id=asset_id).order_by("-timestamp")[:days]

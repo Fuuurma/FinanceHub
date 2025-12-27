@@ -5,8 +5,12 @@ from assets.models.asset_class import AssetClass
 from assets.models.asset_metrics import AssetMetrics
 from assets.models.asset_provider import AssetProviderMapping
 from assets.models.asset_type import AssetType
+from assets.models.country import Country
+from assets.models.exchange import Exchange
 from assets.models.price_history import PriceHistory
 
+admin.site.register(Country)
+admin.site.register(Exchange)
 admin.site.register(AssetType)
 admin.site.register(AssetClass)
 admin.site.register(Asset)

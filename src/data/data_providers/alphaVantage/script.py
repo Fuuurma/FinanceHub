@@ -1,4 +1,4 @@
-# data/jobs/alpha_vantage_jobs.py
+# src/data/data_providers/alphaVantage/script.py
 """Alpha Vantage data fetching jobs"""
 import asyncio
 from typing import List, Optional
