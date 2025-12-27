@@ -4,7 +4,8 @@ from typing import List, Dict, Optional
 from datetime import datetime, date
 from decimal import Decimal
 
-from apps.core.logger import get_logger
+from utils.helpers.logger.logger import get_logger
+
 
 logger = get_logger(__name__)
 
