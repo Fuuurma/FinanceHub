@@ -14,6 +14,10 @@ class DataProvider(UUIDModel, TimestampedModel):
     api_key = models.CharField(
         max_length=200, blank=True
     )  # Encrypted in prod (use django-fernet-fields)
+    priority = models.PositiveSmallIntegerField(
+        default=10, help_text="Lower is higher priority"
+    )
+
     base_url = models.URLField(blank=True)
     rate_limit_per_minute = models.PositiveIntegerField(blank=True, null=True)
     rate_limit_daily = models.PositiveIntegerField(blank=True, null=True)
