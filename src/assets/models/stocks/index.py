@@ -9,3 +9,6 @@ class IndexAsset(Asset):
     weighting_method = models.CharField(
         max_length=50, blank=True
     )  # e.g., "Market Cap Weighted"
+
+    class Meta:
+        db_table = "asset_indexes"

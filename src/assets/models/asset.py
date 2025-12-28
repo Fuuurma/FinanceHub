@@ -8,14 +8,6 @@ from utils.helpers.timestamped_model import TimestampedModel
 from utils.helpers.uuid_model import UUIDModel
 from django.utils.text import slugify
 
-CHANGE_INTERVAL_CHOICES = [
-    ("1h", "1 Hour"),
-    ("24h", "24 Hours"),
-    ("7d", "7 Days"),
-    ("30d", "30 Days"),
-    ("1y", "1 Year"),
-]
-
 
 class Asset(UUIDModel, TimestampedModel, SoftDeleteModel):
     """
@@ -42,18 +34,16 @@ class Asset(UUIDModel, TimestampedModel, SoftDeleteModel):
         AssetType, on_delete=models.PROTECT, related_name="assets"
     )
 
-    exchange = models.ForeignKey(
-        "assets.Exchange", on_delete=models.SET_NULL, null=True
+    asset_class = models.ForeignKey(
+        "assets.AssetClass", on_delete=models.PROTECT, related_name="assets"
     )
-    country = models.ForeignKey("assets.Country", on_delete=models.SET_NULL, null=True)
 
-    # Financial Identifiers
-    isin = models.CharField(
-        max_length=12,
-        blank=True,
-        help_text="International Securities Identification Number",
-    )
-    cusip = models.CharField(max_length=9, blank=True, null=True)
+    exchanges = models.ManyToManyField(
+        "assets.Exchange", blank=True, related_name="assets"
+    )  # Optional M2M
+
+    country = models.ForeignKey("assets.Country", on_delete=models.SET_NULL, null=True)
+    website = models.URLField(blank=True)
 
     # Base configuration
     currency = models.CharField(max_length=3, default="USD")
@@ -61,26 +51,31 @@ class Asset(UUIDModel, TimestampedModel, SoftDeleteModel):
         max_length=20, choices=Status.choices, default=Status.ACTIVE
     )
 
-    # Common metrics (updated daily)
-    market_cap = models.DecimalField(max_digits=30, decimal_places=2, null=True)
-    volume_24h = models.DecimalField(max_digits=30, decimal_places=2, null=True)
-    price_change_24h_pct = models.DecimalField(
-        max_digits=10, decimal_places=4, null=True
-    )
-    high_52w = models.DecimalField(max_digits=20, decimal_places=8, null=True)
-    low_52w = models.DecimalField(max_digits=20, decimal_places=8, null=True)
-    volatility = models.DecimalField(
-        max_digits=10, decimal_places=4, null=True
-    )  # e.g., 30-day std dev
-
     # Tracking the "Latest" state for fast dashboard reads
     last_price = models.DecimalField(
         max_digits=30, decimal_places=10, null=True, blank=True
     )
     last_price_updated_at = models.DateTimeField(null=True, blank=True)
 
-    country = models.CharField(max_length=100, blank=True)
-    website = models.URLField(blank=True)
+    # Common metrics (updated daily)
+    market_cap = models.DecimalField(max_digits=30, decimal_places=2, null=True)
+    volume_24h = models.DecimalField(max_digits=30, decimal_places=2, null=True)
+    price_change_24h = models.DecimalField(
+        max_digits=30, decimal_places=10, null=True, blank=True
+    )
+    price_change_24h_pct = models.DecimalField(
+        max_digits=10, decimal_places=4, null=True
+    )
+
+    # ATH/ATL for price and volume
+    ath_price = models.DecimalField(max_digits=20, decimal_places=8, null=True)
+    ath_price_date = models.DateField(null=True)
+    atl_price = models.DecimalField(max_digits=20, decimal_places=8, null=True)
+    atl_price_date = models.DateField(null=True)
+    ath_volume = models.BigIntegerField(null=True)
+    ath_volume_date = models.DateField(null=True)
+    atl_volume = models.BigIntegerField(null=True)
+    atl_volume_date = models.DateField(null=True)
 
     metadata = models.JSONField(
         default=dict, blank=True
@@ -89,11 +84,13 @@ class Asset(UUIDModel, TimestampedModel, SoftDeleteModel):
     class Meta:
         verbose_name = "Asset"
         verbose_name_plural = "Assets"
+        db_table = "assets"
         ordering = ["ticker"]
         indexes = [
-            models.Index(fields=["ticker"]),
-            models.Index(fields=["asset_type"]),
-            models.Index(fields=["currency"]),
+            models.Index(fields=["status", "ticker"]),
+            models.Index(fields=["asset_type", "market_cap"]),
+            models.Index(fields=["last_price_updated_at"]),
+            models.Index(fields=["last_price"]),
         ]
 
     def __str__(self):
