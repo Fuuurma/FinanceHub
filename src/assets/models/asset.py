@@ -42,7 +42,9 @@ class Asset(UUIDModel, TimestampedModel, SoftDeleteModel):
         "assets.Exchange", blank=True, related_name="assets"
     )  # Optional M2M
 
-    country = models.ForeignKey("assets.Country", on_delete=models.SET_NULL, null=True)
+    country = models.ForeignKey(
+        "assets.Country", on_delete=models.SET_NULL, null=True, blank=True
+    )
     website = models.URLField(blank=True)
 
     # Base configuration
@@ -110,18 +112,3 @@ class Asset(UUIDModel, TimestampedModel, SoftDeleteModel):
     def serialize_metadata(self):
         """Fast serialization with orjson"""
         return orjson.dumps(self.metadata).decode()
-
-    # Method for volatility calculation (from historical prices)
-    def calculate_volatility(self, days=30):
-        from statistics import stdev
-
-        prices = self.prices.order_by("-date")[:days].values_list("close", flat=True)
-        if len(prices) < 2:
-            return Decimal("0")
-        returns = [
-            (prices[i] - prices[i + 1]) / prices[i + 1] for i in range(len(prices) - 1)
-        ]
-        self.volatility = (
-            Decimal(str(stdev(returns) * (252**0.5))) if returns else Decimal("0")
-        )
-        self.save(update_fields=["volatility"])

@@ -11,3 +11,6 @@ class ETFAsset(Asset):
     aum = models.DecimalField(
         max_digits=30, decimal_places=2, null=True
     )  # Assets under management
+
+    class Meta:
+        db_table = "asset_etf"

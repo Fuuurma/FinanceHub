@@ -18,7 +18,7 @@ class CorporateAction(UUIDModel, TimestampedModel):
         SPINOFF = "spinoff", "Spinoff"
 
     asset = models.ForeignKey(
-        Asset, on_delete=models.CASCADE, related_name="corporate_actions"
+        Asset, on_delete=models.CASCADE, related_name="corporate_actions_1"
     )
     action_type = models.CharField(max_length=50, choices=ActionType.choices)
     execution_date = models.DateField(db_index=True)
@@ -42,5 +42,5 @@ class CorporateAction(UUIDModel, TimestampedModel):
     description = models.TextField(blank=True)
 
     class Meta:
-        db_table = "asset_corporate_actions"
+        db_table = "asset_corporate_actions_1"
         ordering = ["-execution_date"]

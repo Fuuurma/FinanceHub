@@ -11,7 +11,7 @@ from decimal import Decimal
 from statistics import stdev
 
 
-class PriceHistory(UUIDModel, TimestampedModel):
+class AssetPricesHistoric(UUIDModel, TimestampedModel):
     """
     Daily (or intraday) price data for assets.
     Used for charts, valuation, and performance calculations.
@@ -54,18 +54,7 @@ class PriceHistory(UUIDModel, TimestampedModel):
     )
 
     class Meta:
-        unique_together = ("asset", "date")
-        ordering = ["-date"]
-        indexes = [
-            models.Index(fields=["asset", "-date"]),
-            models.Index(fields=["date"]),
-        ]
-        verbose_name_plural = "Price Histories"
-
-    def __str__(self):
-        return f"{self.asset.ticker} - {self.date} - ${self.close}"
-
-    class Meta:
+        db_table = "asset_prices_historic"
         unique_together = ("asset", "date", "source")
         ordering = ["-date"]
         indexes = [
@@ -73,18 +62,19 @@ class PriceHistory(UUIDModel, TimestampedModel):
             models.Index(fields=["date"]),
             models.Index(fields=["source"]),
         ]
-        verbose_name_plural = "Price Histories"
+        verbose_name_plural = "Prices Historic"
 
     def __str__(self):
         return f"{self.asset.ticker} - {self.date} - ${self.close}"
 
     def calculate_volatility(self, days=30):
-        """Calculate volatility from previous prices if not set"""
+        """Calculate volatility from 
+        previous prices if not set"""
         if self.volatility is not None:
             return self.volatility
 
         prices = (
-            PriceHistory.objects.filter(asset=self.asset, date__lte=self.date)
+            AssetPricesHistoric.objects.filter(asset=self.asset, date__lte=self.date)
             .order_by("-date")[:days]
             .values_list("close", flat=True)
         )

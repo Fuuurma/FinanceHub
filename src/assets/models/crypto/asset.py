@@ -17,5 +17,7 @@ class CryptoAsset(Asset):
     contract_address = models.CharField(max_length=255, blank=True, null=True)
     blockchain = models.CharField(max_length=255, blank=True, null=True)
 
+    tvl = models.DecimalField(max_digits=40, decimal_places=10, null=True)
+
     class Meta:
-        db_table = "fh_assets_crypto"
+        db_table = "assets_crypto"

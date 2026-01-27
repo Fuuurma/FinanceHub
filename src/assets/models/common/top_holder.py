@@ -5,7 +5,7 @@ from utils.helpers.uuid_model import UUIDModel
 from django.db import models
 
 
-class TopHolder(UUIDModel, TimestampedModel):
+class AssetTopHolder(UUIDModel, TimestampedModel):
     """Significant institutional or individual owners."""
 
     asset = models.ForeignKey(

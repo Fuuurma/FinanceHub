@@ -7,8 +7,10 @@ from utils.helpers.timestamped_model import TimestampedModel
 from decimal import Decimal
 
 
-class AssetMetricsHistory(UUIDModel, TimestampedModel):
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="prices")
+class AssetMetricsHistoric(UUIDModel, TimestampedModel):
+    asset = models.ForeignKey(
+        Asset, on_delete=models.CASCADE, related_name="metrics_historic"
+    )
     date = models.DateField(db_index=True)
     market_cap = models.DecimalField(max_digits=30, decimal_places=2, null=True)
 
@@ -80,39 +82,40 @@ class AssetMetricsHistory(UUIDModel, TimestampedModel):
         max_digits=10, decimal_places=4, null=True
     )
 
-    ath_price_7d = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    ath_price_7d = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     ath_price_date_7d = models.DateField(null=True)
-    atl_price_7d = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    atl_price_7d = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     atl_price_date_7d = models.DateField(null=True)
 
-    ath_price_30d = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    ath_price_30d = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     ath_price_date_30d = models.DateField(null=True)
-    atl_price_30d = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    atl_price_30d = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     atl_price_date_30d = models.DateField(null=True)
 
-    ath_price_90d = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    ath_price_90d = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     ath_price_date_90d = models.DateField(null=True)
-    atl_price_90d = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    atl_price_90d = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     atl_price_date_90d = models.DateField(null=True)
 
-    ath_price_180d = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    ath_price_180d = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     ath_price_date_180d = models.DateField(null=True)
-    atl_price_180d = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    atl_price_180d = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     atl_price_date_180d = models.DateField(null=True)
 
-    ath_price_1y = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    ath_price_1y = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     ath_price_date_1y = models.DateField(null=True)
-    atl_price_1y = models.DecimalField(max_digits=10, decimal_places=4, null=True)
+    atl_price_1y = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     atl_price_date_1y = models.DateField(null=True)
 
     source = models.ForeignKey(
         DataProvider,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="metric_history",
+        related_name="metrics_historic",
     )
 
     class Meta:
+        db_table = "asset_metrics_historic"
         unique_together = (
             "asset",
             "date",
@@ -139,7 +142,7 @@ class AssetMetricsHistory(UUIDModel, TimestampedModel):
         }
         days = intervals_days.get(interval, 1)
         previous_date = self.date - timedelta(days=days)
-        previous = AssetMetricsHistory.objects.filter(
+        previous = AssetMetricsHistoric.objects.filter(
             asset=self.asset, date=previous_date, source=self.source
         ).first()
 
@@ -188,7 +191,7 @@ class AssetMetricsHistory(UUIDModel, TimestampedModel):
         }
         days = intervals_days.get(interval, 365)
         start_date = self.date - timedelta(days=days)
-        historics = AssetMetricsHistory.objects.filter(
+        historics = AssetMetricsHistoric.objects.filter(
             asset=self.asset,
             date__gte=start_date,
             date__lte=self.date,
@@ -196,6 +199,7 @@ class AssetMetricsHistory(UUIDModel, TimestampedModel):
         ).order_by("date")
 
         if historics.exists():
+            # update ath & low pct's
             prices = list(historics.values_list("price", flat=True))
             volumes = list(historics.values_list("volume", flat=True))
             dates = list(historics.values_list("date", flat=True))
@@ -217,7 +221,6 @@ class AssetMetricsHistory(UUIDModel, TimestampedModel):
             setattr(self, f"ath_volume_{interval}", ath_volume)
             setattr(self, f"ath_volume_date_{interval}", dates[ath_v_index])
 
-            # This fields does not exist.
             atl_volume = min(volumes)
             atl_v_index = volumes.index(atl_volume)
             setattr(self, f"atl_volume_{interval}", atl_volume)

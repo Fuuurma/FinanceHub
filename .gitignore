@@ -157,6 +157,9 @@ ENV/
 env.bak/
 venv.bak/
 
+ai/
+context.md
+
 # Spyder project settings
 .spyderproject
 .spyproject
