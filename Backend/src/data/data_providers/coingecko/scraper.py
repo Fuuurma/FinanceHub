@@ -1,77 +1,69 @@
 """
-CoinGecko Crypto Data Scraper
-Fetches cryptocurrency data from CoinGecko API
+CoinGecko Crypto Scraper using BaseAPIFetcher for key rotation
+Performance optimized with orjson and async operations
 """
-import requests
+import aiohttp
+from typing import Dict, Optional, List, Any
 import orjson
-from datetime import datetime
-from typing import List, Dict, Optional, Any
-import logging
 
-from assets.models.asset import Asset
-from assets.models.historic.prices import AssetPricesHistoric
-from assets.models.asset_type import AssetType
+from data.data_providers.base_fetcher import BaseAPIFetcher
 from utils.helpers.logger.logger import get_logger
 
 logger = get_logger(__name__)
 
 
-class CoinGeckoScraper:
-    """CoinGecko API scraper using requests and orjson"""
+class CoinGeckoScraper(BaseAPIFetcher):
+    """
+    CoinGecko API implementation with key rotation
+    
+    Free tier: 10-50 requests/minute per key
+    Strategy: Rotate between multiple free accounts
+    """
     
     def __init__(self):
-        self.base_url = "https://api.coingecko.com/api/v3"
-        self.timeout = 30
-        self.session = requests.Session()
+        super().__init__(provider_name="coingecko")
+    
+    def get_base_url(self) -> str:
+        return "https://api.coingecko.com/api/v3"
+    
+    def extract_rate_limit_error(self, response: dict) -> Optional[str]:
+        """Extract rate limit error from CoinGecko response"""
+        if 'error' in response:
+            error = response['error']
+            if any(keyword in error.lower() for keyword in ['rate limit', 'too many requests', '429']):
+                return error
+        if 'status' in response and response.get('status', {}).get('error_code') == 429:
+            return "Rate limit exceeded"
+        return None
+    
+    async def _make_request(self, endpoint: str, params: Optional[Dict], method: str, api_key) -> Dict:
+        """Make request with async HTTP client"""
+        url = f"{self.get_base_url()}/{endpoint}"
+        headers = self._get_headers(api_key)
         
-        # Free tier: 10-50 requests/minute
-        # Rate limiting: 1 request per second
-        self.rate_limit_delay = 1.2  # seconds between requests
+        async with self.session.request(method, url, params=params, headers=headers) as response:
+            response.raise_for_status()
+            content = await response.read()
+            # Use orjson for fast parsing
+            return orjson.loads(content)
     
-    def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Optional[Dict[str, Any]]:
-        """Make a request to CoinGecko API with rate limiting"""
-        try:
-            import time
-            time.sleep(self.rate_limit_delay)
-            
-            url = f"{self.base_url}/{endpoint}"
-            response = self.session.get(
-                url,
-                params=params,
-                timeout=self.timeout
-            )
-            
-            # Parse JSON with orjson for faster performance
-            data = orjson.loads(response.content)
-            
-            # Check for API errors
-            if 'error' in data:
-                logger.error(f"CoinGecko API error: {data['error']}")
-                return None
-            
-            return data
-            
-        except requests.exceptions.RequestException as e:
-            logger.error(f"CoinGecko request failed: {str(e)}")
-            return None
-        except Exception as e:
-            logger.error(f"Error parsing CoinGecko response: {str(e)}")
-            return None
+    def _get_headers(self, api_key) -> Dict:
+        """CoinGecko uses API key in header for Pro tier"""
+        headers = {
+            'Accept': 'application/json',
+            'User-Agent': 'FinanceHub/1.0'
+        }
+        if api_key.key_value:
+            headers['X-CMC_PRO_API_KEY'] = api_key.key_value
+        return headers
     
-    def get_coin(self, coin_id: str) -> Optional[Dict[str, Any]]:
+    async def get_coin_list(self, vs_currency: str = "usd", per_page: int = 250, page: int = 1) -> Optional[List[Dict[str, Any]]]:
         """
-        Get coin data by ID
-        Documentation: https://www.coingecko.com/en/api/v3/#get_coin_data_by_id
+        Get list of coins with price, market cap and 24h change
+        
+        Performance: Uses async request with orjson parsing
         """
-        data = self._make_request(f"coins/{coin_id}")
-        return data
-    
-    def get_coin_list(self, vs_currency: str = "usd", per_page: int = 250, page: int = 1) -> Optional[List[Dict[str, Any]]]:
-        """
-        Get list of coins with price, market cap, and 24h change
-        Documentation: https://www.coingecko.com/en/api/v3/#get_coins_markets
-        """
-        data = self._make_request("coins/markets", {
+        params = {
             'vs_currency': vs_currency,
             'per_page': per_page,
             'page': page,
@@ -79,83 +71,118 @@ class CoinGeckoScraper:
             'sparkline': False,
             'price_change_percentage': '24h',
             'locale': 'en'
-        })
+        }
         
-        if data and 'data' in data:
-            return data['data']
+        data = await self.request("coins/markets", params=params)
+        
+        if data and isinstance(data, list):
+            return data
         return None
     
-    def get_top_coins_by_market_cap(self, limit: int = 100) -> Optional[List[Dict[str, Any]]):
+    async def get_top_coins_by_market_cap(self, limit: int = 100) -> Optional[List[Dict[str, Any]]]:
         """Get top coins by market cap"""
-        return self.get_coin_list(per_page=limit, page=1)
+        return await self.get_coin_list(per_page=limit, page=1)
     
-    def get_coin_market_chart(
+    async def get_coin_market_chart(
         self,
         coin_id: str,
         vs_currency: str = "usd",
         days: int = 365
-    ) -> Optional[List[Dict[str, Any]]):
+    ) -> Optional[List[Dict[str, Any]]]:
         """
         Get coin market chart data
-        Days: 1, 7, 14, 30, 90, 180, 365, max
-        Documentation: https://www.coingecko.com/en/api/v3/#get_coin_market_chart
+        
+        Performance: Uses async request with orjson parsing
         """
-        data = self._make_request(f"coins/{coin_id}/market_chart", {
+        params = {
             'vs_currency': vs_currency,
             'days': days
-        })
+        }
         
-        if data:
+        data = await self.request(f"coins/{coin_id}/market_chart", params=params)
+        
+        if data and isinstance(data, dict):
             return data.get('prices', [])
         return None
     
-    def get_all_coins_list(self) -> Optional[List[Dict[str, Any]]]:
-        """
-        Get list of all supported coins
-        Note: This is a large operation, use with caution
-        Documentation: https://www.coingecko.com/en/api/v3#/coins/list
-        """
-        data = self._make_request("coins/list")
-        
-        if data:
-            return data
-        return None
+    async def get_coin(self, coin_id: str) -> Optional[Dict[str, Any]]:
+        """Get coin data by ID with full details"""
+        return await self.request(f"coins/{coin_id}")
     
-    def search_coins(self, query: str) -> Optional[List[Dict[str, Any]]]:
-        """
-        Search for coins by name, symbol or ID
-        Documentation: https://www.coingecko.com/en/api/v3#/search_coins
-        """
-        data = self._make_request("search", {
+    async def search_coins(self, query: str) -> Optional[List[Dict[str, Any]]]:
+        """Search for coins by name, symbol or ID"""
+        params = {
             'query': query,
             'order': 'market_cap_desc',
             'per_page': 50,
             'page': 1
-        })
+        }
+        
+        data = await self.request("search", params=params)
         
         if data and 'coins' in data:
             return data['coins']
         return None
     
-    def fetch_and_save_crypto(self, symbol: str) -> bool:
+    async def get_trending(self, limit: int = 7) -> Optional[List[Dict[str, Any]]]:
+        """Get trending cryptocurrencies"""
+        data = await self.request("search/trending")
+        
+        if data and 'coins' in data:
+            return data['coins'][:limit]
+        return None
+    
+    async def get_all_coins_list(self) -> Optional[List[Dict[str, Any]]]:
         """
-        Complete workflow: fetch crypto data and save to database
-        Returns True if successful
+        Get list of all supported coins
+        
+        Performance: Large operation, use with caution
+        """
+        data = await self.request("coins/list")
+        
+        if data and isinstance(data, list):
+            return data
+        return None
+    
+    async def fetch_multiple_cryptos(self, symbols: List[str]) -> Dict[str, bool]:
+        """
+        Fetch multiple cryptocurrencies with async operations
+        
+        Performance: Processes requests concurrently for better throughput
+        """
+        results = {}
+        async with self:
+            tasks = [self.fetch_and_save_crypto(symbol) for symbol in symbols]
+            task_results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            for symbol, result in zip(symbols, task_results):
+                if isinstance(result, Exception):
+                    results[symbol] = False
+                    logger.error(f"Error fetching {symbol}: {str(result)}")
+                else:
+                    results[symbol] = result
+        return results
+    
+    async def fetch_and_save_crypto(self, symbol: str) -> bool:
+        """
+        Fetch and save a single cryptocurrency
+        
+        Performance: Uses async operations and orjson
         """
         try:
+            coin_id = symbol.lower()
+            
             # Get coin data
-            coin_data = self.get_coin(symbol.lower())
+            coin_data = await self.get_coin(coin_id)
             if not coin_data:
                 logger.warning(f"Could not get coin data for {symbol}")
                 return False
             
             # Get market chart data (last 365 days)
-            chart_data = self.get_coin_market_chart(symbol.lower(), days=365)
-            if not chart_data:
-                logger.warning(f"Could not get market chart for {symbol}")
+            chart_data = await self.get_coin_market_chart(coin_id, days=365)
             
             # Save to database
-            self._save_asset_to_db(coin_data, chart_data)
+            await self._save_asset_to_db(coin_data, chart_data, symbol)
             
             logger.info(f"Successfully fetched and saved data for crypto {symbol}")
             return True
@@ -164,23 +191,28 @@ class CoinGeckoScraper:
             logger.error(f"Error fetching/saving crypto {symbol}: {str(e)}")
             return False
     
-    def _save_asset_to_db(
+    async def _save_asset_to_db(
         self,
         coin_data: Dict[str, Any],
-        chart_data: Optional[List] = None
+        chart_data: Optional[List] = None,
+        symbol: str = ""
     ):
         """Save crypto asset data to database"""
-        symbol = coin_data.get('id', '').upper()
+        from assets.models.asset import Asset, AssetType
+        from assets.models.historic.prices import AssetPricesHistoric
+        from datetime import datetime
         
         try:
             # Get or create asset type for crypto
-            crypto_type, _ = AssetType.objects.get_or_create(
+            crypto_type, _ = await asyncio.to_thread(
+                AssetType.objects.get_or_create,
                 name='Crypto',
                 defaults={'name': 'Crypto'}
             )
             
             # Get or create asset
-            asset, created = Asset.objects.update_or_create(
+            asset, created = await asyncio.to_thread(
+                Asset.objects.update_or_create,
                 symbol__iexact=symbol,
                 defaults={
                     'symbol': symbol,
@@ -191,48 +223,56 @@ class CoinGeckoScraper:
             
             # Update asset details
             asset.name = coin_data.get('name', symbol)
-            asset.description = coin_data.get('description', coin_data.get('description', '').get('en', ''))
+            asset.description = coin_data.get('description', '').get('en', '')
             asset.country = coin_data.get('country')
-            asset.website = coin_data.get('links', {}).get('homepage')
+            asset.website = coin_data.get('links', {}).get('homepage', '')
             
             # Save image URL
-            if 'image' in coin_data and coin_data['image']:
-                asset.logo_url = coin_data['image']
+            if 'image' in coin_data and 'large' in coin_data['image']:
+                asset.logo_url = coin_data['image']['large']
             
             asset.is_active = True
-            asset.save()
+            
+            # Save asset synchronously within async context
+            await asyncio.to_thread(asset.save)
             
             # Save current price if available
             market_data = coin_data.get('market_data', {})
             if 'current_price' in market_data:
-                AssetPricesHistoric.objects.create(
+                current_price = float(market_data.get('current_price', 0))
+                
+                await asyncio.to_thread(
+                    AssetPricesHistoric.objects.create,
                     asset=asset,
                     timestamp=datetime.now(),
-                    open=float(market_data.get('current_price', market_data.get('current_price', 0))),
+                    open=current_price,
                     high=float(market_data.get('ath', 0)),
                     low=float(market_data.get('atl', 0)),
-                    close=float(market_data.get('current_price', market_data.get('current_price', 0))),
+                    close=current_price,
                     volume=float(market_data.get('total_volume', 0))
                 )
-                logger.info(f"Saved current price for {symbol}: {market_data.get('current_price')}")
+                logger.info(f"Saved current price for {symbol}: {current_price}")
             
-            # Save historical prices
+            # Save historical prices efficiently
             if chart_data:
                 count = 0
                 for price_point in chart_data[:300]:  # Save last 300 days
                     try:
                         timestamp = datetime.fromtimestamp(price_point[0] / 1000)
-                        AssetPricesHistoric.objects.create(
+                        
+                        await asyncio.to_thread(
+                            AssetPricesHistoric.objects.create,
                             asset=asset,
                             timestamp=timestamp,
-                            open=float(price_point[1]) if len(price_point) > 1 else float(price_point[1]) if len(price_point) > 1 else float(price_point[1]),
-                            high=float(price_point[2]) if len(price_point) > 2 else float(price_point[2]) if len(price_point) > 2 else float(price_point[1]),
-                            low=float(price_point[3]) if len(price_point) > 3 else float(price_point[3]) if len(price_point) > 3 else float(price_point[1]),
+                            open=float(price_point[1]),
+                            high=float(price_point[1]),
+                            low=float(price_point[1]),
                             close=float(price_point[1]),
                             volume=0
                         )
                         count += 1
                     except Exception as e:
+                        logger.debug(f"Error saving price point for {symbol}: {str(e)}")
                         continue
                 
                 logger.info(f"Saved {count} historical prices for {symbol}")
@@ -242,81 +282,66 @@ class CoinGeckoScraper:
         except Exception as e:
             logger.error(f"Error saving crypto asset {symbol} to DB: {str(e)}")
     
-    def fetch_multiple_cryptos(self, symbols: List[str]) -> Dict[str, bool]:
-        """
-        Fetch data for multiple cryptocurrencies with rate limiting
-        Returns dictionary mapping symbol to success status
-        """
-        results = {}
-        
-        for symbol in symbols:
-            results[symbol] = self.fetch_and_save_crypto(symbol)
-        
-        success_count = sum(1 for v in results.values() if v)
-        logger.info(f"CoinGecko: Fetched data for {success_count}/{len(symbols)} cryptos")
-        
-        return results
-    
-    def get_popular_cryptos(self, limit: int = 100) -> List[str]:
+    async def get_popular_cryptos(self, limit: int = 100) -> List[str]:
         """Get list of popular cryptocurrencies to track"""
-        coins = self.get_top_coins_by_market_cap(limit)
+        coins = await self.get_top_coins_by_market_cap(limit)
         
         if coins:
             return [coin['id'].upper() for coin in coins]
         return []
     
-    def get_trending_cryptos(self, limit: int = 7) -> List[str]:
-        """
-        Get trending cryptocurrencies
-        Documentation: https://www.coingecko.com/en/api/v3#/get_trending
-        """
-        data = self._make_request("search/trending")
-        
-        if data and 'coins' in data:
-            trending = []
-            for item in data['coins'][:limit]:
-                trending.append(item['item']['id'].upper())
-            return trending
-        
-        return []
+    @classmethod
+    def from_settings(cls):
+        """Create scraper using settings API key (legacy compatibility)"""
+        from django.conf import settings
+        scraper = cls()
+        return scraper
 
 
-def get_popular_cryptos() -> List[str]:
+async def get_popular_cryptos(limit: int = 100) -> List[str]:
     """Get list of popular cryptocurrencies to track"""
     scraper = CoinGeckoScraper()
-    popular_cryptos = scraper.get_popular_cryptos(100)
+    popular_cryptos = await scraper.get_popular_cryptos(limit)
     
     logger.info(f"Retrieved {len(popular_cryptos)} popular cryptos from CoinGecko")
     return popular_cryptos
 
 
-def get_trending_cryptos() -> List[str]:
+async def get_trending_cryptos(limit: int = 7) -> List[str]:
     """Get trending cryptocurrencies"""
     scraper = CoinGeckoScraper()
-    trending = scraper.get_trending_cryptos(7)
+    trending = await scraper.get_trending(limit)
     
-    logger.info(f"Retrieved {len(trending)} trending cryptos from CoinGecko")
-    return trending
+    if trending:
+        return [item['item']['id'].upper() for item in trending]
+    return []
 
 
 if __name__ == "__main__":
-    scraper = CoinGeckoScraper()
+    import asyncio
     
-    # Test with BTC
-    print("Testing CoinGecko scraper with BTC...")
-    scraper.fetch_and_save_crypto('BTC')
+    async def main():
+        scraper = CoinGeckoScraper()
+        
+        # Test with BTC
+        print("Testing CoinGecko scraper with BTC...")
+        result = await scraper.fetch_and_save_crypto('BTC')
+        print(f"BTC Result: {result}")
+        
+        # Test with ETH
+        print("\nTesting CoinGecko scraper with ETH...")
+        result = await scraper.fetch_and_save_crypto('ETH')
+        print(f"ETH Result: {result}")
+        
+        # Test with multiple cryptos
+        print("\nTesting CoinGecko scraper with popular cryptos...")
+        popular = await get_popular_cryptos(10)
+        results = await scraper.fetch_multiple_cryptos(popular)
+        print(f"Results: {results}")
+        
+        # Get trending
+        print("\nGetting trending cryptos...")
+        trending = await get_trending_cryptos(7)
+        print(f"Trending: {trending}")
     
-    # Test with ETH
-    print("\nTesting CoinGecko scraper with ETH...")
-    scraper.fetch_and_save_crypto('ETH')
-    
-    # Test with multiple cryptos
-    print("\nTesting CoinGecko scraper with popular cryptos...")
-    popular = get_popular_cryptos()[:10]
-    results = scraper.fetch_multiple_cryptos(popular)
-    print(f"Results: {results}")
-    
-    # Get trending
-    print("\nGetting trending cryptos...")
-    trending = get_trending_cryptos()
-    print(f"Trending: {trending}")
+    asyncio.run(main())
