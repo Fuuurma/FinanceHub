@@ -14,6 +14,8 @@ import asyncio
 from typing import List, Dict, Optional
 
 from data.data_providers.alphaVantage.scraper import AlphaVantageScraper
+from data.data_providers.coingecko.scraper import CoinGeckoScraper
+from data.data_providers.coinmarketcap.scraper import CoinMarketCapScraper
 from utils.helpers.logger.logger import get_logger
 
 logger = get_logger(__name__)
@@ -26,6 +28,8 @@ broker.add_middleware(Retries(max_retries=3))
 
 # Initialize scrapers with new BaseAPIFetcher-based architecture
 alpha_scraper = AlphaVantageScraper()
+coingecko_scraper = CoinGeckoScraper()
+coinmarketcap_scraper = CoinMarketCapScraper()
 
 # Popular stocks to fetch regularly
 POPULAR_STOCKS = [
@@ -125,6 +129,72 @@ async def fetch_stocks_alpha(symbols: Optional[List[str]] = None) -> dict:
         return {'error': str(e)}
 
 
+@dramatiq.actor(broker=broker, max_retries=3)
+async def fetch_cryptos_coingecko(symbols: Optional[List[str]] = None) -> dict:
+    """
+    Fetch crypto data from CoinGecko using key rotation
+    Runs every 15 minutes (rate limited)
+    """
+    try:
+        if symbols is None:
+            symbols = POPULAR_CRYPTOS[:20]
+        
+        logger.info(f"Fetching crypto data from CoinGecko for {len(symbols)} symbols")
+        
+        results = await coingecko_scraper.fetch_multiple_cryptos(symbols)
+        success_count = sum(1 for v in results.values() if v)
+        
+        logger.info(f"CoinGecko: {success_count}/{len(symbols)} cryptos fetched successfully")
+        
+        # Process batch data efficiently
+        if success_count > 0:
+            logger.info(f"Processed {success_count} crypto records with key rotation")
+        
+        return {
+            'source': 'coingecko',
+            'total': len(symbols),
+            'success': success_count,
+            'failed': len(symbols) - success_count,
+            'timestamp': datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error in fetch_cryptos_coingecko: {str(e)}")
+        return {'error': str(e)}
+
+
+@dramatiq.actor(broker=broker, max_retries=3)
+async def fetch_cryptos_coinmarketcap(symbols: Optional[List[str]] = None) -> dict:
+    """
+    Fetch crypto data from CoinMarketCap using key rotation
+    Runs every 15 minutes (rate limited)
+    """
+    try:
+        if symbols is None:
+            symbols = POPULAR_CRYPTOS[:20]
+        
+        logger.info(f"Fetching crypto data from CoinMarketCap for {len(symbols)} symbols")
+        
+        results = await coinmarketcap_scraper.fetch_multiple_cryptos(symbols)
+        success_count = sum(1 for v in results.values() if v)
+        
+        logger.info(f"CoinMarketCap: {success_count}/{len(symbols)} cryptos fetched successfully")
+        
+        # Process batch data efficiently
+        if success_count > 0:
+            logger.info(f"Processed {success_count} crypto records with key rotation")
+        
+        return {
+            'source': 'coinmarketcap',
+            'total': len(symbols),
+            'success': success_count,
+            'failed': len(symbols) - success_count,
+            'timestamp': datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error in fetch_cryptos_coinmarketcap: {str(e)}")
+        return {'error': str(e)}
+
+
 @dramatiq.actor(broker=broker, max_retries=2)
 async def fetch_all_markets() -> dict:
     """
@@ -136,14 +206,13 @@ async def fetch_all_markets() -> dict:
         
         # Run tasks concurrently for better performance
         stock_task = fetch_stocks_alpha()
-        
-        # Add other tasks as they get implemented with BaseAPIFetcher
-        # crypto_tasks = [fetch_cryptos_binance(), fetch_cryptos_coingecko()]
+        coingecko_task = fetch_cryptos_coingecko()
+        coinmarketcap_task = fetch_cryptos_coinmarketcap()
         
         results = {
             'stocks_alpha': await stock_task,
-            # 'cryptos_binance': await crypto_tasks[0],
-            # 'cryptos_coingecko': await crypto_tasks[1],
+            'cryptos_coingecko': await coingecko_task,
+            'cryptos_coinmarketcap': await coinmarketcap_task,
         }
         
         logger.info(f"Full market fetch completed: {results}")
@@ -304,6 +373,18 @@ def schedule_tasks():
         repeat=True
     )
     
+    # Fetch cryptos from CoinGecko every 15 minutes (rate limited)
+    fetch_cryptos_coingecko.send_with_options(
+        delay=1000 * 60 * 15,  # 15 minutes
+        repeat=True
+    )
+    
+    # Fetch cryptos from CoinMarketCap every 15 minutes (rate limited)
+    fetch_cryptos_coinmarketcap.send_with_options(
+        delay=1000 * 60 * 15,  # 15 minutes
+        repeat=True
+    )
+    
     # Fetch all markets every 30 minutes
     fetch_all_markets.send_with_options(
         delay=1000 * 60 * 30,  # 30 minutes
@@ -316,9 +397,9 @@ def schedule_tasks():
         repeat=True
     )
     
-    # Batch update popular stocks hourly
+    # Batch update popular cryptos hourly
     batch_update_assets.send_with_options(
-        args=[POPULAR_STOCKS[:20], 'alpha_vantage'],
+        args=[POPULAR_CRYPTOS[:20], 'coingecko'],
         delay=1000 * 60 * 60,  # 60 minutes
         repeat=True
     )
