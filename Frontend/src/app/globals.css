@@ -1,0 +1,881 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+/* ===================================================================
+   THEME VARIABLES - Professional Financial Design System
+   =================================================================== */
+
+:root {
+  /* Subtle corner radius for modern brutalism */
+  --radius: 0.25rem;
+
+  /* Monochromatic Base - Light Mode */
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+
+  /* Professional Grays */
+  --primary: oklch(0.25 0 0);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0.25 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.50 0 0);
+  --accent: oklch(0.94 0 0);
+  --accent-foreground: oklch(0.25 0 0);
+
+  /* NEW: Brand Accent Color - Professional Blue */
+  --brand: oklch(0.55 0.18 250);
+  --brand-foreground: oklch(0.98 0 0);
+
+  /* System Colors */
+  --success: oklch(0.60 0.18 145);
+  --success-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --warning: oklch(0.70 0.18 85);
+  --warning-foreground: oklch(0.15 0 0);
+  --info: oklch(0.60 0.15 250);
+  --info-foreground: oklch(0.98 0 0);
+
+  --border: oklch(0.90 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.55 0.18 250);
+
+  /* Chart Colors - Vibrant but Professional */
+  --chart-1: oklch(0.60 0.18 250);
+  --chart-2: oklch(0.65 0.16 180);
+  --chart-3: oklch(0.55 0.15 210);
+  --chart-4: oklch(0.70 0.17 160);
+  --chart-5: oklch(0.60 0.16 200);
+
+  /* Sidebar */
+  --sidebar: oklch(0.99 0 0);
+  --sidebar-foreground: oklch(0.25 0 0);
+  --sidebar-primary: oklch(0.25 0 0);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.96 0 0);
+  --sidebar-accent-foreground: oklch(0.25 0 0);
+  --sidebar-border: oklch(0.90 0 0);
+  --sidebar-ring: oklch(0.65 0 0);
+
+  /* Liquid Glass Variables */
+  --glass-bg: rgba(255, 255, 255, 0.40);
+  --glass-border: rgba(0, 0, 0, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.90);
+  --glass-shadow: rgba(0, 0, 0, 0.08);
+  --glass-blur: 16px;
+}
+
+.dark {
+  /* Monochromatic Base - Dark Mode */
+  --background: oklch(0.12 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.16 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.16 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+
+  /* Professional Grays - Dark */
+  --primary: oklch(0.90 0 0);
+  --primary-foreground: oklch(0.15 0 0);
+  --secondary: oklch(0.20 0 0);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.22 0 0);
+  --accent-foreground: oklch(0.98 0 0);
+
+  /* Brand Accent - Dark */
+  --brand: oklch(0.65 0.20 250);
+  --brand-foreground: oklch(0.98 0 0);
+
+  /* System Colors - Dark */
+  --success: oklch(0.65 0.20 145);
+  --success-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --warning: oklch(0.75 0.20 85);
+  --warning-foreground: oklch(0.15 0 0);
+  --info: oklch(0.65 0.18 250);
+  --info-foreground: oklch(0.98 0 0);
+
+  --border: oklch(0.25 0 0);
+  --input: oklch(0.20 0 0);
+  --ring: oklch(0.65 0.20 250);
+
+  /* Chart Colors - Dark */
+  --chart-1: oklch(0.65 0.20 250);
+  --chart-2: oklch(0.70 0.18 180);
+  --chart-3: oklch(0.60 0.17 210);
+  --chart-4: oklch(0.75 0.19 160);
+  --chart-5: oklch(0.65 0.18 200);
+
+  /* Sidebar - Dark */
+  --sidebar: oklch(0.14 0 0);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.85 0 0);
+  --sidebar-primary-foreground: oklch(0.15 0 0);
+  --sidebar-accent: oklch(0.18 0 0);
+  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar-border: oklch(0.22 0 0);
+  --sidebar-ring: oklch(0.65 0 0);
+
+  /* Liquid Glass Variables - Dark */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.10);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+  --glass-blur: 24px;
+}
+
+/* ===================================================================
+   BASE STYLES
+   =================================================================== */
+
+* {
+  border-color: var(--border);
+  outline-color: color-mix(in oklch, var(--ring), transparent 50%);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===================================================================
+   LIQUID GLASS UTILITIES - Enhanced & Consistent
+   =================================================================== */
+
+/* Base Liquid Glass - Works in both light and dark */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 8px 32px 0 var(--glass-shadow),
+    inset 0 1px 0 0 var(--glass-highlight);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-glass:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px 0 var(--glass-shadow),
+    inset 0 1px 0 0 var(--glass-highlight);
+}
+
+/* Subtle Variant - More transparent */
+.liquid-glass-subtle {
+  background: rgba(255, 255, 255, 0.20);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .liquid-glass-subtle {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+}
+
+.liquid-glass-subtle:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.06);
+}
+
+.dark .liquid-glass-subtle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Strong Variant - More opaque */
+.liquid-glass-strong {
+  background: rgba(255, 255, 255, 0.60);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.10);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .liquid-glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.6);
+}
+
+.liquid-glass-strong:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.70);
+  box-shadow: 0 16px 56px 0 rgba(0, 0, 0, 0.12);
+}
+
+.dark .liquid-glass-strong:hover {
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 16px 56px 0  rgba(0, 0, 0, 0.7);
+}
+
+/* Ghost Variant - Very subtle */
+.liquid-glass-ghost {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .liquid-glass-ghost {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.liquid-glass-ghost:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.dark .liquid-glass-ghost:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Financial Variants with Hover */
+.liquid-glass-positive {
+  background: linear-gradient(135deg,
+      rgba(34, 197, 94, 0.12) 0%,
+      rgba(255, 255, 255, 0.25) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(34, 197, 94, 0.30);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .liquid-glass-positive {
+  background: linear-gradient(135deg,
+      rgba(34, 197, 94, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.liquid-glass-positive:hover {
+  background: linear-gradient(135deg,
+      rgba(34, 197, 94, 0.18) 0%,
+      rgba(255, 255, 255, 0.30) 100%);
+  transform: translateY(-2px);
+}
+
+.dark .liquid-glass-positive:hover {
+  background: linear-gradient(135deg,
+      rgba(34, 197, 94, 0.12) 0%,
+      rgba(255, 255, 255, 0.05) 100%);
+}
+
+.liquid-glass-negative {
+  background: linear-gradient(135deg,
+      rgba(239, 68, 68, 0.12) 0%,
+      rgba(255, 255, 255, 0.25) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(239, 68, 68, 0.30);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .liquid-glass-negative {
+  background: linear-gradient(135deg,
+      rgba(239, 68, 68, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.liquid-glass-negative:hover {
+  background: linear-gradient(135deg,
+      rgba(239, 68, 68, 0.18) 0%,
+      rgba(255, 255, 255, 0.30) 100%);
+  transform: translateY(-2px);
+}
+
+.dark .liquid-glass-negative:hover {
+  background: linear-gradient(135deg,
+      rgba(239, 68, 68, 0.12) 0%,
+      rgba(255, 255, 255, 0.05) 100%);
+}
+
+/* Shimmer Animation - Works on any liquid-glass */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 70%);
+  animation: shimmer 3s infinite;
+  pointer-events: none;
+}
+
+.dark .shimmer::after {
+  background: linear-gradient(45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.08) 50%,
+      transparent 70%);
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+/* ===================================================================
+   BRUTALIST COMPONENTS - Refined with Subtle Corners
+   =================================================================== */
+
+/* BASE CONTAINER */
+.brutalist-glass {
+  border-radius: var(--radius);
+  border: 2px solid var(--foreground);
+  background: color-mix(in oklch, var(--background), transparent 10%);
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 4px 4px 0px 0px var(--foreground);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brutalist-glass:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px 0px var(--foreground);
+}
+
+/* INTERACTIVE - For buttons and clickable elements */
+.brutalist-interactive {
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.brutalist-interactive:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0px 0px var(--foreground) !important;
+}
+
+/* NAVBAR */
+.brutalist-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  border-bottom: 4px solid var(--foreground);
+  background: color-mix(in oklch, var(--background), transparent 5%);
+  backdrop-filter: blur(12px);
+}
+
+/* GHOST VARIANT */
+.brutalist-glass-ghost {
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--background), transparent 95%);
+  backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in oklch, var(--foreground), transparent 85%);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brutalist-glass-ghost:hover {
+  background: color-mix(in oklch, var(--background), transparent 90%);
+  border: 1px solid color-mix(in oklch, var(--foreground), transparent 75%);
+}
+
+/* ACCENT VARIANT */
+.brutalist-glass-accent {
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--brand), transparent 85%);
+  backdrop-filter: blur(12px);
+  border: 2px solid var(--brand);
+  box-shadow: 4px 4px 0px 0px var(--brand);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brutalist-glass-accent:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px 0px var(--brand);
+}
+
+/* INPUTS - Improved focus state */
+.brutalist-input {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: color-mix(in oklch, var(--background), transparent 30%);
+}
+
+.brutalist-input:hover {
+  border-color: var(--foreground);
+}
+
+.brutalist-input:focus {
+  background: var(--background);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--brand), transparent 85%);
+}
+
+/* INPUT GROUP */
+.brutalist-input-group {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 2px solid var(--foreground);
+  background: color-mix(in oklch, var(--background), transparent 40%);
+  box-shadow: 3px 3px 0px 0px var(--foreground);
+  transition: all 0.2s ease;
+}
+
+.brutalist-input-group:focus-within {
+  border-color: var(--brand);
+  box-shadow: 3px 3px 0px 0px var(--brand);
+}
+
+.brutalist-input-group input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0 1rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.brutalist-input-group .unit {
+  background: var(--foreground);
+  color: var(--background);
+  padding: 0 0.75rem;
+  display: flex;
+  align-items: center;
+  font-weight: 900;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+/* NUMBER INPUT CONTROLS - Improved styling */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ===================================================================
+   BUTTON STYLES
+   =================================================================== */
+
+.btn-primary {
+  border-radius: var(--radius);
+  border: 2px solid var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0px 0px var(--foreground);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 5px 5px 0px 0px var(--primary);
+  transform: translate(-1px, -1px);
+}
+
+.btn-primary:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0px 0px var(--foreground);
+}
+
+.btn-outline {
+  border-radius: var(--radius);
+  border: 2px solid var(--foreground);
+  background: transparent;
+  color: var(--foreground);
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0px 0px var(--foreground);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.btn-outline:hover {
+  background: var(--foreground);
+  color: var(--background);
+  box-shadow: 4px 4px 0px 0px var(--foreground);
+  transform: translate(-1px, -1px);
+}
+
+.btn-outline:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0px 0px var(--foreground);
+}
+
+.btn-ghost {
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--foreground);
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-ghost:hover {
+  background: color-mix(in oklch, var(--foreground), transparent 90%);
+}
+
+.btn-ghost:active {
+  background: color-mix(in oklch, var(--foreground), transparent 85%);
+}
+
+/* ===================================================================
+   BADGE STYLES
+   =================================================================== */
+
+.badge-default {
+  border-radius: calc(var(--radius) - 2px);
+  border: 2px solid var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+  font-weight: 900;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+.badge-outline {
+  border-radius: calc(var(--radius) - 2px);
+  border: 2px solid var(--foreground);
+  background: transparent;
+  color: var(--foreground);
+  font-weight: 900;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+/* ===================================================================
+   ALERT STYLES
+   =================================================================== */
+
+.alert-base {
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  padding: 1rem;
+}
+
+.alert-info {
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  padding: 1rem;
+  background: color-mix(in oklch, var(--info), transparent 90%);
+  border-color: var(--info);
+  color: var(--info);
+}
+
+.dark .alert-info {
+  background: color-mix(in oklch, var(--info), var(--background) 85%);
+}
+
+.alert-success {
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  padding: 1rem;
+  background: color-mix(in oklch, var(--success), transparent 90%);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.dark .alert-success {
+  background: color-mix(in oklch, var(--success), var(--background) 85%);
+}
+
+.alert-error {
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  padding: 1rem;
+  background: color-mix(in oklch, var(--destructive), transparent 90%);
+  border-color: var(--destructive);
+  color: var(--destructive);
+}
+
+.dark .alert-error {
+  background: color-mix(in oklch, var(--destructive), var(--background) 85%);
+}
+
+.alert-warning {
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  padding: 1rem;
+  background: color-mix(in oklch, var(--warning), transparent 90%);
+  border-color: var(--warning);
+  color: var(--warning-foreground);
+}
+
+.dark .alert-warning {
+  background: color-mix(in oklch, var(--warning), var(--background) 85%);
+}
+
+/* ===================================================================
+   CARD STYLES
+   =================================================================== */
+
+.card-base {
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--card);
+  box-shadow: 3px 3px 0px 0px var(--border);
+  transition: all 0.2s ease;
+}
+
+.card-base:hover {
+  box-shadow: 4px 4px 0px 0px var(--border);
+  transform: translate(-1px, -1px);
+}
+
+/* ===================================================================
+   SHADCN COMPONENT OVERRIDES
+   =================================================================== */
+
+/* TABS - Beautiful like in the design system */
+[role="tablist"] {
+  background: transparent;
+  border-bottom: 2px solid var(--foreground);
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  width: 100%;
+  justify-content: flex-start;
+  gap: 0.25rem;
+}
+
+[role="tab"] {
+  border-radius: var(--radius) var(--radius) 0 0;
+  border: 2px solid var(--foreground);
+  border-bottom: 0;
+  background: var(--muted);
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+[role="tab"]:active {
+  transform: translate(3px, 3px);
+}
+
+[role="tab"][data-state="active"] {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.dark [role="tab"][data-state="active"] {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+/* CHECKBOX IMPROVEMENTS */
+[role="checkbox"] {
+  border-radius: calc(var(--radius) - 2px);
+  border: 2px solid var(--foreground);
+  background: transparent;
+  transition: all 0.15s ease;
+}
+
+[role="checkbox"][data-state="checked"] {
+  background: var(--foreground);
+  border-color: var(--foreground);
+}
+
+/* SWITCH IMPROVEMENTS */
+[role="switch"] {
+  border-radius: 9999px;
+  border: 2px solid var(--foreground);
+  background: var(--muted);
+  transition: all 0.2s ease;
+}
+
+[role="switch"][data-state="checked"] {
+  background: var(--foreground);
+}
+
+[role="switch"]>span {
+  border-radius: 9999px;
+  background: var(--foreground);
+  transition: all 0.2s ease;
+}
+
+[role="switch"][data-state="checked"]>span {
+  background: var(--background);
+}
+
+/* DROPDOWN/SELECT IMPROVEMENTS */
+[role="combobox"],
+[role="listbox"] {
+  border-radius: var(--radius);
+  border: 2px solid var(--foreground);
+  background: var(--popover);
+  box-shadow: 4px 4px 0px 0px var(--foreground);
+}
+
+[role="option"]:hover {
+  background: color-mix(in oklch, var(--foreground), transparent 90%);
+}
+
+[role="option"][data-state="checked"] {
+  background: var(--foreground);
+  color: var(--background);
+  font-weight: 900;
+}
+
+/* PROGRESS BAR */
+[role="progressbar"] {
+  border-radius: var(--radius);
+  border: 2px solid var(--foreground);
+  background: var(--muted);
+  overflow: hidden;
+}
+
+[role="progressbar"]>div {
+  background: var(--foreground);
+  transition: all 0.3s ease;
+}
+
+/* SLIDER */
+[role="slider"] {
+  position: relative;
+}
+
+[role="slider"]>span:first-child {
+  border-radius: var(--radius);
+  border: 2px solid var(--foreground);
+  background: var(--muted);
+}
+
+[role="slider"]>span:first-child>span {
+  background: var(--foreground);
+}
+
+[role="slider"]>span:last-child {
+  border-radius: 9999px;
+  border: 3px solid var(--foreground);
+  background: var(--background);
+  box-shadow: 2px 2px 0px 0px var(--foreground);
+}
+
+/* CALENDAR */
+[role="grid"] {
+  border-radius: var(--radius);
+  border: 2px solid var(--foreground);
+  background: var(--popover);
+  padding: 1rem;
+}
+
+[role="gridcell"] button {
+  border-radius: calc(var(--radius) - 2px);
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+[role="gridcell"] button:hover {
+  background: color-mix(in oklch, var(--foreground), transparent 90%);
+}
+
+[role="gridcell"] button[data-selected="true"] {
+  background: var(--foreground);
+  color: var(--background);
+  font-weight: 900;
+}
+
+/* LABEL */
+label {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--foreground);
+}
