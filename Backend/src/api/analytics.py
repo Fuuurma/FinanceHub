@@ -250,6 +250,7 @@ async def get_risk_adjusted(
 
 
 @router.get("/risk/volatility", response=VolatilityResponse)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def get_volatility(
     request,
     symbol: str = Query(...)
@@ -277,6 +278,7 @@ async def get_volatility(
 
 
 @router.get("/risk/var", response=VaRResponse)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def get_var(
     request,
     symbol: str = Query(...),
@@ -307,6 +309,7 @@ async def get_var(
 
 
 @router.get("/risk/cvar", response=CVaRResponse)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def get_cvar(
     request,
     symbol: str = Query(...),
@@ -331,6 +334,7 @@ async def get_cvar(
 
 
 @router.get("/risk/drawdown", response=DrawdownResponse)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def get_drawdown(
     request,
     symbol: str = Query(...)
@@ -358,6 +362,7 @@ async def get_drawdown(
 
 
 @router.post("/correlation", response=CorrelationResponse)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def post_correlation(request, data: CorrelationRequest):
     """
     Calculate correlation matrix and diversification score.
@@ -387,6 +392,7 @@ async def post_correlation(request, data: CorrelationRequest):
 
 
 @router.post("/options/analyze", response=OptionAnalysisResponse)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def post_option_analysis(request, data: OptionAnalysisRequest):
     """
     Analyze a single option with Greeks and interpretation.
@@ -417,6 +423,7 @@ async def post_option_analysis(request, data: OptionAnalysisRequest):
 
 
 @router.post("/options/chain", response=OptionsChainResponse)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def post_options_chain(request, data: OptionsChainRequest):
     """
     Analyze options chain with Greeks by strike.
