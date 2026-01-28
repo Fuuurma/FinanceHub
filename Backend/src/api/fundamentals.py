@@ -71,6 +71,20 @@ class YieldCurveResponse(BaseModel):
     source: str
 
 
+class HistoricalFundamentalsRequest(BaseModel):
+    symbol: str
+    period_type: str = 'annual'
+    limit: int = Field(default=5, ge=1, le=20)
+
+
+class HistoricalFundamentalsResponse(BaseModel):
+    symbol: str
+    period_type: str
+    data: List[dict]
+    fetched_at: str
+    source: str
+
+
 class StockScreenerRequest(BaseModel):
     market_cap_min: Optional[int] = None
     market_cap_max: Optional[int] = None
@@ -78,17 +92,25 @@ class StockScreenerRequest(BaseModel):
     pe_max: Optional[float] = None
     dividend_yield_min: Optional[float] = None
     sector: Optional[str] = None
-    limit: int = 100
+    limit: int = Field(default=100, ge=1, le=500)
 
 
 class StockScreenerResponse(BaseModel):
-    stocks: List[dict]
-    count: int
+    results: List[dict]
+    total_count: int
     fetched_at: str
+    source: str
 
 
 class SectorPerformanceResponse(BaseModel):
     sectors: List[dict]
+    fetched_at: str
+    source: str
+
+
+class CacheStatsResponse(BaseModel):
+    fundamentals_keys: dict
+    cache_ttl_recommendations: dict
     fetched_at: str
 
 
@@ -98,7 +120,7 @@ async def get_equity_fundamentals(request, symbol: str, force_refresh: bool = Fa
     Get comprehensive fundamental data for an equity
 
     Includes: company profile, key metrics, financial ratios, income statement,
-    balance sheet, and cash flow statement
+    balance sheet and cash flow statement
     """
     service = get_fundamental_service()
     data = await service.get_equity_fundamentals(symbol, force_refresh=force_refresh)
@@ -135,6 +157,43 @@ async def get_equity_financials(
     service = get_fundamental_service()
     data = await service.get_equity_financials(symbol, period=period, limit=limit)
     return data
+
+
+@router.get("/historical/{symbol}", response=HistoricalFundamentalsResponse)
+async def get_historical_fundamentals(
+    request,
+    symbol: str,
+    filters: HistoricalFundamentalsRequest
+):
+    """
+    Get historical fundamental data for an equity
+
+    Returns historical key metrics over time for trend analysis
+    """
+    service = get_fundamental_service()
+    data = await service.get_historical_fundamentals(
+        symbol=symbol.upper(),
+        period_type=filters.period_type,
+        limit=filters.limit,
+        force_refresh=False
+    )
+    
+    if 'error' in data:
+        return {
+            'symbol': symbol.upper(),
+            'period_type': filters.period_type,
+            'data': [],
+            'fetched_at': timezone.now().isoformat(),
+            'source': 'fundamentals_service'
+        }
+    
+    return {
+        'symbol': symbol.upper(),
+        'period_type': filters.period_type,
+        'data': data,
+        'fetched_at': timezone.now().isoformat(),
+        'source': 'fundamentals_service'
+    }
 
 
 @router.get("/crypto/protocol/{protocol}", response=CryptoProtocolResponse)
@@ -233,13 +292,13 @@ async def screen_stocks(request, filters: StockScreenerRequest):
         limit=filters.limit
     )
     return {
-        "stocks": stocks,
-        "count": len(stocks),
+        "results": stocks,
+        "total_count": len(stocks),
         "fetched_at": timezone.now().isoformat()
     }
 
 
-@router.get("/batch/equities")
+@router.post("/batch/equities")
 async def batch_fetch_equities(
     request,
     symbols: str,
@@ -268,3 +327,31 @@ async def get_sector_performance(request):
     service = get_fundamental_service()
     data = await service.get_sector_performance()
     return data
+
+
+@router.get("/cache/stats", response=CacheStatsResponse)
+async def get_cache_statistics(request):
+    """
+    Get caching statistics for fundamentals
+
+    Returns cache hit rates, key statistics, and TTL recommendations
+    """
+    service = get_fundamental_service()
+    stats = await service.get_cached_stats()
+    return stats
+
+
+@router.post("/cache/invalidate/{symbol}")
+async def invalidate_fundamentals_cache(request, symbol: str):
+    """
+    Invalidate all cached data for a symbol
+
+    Use this to force a refresh for a specific symbol
+    """
+    service = get_fundamental_service()
+    result = await service.invalidate_fundamentals_cache(symbol.upper())
+    return {
+        "symbol": symbol.upper(),
+        "invalidated": result,
+        "message": "Cache cleared for symbol" if result else "Failed to clear cache"
+    }
