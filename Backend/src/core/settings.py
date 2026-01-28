@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "django_dramatiq",
     # "corsheaders",
     "ninja_jwt",
+    "channels",
     # apps
     "core",
     "users",
@@ -109,7 +110,22 @@ NINJA_JWT = {
     # Add blacklisting support if needed later
 }
 
-WSGI_APPLICATION = "core.wsgi.application"
+WSGI_APPLICATION = "core.asgi.application"
+
+
+# Channels
+ASGI_APPLICATION = "core.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+CHANNELS_WS_PROTOCOLS = ["websocket", "wss"]
 
 
 # Database
