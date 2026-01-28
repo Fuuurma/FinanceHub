@@ -29,28 +29,43 @@ BATCH_FETCH_LIMIT_MAX = 500
 # Limits - Market Data
 MARKET_MOVERS_LIMIT = 20
 
-# Cache TTL (seconds)
-CACHE_TTL_SHORT = 60
-CACHE_TTL_MEDIUM = 300
-CACHE_TTL_LONG = 3600
-
-# Rate Limits
+# Rate Limits - Individual (for backward compatibility)
 RATE_LIMIT_ANON = "100/hour"
 RATE_LIMIT_AUTH = "1000/hour"
-
-# Rate Limit Groups (requests per hour)
 RATE_LIMIT_READ = "500/hour"
 RATE_LIMIT_WRITE = "100/hour"
 RATE_LIMIT_ANALYTICS = "200/hour"
 RATE_LIMIT_REALTIME = "1000/hour"
 RATE_LIMIT_DATA_INTENSIVE = "50/hour"
 
-# Cache TTL (seconds)
+# Rate Limits - Grouped dict (for new decorators)
+RATE_LIMITS = {
+    'default': '500/hour',
+    'read': '500/hour',
+    'write': '100/hour',
+    'analytics': '200/hour',
+    'realtime': '1000/hour',
+    'data_intensive': '50/hour',
+    'anon': '100/hour',
+    'auth': '1000/hour',
+}
+
+# Cache TTL - Individual (for backward compatibility)
 CACHE_TTL_SHORT = 60
 CACHE_TTL_MEDIUM = 300
 CACHE_TTL_LONG = 3600
-CACHE_TTL_PORTFOLIO = 300  # 5 minutes for portfolio data
-CACHE_TTL_ANALYTICS = 900  # 15 minutes for analytics
+CACHE_TTL_PORTFOLIO = 300
+CACHE_TTL_ANALYTICS = 900
+
+# Cache TTL - Grouped dict (for new decorators)
+CACHE_TTLS = {
+    'short': 60,
+    'medium': 300,
+    'long': 3600,
+    'portfolio': 300,
+    'analytics': 900,
+    'default': 300,
+}
 
 # API Response Codes
 ERROR_NOT_FOUND = "not_found"

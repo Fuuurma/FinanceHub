@@ -6,15 +6,14 @@ from typing import Optional, List, Dict, Any
 from ninja import Router, Schema, Query, Field
 from pydantic import BaseModel, validator
 from datetime import datetime
-from django_ratelimit.decorators import ratelimit
-from django.core.cache import cache
+from utils.api.decorators import api_endpoint
 
 from utils.services.performance import PerformanceAnalyzer, PerformanceReport, RiskAdjustedReport, FactorReport
 from utils.services.risk import RiskAnalyzer, VolatilityReport, DrawdownReport, VaRReport, CVaRReport
 from utils.services.correlation import CorrelationAnalyzer, CorrelationReport, DiversificationReport
 from utils.services.options import OptionsAnalyzer, OptionAnalysisReport, OptionsChainReport
 from utils.constants.analytics import DEFAULT_CONFIDENCE_LEVEL, DEFAULT_RISK_FREE_RATE
-from utils.constants.api import RATE_LIMIT_ANALYTICS, CACHE_TTL_ANALYTICS
+from utils.constants.api import RATE_LIMITS, CACHE_TTLS
 
 router = Router(tags=["Analytics"])
 
@@ -181,7 +180,7 @@ class OptionsChainResponse(BaseModel):
 
 
 @router.get("/performance", response=PerformanceResponse)
-@ratelimit(key='ip', rate=RATE_LIMIT_ANALYTICS, block=True)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def get_performance(
     request,
     symbol: str = Query(...),
@@ -193,11 +192,6 @@ async def get_performance(
     
     Returns total return, annualized return, best/worst periods, and interpretation.
     """
-    cache_key = f"analytics_performance_{symbol}_{period}_{benchmark}"
-    cached_result = cache.get(cache_key)
-    if cached_result:
-        return cached_result
-    
     analyzer = PerformanceAnalyzer()
     
     prices = await _get_price_series(symbol, period)
@@ -205,7 +199,7 @@ async def get_performance(
     
     report = analyzer.analyze_returns(prices, symbol, benchmark_prices, period)
     
-    result = PerformanceResponse(
+    return PerformanceResponse(
         symbol=report.symbol,
         total_return=report.total_return,
         annualized_return=report.annualized_return,
@@ -217,13 +211,10 @@ async def get_performance(
         interpretation=report.interpretation,
         fetched_at=report.fetched_at,
     )
-    
-    cache.set(cache_key, result, CACHE_TTL_ANALYTICS)
-    return result
 
 
 @router.get("/performance/risk-adjusted", response=RiskAdjustedResponse)
-@ratelimit(key='ip', rate=RATE_LIMIT_ANALYTICS, block=True)
+@api_endpoint(ttl=CACHE_TTLS['analytics'], rate=RATE_LIMITS['analytics'], key_prefix="analytics")
 async def get_risk_adjusted(
     request,
     returns: List[float] = Query(...),
@@ -236,11 +227,6 @@ async def get_risk_adjusted(
     Returns Sharpe, Sortino, Treynor ratios, alpha, beta, and interpretation.
     """
     import polars as pl
-    
-    cache_key = f"analytics_risk_adjusted_{hash(tuple(returns))}"
-    cached_result = cache.get(cache_key)
-    if cached_result:
-        return cached_result
     
     analyzer = PerformanceAnalyzer()
     returns_series = pl.Series(returns)
