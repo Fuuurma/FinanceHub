@@ -1,5 +1,5 @@
 # investments/schemas.py
-from pydantic import BaseModel, Field, Decimal
+from pydantic import BaseModel, Field
 from typing import Optional, List, Literal
 from datetime import date, datetime
 from decimal import Decimal

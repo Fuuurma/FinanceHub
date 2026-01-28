@@ -1,4 +1,4 @@
-import traceback
+from typing import Optional
 import sys
 import jwt
 from django.http import HttpRequest, JsonResponse
@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 class GlobalErrorHandler:
     @staticmethod
-    def _log_error(request: HttpRequest, exc: Exception, extra: dict | None = None):
+    def _log_error(request: HttpRequest, exc: Exception, extra: Optional[dict] = None):
         logger.error(
             f"{exc.__class__.__name__}: {str(exc)}",
             extra={
@@ -157,7 +157,7 @@ class GlobalErrorHandler:
         def not_found(request, exc):
             return GlobalErrorHandler.handle_not_found(request, exc)
 
-        @api.exception_handler((DatabaseError, IntegrityError))
+        @api.exception_handler(DatabaseError)
         def db_error(request, exc):
             return GlobalErrorHandler.handle_database_error(request, exc)
 

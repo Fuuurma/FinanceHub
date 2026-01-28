@@ -5,7 +5,7 @@ from ninja.pagination import LimitOffsetPagination
 from ninja_jwt.authentication import JWTAuth
 from typing import List, Optional
 
-from assets.models.price_history import PriceHistory
+from assets.models import AssetPricesHistoric
 from portfolios.models.portfolio import Portfolio
 from portfolios.schemas.schemas import (
     AssetOut,
