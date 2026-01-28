@@ -3,6 +3,7 @@ from ninja import Router, Query
 from pydantic import BaseModel
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from ratelimit.decorators import ratelimit
 from investments.models.watchlist import Watchlist
 from assets.models.asset import Asset
 from ninja_jwt.authentication import JWTAuth
@@ -10,7 +11,11 @@ from utils.constants.api import (
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
     DEFAULT_OFFSET,
+    RATE_LIMIT_READ,
+    RATE_LIMIT_WRITE,
+    CACHE_TTL_SHORT,
 )
+from django.core.cache import cache
 
 
 class Message(BaseModel):
