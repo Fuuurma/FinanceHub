@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "investments",
     "portfolios",
     "assets",
+    "fundamentals",
 ]
 
 
