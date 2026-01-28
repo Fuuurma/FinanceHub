@@ -111,3 +111,59 @@ export interface ComparisonResponse {
   comparison_period: string
   analyzed_at: string
 }
+
+export type AnalyticsPeriod = '1d' | '7d' | '30d' | '90d' | '1y'
+
+export interface AssetPerformance {
+  asset_type: string
+  return: number
+  value: number
+}
+
+export interface RiskMetrics {
+  volatility: number
+  beta: number
+  sharpe_ratio: number
+}
+
+export interface PortfolioAnalytics {
+  total_return: number
+  total_value: number
+  total_value_change: number
+  total_value_change_percent: number
+  performance_by_asset: AssetPerformance[]
+  risk_metrics: RiskMetrics
+  period_start: string
+  period_end: string
+  total_transactions: number
+}
+
+export interface SectorData {
+  name: string
+  value: number
+  percentage: number
+}
+
+export interface BenchmarkData {
+  date: string
+  portfolio: number
+  benchmark: number
+}
+
+export interface AttributionData {
+  symbol: string
+  contribution: number
+  value: number
+}
+
+export interface RollingReturnsData {
+  date: string
+  '7d': number
+  '30d': number
+}
+
+export interface RiskHistoryData {
+  date: string
+  volatility: number
+  sharpeRatio: number
+}

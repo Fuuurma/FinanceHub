@@ -6,7 +6,7 @@ import type { PortfolioAnalytics as PortfolioAnalyticsType, AnalyticsPeriod } fr
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TrendingUp, TrendingDown, PieChart, BarChart3, RefreshCw, Download, Calendar } from 'lucide-react'
+import { TrendingUp, TrendingDown, PieChart, BarChart3, RefreshCw, Download, Calendar, DollarSign, Activity, LineChart, Target, TrendingDown as ArrowDown } from 'lucide-react'
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<AnalyticsPeriod>('7d')

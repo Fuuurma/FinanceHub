@@ -334,7 +334,372 @@
 
 ---
 
-## 🎯 Phase 6 Success Criteria
+## 🔜 Phase 7: Frontend-Backend Integration
+
+### 7.1 Enhanced Analytics Dashboard
+**Priority**: HIGH
+**Estimated Time**: 2-3 days
+
+**Tasks:**
+- [ ] Integrate 8 chart components into analytics page
+- [ ] Create tabbed interface (Overview, Performance, Risk, Comparison)
+- [ ] Add sector breakdown visualization
+- [ ] Add benchmarking comparison charts
+- [ ] Add performance attribution analysis
+- [ ] Add rolling returns visualization
+- [ ] Add risk metrics history trends
+- [ ] Test all chart interactions and responsiveness
+
+**Deliverables:**
+- Enhanced `app/(dashboard)/analytics/page.tsx`
+- Integrated chart components
+- Tabbed interface with state management
+- Period and benchmark selection
+- Export functionality for each chart type
+- Tests for analytics dashboard
+
+---
+
+### 7.2 Screener UI Implementation
+**Priority**: HIGH
+**Estimated Time**: 3-5 days
+
+**Tasks:**
+- [ ] Create `/screener` page
+- [ ] Advanced filter form with multiple criteria
+- [ ] Results table with sorting and pagination
+- [ ] Save/load presets functionality
+- [ ] Export results (CSV, JSON)
+- [ ] Connect to backend screener API
+
+**Deliverables:**
+- `app/(dashboard)/screener/page.tsx`
+- `lib/api/screener.ts`
+- `lib/types/screener.ts`
+- `stores/screenerStore.ts`
+- Screener filter components
+- Screener results table component
+
+---
+
+### 7.3 Enhanced Asset Detail Pages
+**Priority**: MEDIUM
+**Estimated Time**: 4-6 days
+
+**Tasks:**
+- [ ] Interactive price chart with multiple timeframes
+- [ ] Technical indicators overlay
+- [ ] News section with sentiment analysis
+- [ ] Fundamentals tab with company data
+- [ ] Dividend history (if applicable)
+- [ ] Similar assets section
+- [ ] Analyst ratings and price targets
+
+**Deliverables:**
+- Enhanced `app/(dashboard)/assets/[assetId]/page.tsx`
+- Asset chart component with indicators
+- Fundamentals card component
+- News section with sentiment
+- Dividend history component
+
+---
+
+### 7.4 Settings Page Implementation
+**Priority**: MEDIUM
+**Estimated Time**: 2-3 days
+
+**Tasks:**
+- [ ] Theme toggle (light/dark mode)
+- [ ] Currency display preferences
+- [ ] Notification settings
+- [ ] Alert preferences
+- [ ] Data export/import functionality
+- [ ] Account settings
+
+**Deliverables:**
+- `app/(dashboard)/settings/page.tsx`
+- Settings components (theme, currency, notifications)
+- Settings store for preferences
+- Type definitions for settings
+
+---
+
+### 7.5 Mobile Responsiveness & Accessibility
+**Priority**: MEDIUM
+**Estimated Time**: 5-7 days
+
+**Tasks:**
+- [ ] Audit all pages for mobile compatibility
+- [ ] Responsive chart interactions
+- [ ] Mobile-friendly navigation
+- [ ] Touch-optimized tables and cards
+- [ ] Add ARIA labels to all interactive elements
+- [ ] Implement keyboard navigation
+- [ ] Screen reader compatibility testing
+- [ ] High contrast mode support
+- [ ] WCAG AA compliance
+
+**Deliverables:**
+- Mobile-responsive all pages
+- Accessibility improvements
+- ARIA labels throughout
+- Keyboard navigation support
+- Accessibility audit report
+
+---
+
+### 7.6 Performance Optimization
+**Priority**: MEDIUM
+**Estimated Time**: 3-4 days
+
+**Tasks:**
+- [ ] Implement code splitting with route groups
+- [ ] Lazy load heavy components
+- [ ] Optimize bundle size
+- [ ] Add loading skeletons for all pages
+- [ ] Image optimization
+- [ ] Debounce search inputs
+- [ ] Virtualize long lists
+- [ ] Lighthouse audit (target >90)
+
+**Deliverables:**
+- Optimized bundle size
+- Code splitting implementation
+- Loading skeletons throughout
+- Performance improvements
+- Lighthouse score report (>90)
+
+---
+
+### 7.7 Comprehensive Testing
+**Priority**: HIGH
+**Estimated Time**: 4-5 days
+
+**Tasks:**
+- [ ] Unit tests for all components
+- [ ] Integration tests for pages
+- [ ] E2E tests with Playwright
+- [ ] Test coverage >80%
+- [ ] Visual regression tests
+- [ ] Accessibility testing
+
+**Deliverables:**
+- Component unit tests
+- Page integration tests
+- E2E test suite
+- Test coverage report (>80%)
+- Testing documentation
+
+---
+
+## 🎯 Phase 7 Success Criteria
+
+### Minimum Viable Phase 7
+- [ ] Analytics dashboard with integrated charts
+- [ ] Screener UI functional
+- [ ] Settings page implemented
+- [ ] Mobile responsiveness improved
+- [ ] Accessibility improvements made
+- [ ] Test coverage >70%
+
+### Complete Phase 7
+- [ ] All 8 chart components integrated and tested
+- [ ] Screener UI fully functional with all filters
+- [ ] Enhanced asset detail pages complete
+- [ ] Settings page with all features
+- [ ] Mobile responsiveness across all pages
+- [ ] Full accessibility compliance (WCAG AA)
+- [ ] Performance optimized (Lighthouse >90)
+- [ ] Test coverage >80%
+- [ ] E2E tests implemented
+- [ ] Documentation updated
+- [ ] Frontend-backend integration tested end-to-end
+
+---
+
+## 📋 Development Guidelines for Phase 7
+
+### Code Structure
+```
+Frontend/src/
+├── app/
+│   ├── (dashboard)/
+│   │   ├── analytics/page.tsx (enhanced)
+│   │   ├── screener/page.tsx (new)
+│   │   ├── settings/page.tsx (new)
+│   │   └── assets/[assetId]/page.tsx (enhanced)
+│   └── (auth)/
+├── components/
+│   ├── analytics/ (8 chart components - integrated)
+│   ├── screener/ (new filter and results components)
+│   ├── settings/ (new settings components)
+│   └── assets/ (enhanced asset detail components)
+├── stores/
+│   ├── screenerStore.ts (new)
+│   └── settingsStore.ts (new)
+├── lib/
+│   ├── api/
+│   │   └── screener.ts (new)
+│   └── types/
+│       ├── screener.ts (new)
+│       └── settings.ts (new)
+└── tests/
+    ├── components/ (unit tests)
+    ├── pages/ (integration tests)
+    └── e2e/ (E2E tests)
+```
+
+### Development Principles
+1. **Frontend-First Integration**
+   - Test frontend with mock data first
+   - Connect to backend APIs when ready
+   - Handle API errors gracefully
+   - Show loading states during data fetch
+
+2. **Component Reusability**
+   - Extract common patterns to reusable components
+   - Use shadcn/ui as base
+   - Follow DRY principle
+   - Create custom hooks for shared logic
+
+3. **Responsive Design**
+   - Mobile-first approach
+   - Test on multiple breakpoints
+   - Use Tailwind responsive prefixes
+   - Ensure touch targets are accessible
+
+4. **Performance-First Design**
+   - Lazy load heavy components
+   - Optimize bundle size
+   - Use React.memo for expensive renders
+   - Implement caching strategies
+
+5. **Accessibility-First Design**
+   - Add ARIA labels
+   - Ensure keyboard navigation
+   - Test with screen readers
+   - Meet WCAG AA standards
+
+---
+
+## 📊 Resource Requirements for Phase 7
+
+### Infrastructure
+- **Frontend**: Next.js 16, React 19
+- **Backend**: Django 5, MySQL 8.0, Redis 7
+- **Testing**: Jest, Playwright, axe-core
+
+### Development Time
+- **Phase 7.1**: 2-3 days (Analytics Dashboard)
+- **Phase 7.2**: 3-5 days (Screener UI)
+- **Phase 7.3**: 4-6 days (Enhanced Asset Details)
+- **Phase 7.4**: 2-3 days (Settings Page)
+- **Phase 7.5**: 5-7 days (Mobile & Accessibility)
+- **Phase 7.6**: 3-4 days (Performance)
+- **Phase 7.7**: 4-5 days (Testing)
+- **Total**: 23-33 days (3-5 weeks)
+
+### Estimated Lines of Code
+- **Phase 7.1**: ~1,500-2,000 lines
+- **Phase 7.2**: ~2,000-2,500 lines
+- **Phase 7.3**: ~2,500-3,000 lines
+- **Phase 7.4**: ~1,000-1,500 lines
+- **Phase 7.5**: ~1,500-2,000 lines (responsive + accessibility)
+- **Phase 7.6**: ~1,000-1,500 lines (performance)
+- **Phase 7.7**: ~2,000-2,500 lines (tests)
+- **Total**: ~11,500-13,000 new lines
+
+---
+
+## 🚀 Quick Start for Phase 7
+
+### 1. Complete Analytics Dashboard Integration
+```bash
+# Update analytics page with tabbed interface
+# Integrate all 8 chart components
+# Add state management for tabs and periods
+# Test all chart interactions
+# Export functionality
+```
+
+### 2. Build Screener UI
+```bash
+# Create screener page structure
+# Build filter form components
+# Connect to backend screener API
+# Test all filters and combinations
+# Implement save/load presets
+```
+
+### 3. Continue with Phase 7.3-7.7
+- Follow task lists above
+- Commit each sub-phase separately
+- Update documentation as you go
+
+---
+
+## 📈 Success Metrics
+
+### Performance Targets
+- **Analytics Dashboard**: <2s page load
+- **Screener**: <1s filter application
+- **Asset Details**: <1.5s page load
+- **Settings**: <500ms preference update
+- **Lighthouse Score**: >90
+- **Bundle Size**: <500KB (gzipped)
+
+### Quality Targets
+- **Test Coverage**: >80%
+- **Accessibility Score**: WCAG AA compliant
+- **Mobile Responsiveness**: All pages work on 320px+
+- **Performance**: 90+ Lighthouse score
+- **Code Quality**: No TypeScript errors, no lint errors
+
+---
+
+## 📝 Documentation Updates
+
+### Phase 7 Documentation Tasks
+- [ ] Update FRONTEND_ROADMAP.md with Phase 7 completion
+- [ ] Update README.md with new features
+- [ ] Update AGENTS.md with Phase 7 guidelines
+- [ ] Create deployment guide for frontend
+- [ ] Update API documentation with new endpoints
+- [ ] Create component documentation
+
+---
+
+## 🔗 Key Resources
+
+### Phase Documentation
+- `.opencode/PHASE_0_1_COMPLETION_SUMMARY.md`
+- `.opencode/PHASE_2_2_COMPLETION_SUMMARY.md`
+- `.opencode/PHASE_2_3_COMPLETION_SUMMARY.md`
+- `.opencode/PHASE_3_PROGRESS_SUMMARY.md`
+- `.opencode/PHASE_4_COMPLETION_SUMMARY.md`
+- `.opencode/PHASE_5_COMPLETION_SUMMARY.md`
+- `.opencode/PHASE_6_COMPLETION_SUMMARY.md`
+- `.opencode/FRONTEND_ROADMAP.md` (NEW)
+
+### Implementation Plans
+- `.opencode/plans/BLOOMBERG_TERMINAL_IMPLEMENTATION.md`
+
+### Registration Guides
+- `.opencode/plans/FREE_API_REGISTRATION_GUIDE.md`
+
+### API Documentation
+- `http://localhost:8000/api/docs` (when running)
+- Interactive API explorer with examples
+
+---
+
+**Last Updated**: January 28, 2026
+**Next Review**: After Phase 7.1 completion
+**Maintainer**: Development Team
+
+---
+
+## 🎯 Phase 6 Success Criteria (ARCHIVED)
 
 ### Minimum Viable Phase 6
 - [ ] Technical indicators working (SMA, EMA, RSI, MACD, Bollinger)

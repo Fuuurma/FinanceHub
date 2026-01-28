@@ -1,8 +1,9 @@
 # FinanceHub - Active TODO List
 
-**Last Updated**: January 28, 2026  
-**Current Phase**: PHASE 6 COMPLETE! 🎉
-
+**Last Updated**: January 28, 2026
+**Current Phase**: PHASE 7: Frontend-Backend Integration
+**Backend Status**: 95% Complete
+**Frontend Status**: 65% Complete
 ---
 
 ## 🚨 CRITICAL - Must Complete Before Phase 6
@@ -388,6 +389,117 @@
 - [ ] Check for SQL injection risks
 - [ ] Validate all user inputs
 - [ ] Review API key security
+
+---
+
+## 📝 Frontend Tasks
+
+### Phase F3: Analytics Dashboard (HIGH PRIORITY)
+- [ ] Integrate 8 chart components into analytics page
+- [ ] Create tabbed interface (Overview, Performance, Risk, Comparison)
+- [ ] Add sector breakdown visualization
+- [ ] Add benchmarking comparison charts
+- [ ] Add performance attribution analysis
+- [ ] Add rolling returns visualization
+- [ ] Add risk metrics history trends
+- [ ] Test all chart interactions
+
+### Phase F4: Advanced Features (MEDIUM PRIORITY)
+
+#### F4.1: Screener UI
+- [ ] Create `/screener` page
+- [ ] Advanced filter form (sector, market cap, P/E, dividend yield)
+- [ ] Results table with sorting
+- [ ] Save/load presets
+- [ ] Export results (CSV, JSON)
+
+#### F4.2: Enhanced Asset Details
+- [ ] Interactive price chart with multiple timeframes
+- [ ] Technical indicators overlay
+- [ ] News section with sentiment
+- [ ] Fundamentals tab
+- [ ] Dividend history
+- [ ] Similar assets section
+
+#### F4.3: Settings Page
+- [ ] Theme toggle (light/dark)
+- [ ] Currency display preferences
+- [ ] Notification settings
+- [ ] Alert preferences
+- [ ] Data export/import
+- [ ] Account settings
+
+#### F4.4: Advanced Charts
+- [ ] DrawdownChart - Max drawdown visualization
+- [ ] HeatmapChart - Portfolio performance heatmap
+- [ ] CorrelationMatrix - Asset correlation analysis
+- [ ] PortfolioComparison - Side-by-side portfolio comparison
+- [ ] Spider/RadarChart - Risk/return metrics
+
+### Phase F5: Polish & Integration (MEDIUM PRIORITY)
+
+#### F5.1: Mobile Responsiveness
+- [ ] Audit all pages for mobile compatibility
+- [ ] Responsive chart interactions
+- [ ] Mobile-friendly navigation (collapsible sidebar)
+- [ ] Touch-optimized tables and cards
+- [ ] Test on various screen sizes (320px to 1920px)
+- [ ] Optimize touch targets (minimum 44x44px)
+
+#### F5.2: Accessibility Improvements
+- [ ] Add ARIA labels to all interactive elements
+- [ ] Keyboard navigation support (tab, enter, escape, arrows)
+- [ ] Screen reader compatibility testing
+- [ ] High contrast mode support
+- [ ] Focus management in modals and dialogs
+- [ ] Skip to main content link
+- [ ] Proper heading hierarchy (h1-h6)
+- [ ] Alt text for all images
+- [ ] WCAG AA compliance
+
+#### F5.3: Performance Optimization
+- [ ] Implement code splitting with route groups
+- [ ] Lazy load heavy components (charts, tables)
+- [ ] Optimize bundle size
+- [ ] Add loading skeletons for all pages
+- [ ] Image optimization (next/image)
+- [ ] Debounce search inputs
+- [ ] Virtualize long lists (react-window)
+- [ ] Cache API responses
+- [ ] Implement request cancellation on unmount
+- [ ] Lighthouse audit (target score >90)
+
+#### F5.4: Error Handling & Boundaries
+- [ ] Implement error boundaries for route groups
+- [ ] Add global error boundary
+- [ ] Friendly error pages (404, 500, etc.)
+- [ ] Toast notifications for errors and warnings
+- [ ] Retry logic for failed API calls
+- [ ] Offline mode detection
+- [ ] Error logging to backend
+
+#### F5.5: Testing
+- [ ] Unit tests for all components
+- [ ] Integration tests for pages
+- [ ] E2E tests with Playwright or Cypress
+- [ ] Test coverage >80%
+- [ ] Visual regression tests
+- [ ] Accessibility testing (axe-core)
+
+### Frontend Integration Tasks
+- [ ] Connect frontend to all backend API endpoints
+- [ ] Test WebSocket connections with real backend
+- [ ] Test all API clients with backend
+- [ ] Verify data flow from backend to frontend
+- [ ] Test authentication flow end-to-end
+- [ ] Test real-time data updates
+
+### Frontend Documentation
+- [ ] Document all component props and usage
+- [ ] Create component storybook (optional)
+- [ ] Document API client patterns
+- [ ] Document state management patterns
+- [ ] Create deployment guide for frontend
 
 ---
 

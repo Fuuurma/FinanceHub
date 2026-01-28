@@ -176,6 +176,61 @@ npx tsc --noEmit
 - Use responsive prefixes (`md:`, `lg:`) for breakpoints
 - Use dark mode support (next-themes)
 
+**Component Best Practices:**
+- Always add loading states (use skeletons during data fetch)
+- Implement proper error boundaries
+- Add optimistic UI updates where appropriate
+- Use memoization for expensive calculations (React.memo, useMemo)
+- Use callback memoization for event handlers (useCallback)
+- Test component in isolation with Storybook-like approach
+- Follow DRY principle - extract reusable logic to custom hooks
+
+**Chart Components:**
+- Use Recharts for data visualization (not Chart.js - reserved for real-time)
+- Use Chart.js only for real-time streaming charts
+- Define proper TypeScript interfaces for chart data
+- Handle empty states gracefully
+- Add tooltips and legends for better UX
+- Ensure charts are responsive (ResponsiveContainer from Recharts)
+- Use consistent color schemes (define in constants or theme)
+
+**State Management Patterns:**
+- Zustand for global application state
+- React Context for auth/user state (persists across app)
+- Local useState for component-specific UI state
+- Server state from API (don't store in Zustand unless needed globally)
+- Use immer middleware for complex state updates in Zustand
+- Persist important state to localStorage when needed
+
+**Performance:**
+- Use Next.js dynamic imports for heavy components: `import('...')`
+- Implement code splitting with route groups
+- Use Image component from next/image for images
+- Lazy load charts and heavy components
+- Debounce API calls and search inputs (use lodash debounce)
+- Throttle scroll events and resize handlers
+- Use React.memo for expensive renders
+- Virtualize long lists (react-window or similar)
+
+**Accessibility:**
+- Add semantic HTML (use proper HTML5 elements)
+- Add ARIA labels for all interactive elements
+- Ensure keyboard navigation works (tab, enter, escape)
+- Use focus management in modals and dialogs
+- Add alt text for all images
+- Ensure color contrast meets WCAG AA standards
+- Test with screen reader (story)
+- Use proper heading hierarchy (h1, h2, etc.)
+
+**Form Handling:**
+- Use react-hook-form with Zod validation
+- Define form schemas with proper TypeScript types
+- Handle form validation errors gracefully
+- Show validation messages inline
+- Implement form submission states (loading, success, error)
+- Reset forms after successful submission
+- Use proper input types (email, number, etc.)
+
 ---
 
 ## Testing
