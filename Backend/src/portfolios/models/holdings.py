@@ -39,10 +39,11 @@ class Holding(UUIDModel, TimestampedModel, SoftDeleteModel):
 
     @property
     def current_price(self):
-        latest = self.asset.prices.order_by("-date").first()
-        return latest.close if latest else None
+        """Use cached last_price from asset for performance (N+1 fix)."""
+        return self.asset.last_price
 
     @property
     def current_value(self):
+        """Calculate current value using cached price (N+1 fix)."""
         price = self.current_price
         return (price * self.quantity) if price else Decimal("0")

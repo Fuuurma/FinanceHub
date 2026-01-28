@@ -2,6 +2,7 @@ from typing import List, Optional, Dict
 from ninja import Router, Query
 from pydantic import BaseModel
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from investments.models.watchlist import Watchlist
 from assets.models.asset import Asset
 from ninja_jwt.authentication import JWTAuth
@@ -91,8 +92,13 @@ def get_watchlist(request, watchlist_id: str):
 
 
 @router.post("/watchlist", response=WatchlistOut, auth=jwt_auth)
+@transaction.atomic
 def create_watchlist(request, data: WatchlistCreateIn):
-    """Create a new watchlist with bulk asset lookup (N+1 fix)."""
+    """Create a new watchlist with bulk asset lookup (N+1 fix).
+
+    Uses database transaction to ensure atomicity of watchlist creation
+    and asset association.
+    """
     watchlist = Watchlist.objects.create(
         user=request.user,
         name=data.name,
@@ -117,8 +123,13 @@ def create_watchlist(request, data: WatchlistCreateIn):
 
 
 @router.put("/watchlist/{watchlist_id}", response=WatchlistOut, auth=jwt_auth)
+@transaction.atomic
 def update_watchlist(request, watchlist_id: str, data: WatchlistUpdateIn):
-    """Update watchlist with bulk asset lookup (N+1 fix)."""
+    """Update watchlist with bulk asset lookup (N+1 fix).
+
+    Uses database transaction to ensure atomicity of watchlist update
+    and asset re-association.
+    """
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     watchlist.name = data.name
     watchlist.is_public = data.is_public

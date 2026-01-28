@@ -791,3 +791,268 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws
 ```
+
+---
+
+## Backend Patterns & Best Practices (2026)
+
+### Constants File Structure
+
+Use centralized constants to avoid magic numbers scattered across the codebase:
+
+```python
+# Backend/src/utils/constants/api.py
+"""
+API Constants
+Centralized configuration for API limits, timeouts, and pagination.
+"""
+
+# Pagination
+DEFAULT_PAGE_SIZE = 50
+MAX_PAGE_SIZE = 100
+DEFAULT_OFFSET = 0
+
+# Limits
+ALERT_COOLDOWN_SECONDS = 300
+ALERT_LIST_LIMIT = 50
+ALERT_HISTORY_LIMIT = 20
+
+# Cache TTL (seconds)
+CACHE_TTL_SHORT = 60
+CACHE_TTL_MEDIUM = 300
+CACHE_TTL_LONG = 3600
+
+# Rate Limits
+RATE_LIMIT_ANON = "100/hour"
+RATE_LIMIT_AUTH = "1000/hour"
+
+# Error Codes
+ERROR_NOT_FOUND = "not_found"
+ERROR_VALIDATION = "validation_error"
+ERROR_DATABASE = "database_error"
+```
+
+Usage in API endpoints:
+```python
+from utils.constants.api import ALERT_LIST_LIMIT, ALERT_COOLDOWN_SECONDS
+
+@router.get("/", response=List[AlertOut])
+async def list_alerts(
+    request,
+    limit: int = Query(default=ALERT_LIST_LIMIT, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+):
+    # ...
+```
+
+### N+1 Query Prevention
+
+**Don't do this:**
+```python
+# N+1 query - queries prices for each holding
+@property
+def current_price(self):
+    latest = self.asset.prices.order_by("-date").first()
+    return latest.close if latest else None
+```
+
+**Do this instead:**
+```python
+# Uses cached last_price field (pre-computed for performance)
+@property
+def current_price(self):
+    return self.asset.last_price
+
+# Use select_related when querying holdings
+holdings = self.holdings.select_related('asset').filter(is_deleted=False)
+```
+
+### Database Transactions
+
+Wrap multi-step operations in transactions for atomicity:
+
+```python
+from django.db import transaction
+
+@router.post("/watchlist", response=WatchlistOut, auth=jwt_auth)
+@transaction.atomic
+def create_watchlist(request, data: WatchlistCreateIn):
+    """Create watchlist with atomic transaction."""
+    watchlist = Watchlist.objects.create(...)
+    if data.symbols:
+        assets_map = _get_assets_by_symbol(data.symbols)
+        assets_to_add = [assets_map[s.upper()] for s in data.symbols if s.upper() in assets_map]
+        if assets_to_add:
+            watchlist.assets.add(*assets_to_add)
+    return WatchlistOut(...)
+```
+
+### Model Indexes
+
+Always add indexes for frequently queried fields:
+
+```python
+class Watchlist(UUIDModel, TimestampedModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="watchlists")
+    name = models.CharField(max_length=100)
+    is_public = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "watchlists"  # Explicit table name
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["is_public"]),
+            models.Index(fields=["user", "is_public"]),
+        ]
+```
+
+### Error Handling Patterns
+
+Use specific error types instead of generic exception handling:
+
+```python
+from utils.constants.api import ERROR_NOT_FOUND, ERROR_VALIDATION, ERROR_DATABASE
+
+class AlertErrorResponse(Schema):
+    error: str
+    code: str = "error"
+
+def handle_database_error(func):
+    """Decorator for improved error handling."""
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Alert.DoesNotExist:
+            return AlertErrorResponse(error="Alert not found", code=ERROR_NOT_FOUND)
+        except ValueError as e:
+            return AlertErrorResponse(error=str(e), code=ERROR_VALIDATION)
+        except Exception as e:
+            logger.error(f"Database error in {func.__name__}: {e}")
+            return AlertErrorResponse(error="An error occurred", code=ERROR_DATABASE)
+    return wrapper
+```
+
+### Database Connection Pooling
+
+Configure connection pooling in settings for production:
+
+```python
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "PORT": os.getenv("DB_PORT", "3306"),
+        "OPTIONS": {
+            "charset": "utf8mb4",
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            "connect_timeout": 10,
+            "read_timeout": 30,
+            "write_timeout": 30,
+        },
+        "CONN_MAX_AGE": 600,  # Connection reuse (10 minutes)
+    }
+}
+```
+
+### Bulk Operations for N+1 Prevention
+
+**Don't do this (N+1):**
+```python
+# Queries DB for each symbol
+for symbol in data.symbols:
+    asset = Asset.objects.filter(symbol__iexact=symbol).first()
+    if asset:
+        watchlist.assets.add(asset)
+```
+
+**Do this (bulk fetch):**
+```python
+# Single query for all symbols
+def _get_assets_by_symbol(symbols: List[str]) -> Dict[str, Asset]:
+    if not symbols:
+        return {}
+    return {
+        asset.symbol.upper(): asset
+        for asset in Asset.objects.filter(symbol__in=[s.upper() for s in symbols])
+    }
+
+# Then use the map
+assets_map = _get_assets_by_symbol(data.symbols)
+assets_to_add = [assets_map[s.upper()] for s in data.symbols if s.upper() in assets_map]
+watchlist.assets.add(*assets_to_add)
+```
+
+### Pagination in List Endpoints
+
+Always add pagination to list endpoints:
+
+```python
+from utils.constants.api import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, DEFAULT_OFFSET
+
+@router.get("/watchlist", response=List[WatchlistOut], auth=jwt_auth)
+def list_watchlists(
+    request,
+    limit: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    offset: int = Query(default=DEFAULT_OFFSET, ge=0),
+):
+    watchlists = Watchlist.objects.filter(user=request.user)[offset:offset + limit]
+    return [WatchlistOut(...) for w in watchlists]
+```
+
+### CORS Configuration
+
+Enable CORS middleware in settings for frontend integration:
+
+```python
+# settings.py
+INSTALLED_APPS = [
+    ...
+    "corsheaders",
+    ...
+]
+
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # Must be at top
+    ...
+]
+
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+```
+
+### Rate Limiting
+
+Configure rate limiting in settings:
+
+```python
+# settings.py
+RATELIMIT_ENABLE = True
+RATELIMIT_AUTHENTICATED = True
+RATELIMIT_AUTHENTICATED_RATE = "1000/hour"
+RATELIMIT_ANON_RATE = "100/hour"
+RATELIMIT_USE_REDIS = True
+RATELIMIT_KEY_PREFIX = "ratelimit"
+```
+
+### Security Settings
+
+Never hardcode secrets - use environment variables:
+
+```python
+# settings.py - BAD (hardcoded)
+SECRET_KEY = "django-insecure-nmwss$g4$o%6e=z(k#8r2p"
+DEBUG = True
+
+# settings.py - GOOD (from env)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-this-in-production")
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+```
+
+```bash
+# .env
+DJANGO_SECRET_KEY=your-secure-random-key-here-min-50-chars
+DEBUG=False
+```
+

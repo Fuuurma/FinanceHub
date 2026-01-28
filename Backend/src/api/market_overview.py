@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from django.utils import timezone
 
 from utils.services.fundamental_service import get_fundamental_service
-from utils.services.market_data_service import get_market_data_service
+from utils.services.data_orchestrator import get_data_orchestrator
 from utils.helpers.logger.logger import get_logger
 
 logger = get_logger(__name__)
@@ -88,7 +88,7 @@ async def get_market_overview():
         sectors = sector_data.get('sectors', [])
         
         # Get top gainers/losers from market data
-        top_movers = await market_service.get_top_movers(limit=10)
+        top_movers = await orchestrator.get_top_movers(limit=10)
         top_gainers = top_movers.get('gainers', [])
         top_losers = top_movers.get('losers', [])
         
@@ -97,23 +97,23 @@ async def get_market_overview():
             {
                 'symbol': '^GSPC',
                 'name': 'S&P 500',
-                'price': await market_service.get_current_price('^GSPC'),
-                'change': await market_service.get_24h_change('^GSPC'),
-                'change_percent': await market_service.get_24h_change_percent('^GSPC'),
+                'price': await orchestrator.get_current_price('^GSPC'),
+                'change': await orchestrator.get_24h_change('^GSPC'),
+                'change_percent': await orchestrator.get_24h_change_percent('^GSPC'),
             },
             {
                 'symbol': '^DJI',
                 'name': 'Dow Jones',
-                'price': await market_service.get_current_price('^DJI'),
-                'change': await market_service.get_24h_change('^DJI'),
-                'change_percent': await market_service.get_24h_change_percent('^DJI'),
+                'price': await orchestrator.get_current_price('^DJI'),
+                'change': await orchestrator.get_24h_change('^DJI'),
+                'change_percent': await orchestrator.get_24h_change_percent('^DJI'),
             },
             {
                 'symbol': '^IXIC',
                 'name': 'NASDAQ',
-                'price': await market_service.get_current_price('^IXIC'),
-                'change': await market_service.get_24h_change('^IXIC'),
-                'change_percent': await market_service.get_24h_change_percent('^IXIC'),
+                'price': await orchestrator.get_current_price('^IXIC'),
+                'change': await orchestrator.get_24h_change('^IXIC'),
+                'change_percent': await orchestrator.get_24h_change_percent('^IXIC'),
             },
         ]
         
@@ -175,42 +175,42 @@ async def get_market_indices():
             {
                 'symbol': '^GSPC',
                 'name': 'S&P 500',
-                'price': await market_service.get_current_price('^GSPC'),
-                'change': await market_service.get_24h_change('^GSPC'),
-                'change_percent': await market_service.get_24h_change_percent('^GSPC'),
-                'volume': await market_service.get_24h_volume('^GSPC'),
-                'high_52w': await market_service.get_52w_high('^GSPC'),
-                'low_52w': await market_service.get_52w_low('^GSPC'),
+                'price': await orchestrator.get_current_price('^GSPC'),
+                'change': await orchestrator.get_24h_change('^GSPC'),
+                'change_percent': await orchestrator.get_24h_change_percent('^GSPC'),
+                'volume': await orchestrator.get_24h_volume('^GSPC'),
+                'high_52w': await orchestrator.get_52w_high('^GSPC'),
+                'low_52w': await orchestrator.get_52w_low('^GSPC'),
             },
             {
                 'symbol': '^DJI',
                 'name': 'Dow Jones Industrial',
-                'price': await market_service.get_current_price('^DJI'),
-                'change': await market_service.get_24h_change('^DJI'),
-                'change_percent': await market_service.get_24h_change_percent('^DJI'),
-                'volume': await market_service.get_24h_volume('^DJI'),
-                'high_52w': await market_service.get_52w_high('^DJI'),
-                'low_52w': await market_service.get_52w_low('^DJI'),
+                'price': await orchestrator.get_current_price('^DJI'),
+                'change': await orchestrator.get_24h_change('^DJI'),
+                'change_percent': await orchestrator.get_24h_change_percent('^DJI'),
+                'volume': await orchestrator.get_24h_volume('^DJI'),
+                'high_52w': await orchestrator.get_52w_high('^DJI'),
+                'low_52w': await orchestrator.get_52w_low('^DJI'),
             },
             {
                 'symbol': '^IXIC',
                 'name': 'NASDAQ Composite',
-                'price': await market_service.get_current_price('^IXIC'),
-                'change': await market_service.get_24h_change('^IXIC'),
-                'change_percent': await market_service.get_24h_change_percent('^IXIC'),
-                'volume': await market_service.get_24h_volume('^IXIC'),
-                'high_52w': await market_service.get_52w_high('^IXIC'),
-                'low_52w': await market_service.get_52w_low('^IXIC'),
+                'price': await orchestrator.get_current_price('^IXIC'),
+                'change': await orchestrator.get_24h_change('^IXIC'),
+                'change_percent': await orchestrator.get_24h_change_percent('^IXIC'),
+                'volume': await orchestrator.get_24h_volume('^IXIC'),
+                'high_52w': await orchestrator.get_52w_high('^IXIC'),
+                'low_52w': await orchestrator.get_52w_low('^IXIC'),
             },
             {
                 'symbol': '^RUT',
                 'name': 'Russell 2000',
-                'price': await market_service.get_current_price('^RUT'),
-                'change': await market_service.get_24h_change('^RUT'),
-                'change_percent': await market_service.get_24h_change_percent('^RUT'),
-                'volume': await market_service.get_24h_volume('^RUT'),
-                'high_52w': await market_service.get_52w_high('^RUT'),
-                'low_52w': await market_service.get_52w_low('^RUT'),
+                'price': await orchestrator.get_current_price('^RUT'),
+                'change': await orchestrator.get_24h_change('^RUT'),
+                'change_percent': await orchestrator.get_24h_change_percent('^RUT'),
+                'volume': await orchestrator.get_24h_volume('^RUT'),
+                'high_52w': await orchestrator.get_52w_high('^RUT'),
+                'low_52w': await orchestrator.get_52w_low('^RUT'),
             },
         ]
         
@@ -245,14 +245,14 @@ async def get_market_movers(
     
     try:
         # Get top gainers
-        gainers = await market_service.get_top_movers(
+        gainers = await orchestrator.get_top_movers(
             direction='gainers',
             asset_type=asset_type,
             limit=limit
         )
         
         # Get top losers
-        losers = await market_service.get_top_movers(
+        losers = await orchestrator.get_top_movers(
             direction='losers',
             asset_type=asset_type,
             limit=limit
@@ -262,12 +262,12 @@ async def get_market_movers(
         crypto_gainers = []
         crypto_losers = []
         if asset_type in ['crypto', 'all']:
-            crypto_gainers = await market_service.get_top_movers(
+            crypto_gainers = await orchestrator.get_top_movers(
                 direction='gainers',
                 asset_type='crypto',
                 limit=limit
             )
-            crypto_losers = await market_service.get_top_movers(
+            crypto_losers = await orchestrator.get_top_movers(
                 direction='losers',
                 asset_type='crypto',
                 limit=limit
@@ -307,7 +307,7 @@ async def get_trending_assets(
     market_service = get_market_data_service()
     
     try:
-        trending = await market_service.get_trending_assets(
+        trending = await orchestrator.get_trending_assets(
             asset_type=asset_type,
             limit=limit,
             time_period=time_period

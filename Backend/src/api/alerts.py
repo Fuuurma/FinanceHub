@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime
 from ninja import Router, Schema, Query
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 from utils.helpers.logger.logger import get_logger
 from utils.services.alert_engine import get_alert_engine
@@ -17,11 +18,42 @@ from utils.constants.api import (
     ALERT_COOLDOWN_SECONDS,
     ERROR_NOT_FOUND,
     ERROR_VALIDATION,
+    ERROR_DATABASE,
 )
+from utils.constants.api import CACHE_TTL_SHORT
 
 logger = get_logger(__name__)
 
 router = Router(tags=["Alerts"])
+
+
+class AlertErrorResponse(Schema):
+    error: str
+    code: str = "error"
+
+
+def handle_database_error(func):
+    """Decorator for improved error handling with specific exceptions."""
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Alert.DoesNotExist:
+            return AlertErrorResponse(
+                error="Alert not found",
+                code=ERROR_NOT_FOUND
+            )
+        except ValueError as e:
+            return AlertErrorResponse(
+                error=str(e),
+                code=ERROR_VALIDATION
+            )
+        except Exception as e:
+            logger.error(f"Database error in {func.__name__}: {e}")
+            return AlertErrorResponse(
+                error="An error occurred while processing your request",
+                code=ERROR_DATABASE
+            )
+    return wrapper
 
 
 class AlertCreateIn(Schema):

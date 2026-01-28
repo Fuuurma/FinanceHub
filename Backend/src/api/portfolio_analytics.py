@@ -93,7 +93,7 @@ class RebalancingSuggestionsResponse(BaseModel):
     """
     Portfolio rebalancing recommendations
     """
-    portfolio_id: string
+    portfolio_id: str
     current_allocation: dict
     suggested_allocation: dict
     suggested_trades: List[dict]
@@ -314,7 +314,7 @@ async def get_risk_analysis(request, portfolio_id: str):
         sorted_holdings = sorted(holding_values, key=lambda x: x[1], reverse=True)
         
         largest_value = sorted_holdings[0][1] if sorted_holdings else Decimal('0')
-        largest_holding_percent = (largest_value / total_value) if total_value > 0 else Decimal('0'))
+        largest_holding_percent = (largest_value / total_value) if total_value > 0 else Decimal('0')
         
         concentration_risk = float(largest_holding_percent)
         
@@ -341,7 +341,7 @@ async def get_risk_analysis(request, portfolio_id: str):
         for sector, value in sector_exposure.items():
             sector_exposure[sector] = {
                 'value': float(value),
-                'percentage': float(value / total) if total > 0 else 0)
+                'percentage': float(value / total) if total > 0 else 0
             }
         
         # Generate recommendations

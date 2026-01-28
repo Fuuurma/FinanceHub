@@ -151,25 +151,30 @@ class AlertHistory(models.Model):
 class AlertNotification(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     alert_history = models.ForeignKey(AlertHistory, on_delete=models.CASCADE, related_name='notifications')
-    
+
     channel = models.CharField(max_length=20, choices=DeliveryChannel.choices)
-    
-    status = models.CharField(max_length=20, default='pending')
+
+    status = models.CharField(max_length=20, default='pending', db_index=True)
     sent_at = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     read_at = models.DateTimeField(null=True, blank=True)
-    
+
     error_message = models.TextField(null=True, blank=True)
     retry_count = models.IntegerField(default=0)
-    
+
     metadata = models.JSONField(default=dict, blank=True)
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         db_table = 'investments_alert_notification'
         ordering = ['-created_at']
-    
+        indexes = [
+            models.Index(fields=['alert_history', 'status']),
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['channel', 'status']),
+        ]
+
     def __str__(self):
         return f"Notification {self.id} via {self.channel}"
 

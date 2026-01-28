@@ -32,10 +32,11 @@ class Portfolio(UUIDModel, TimestampedModel, SoftDeleteModel):
 
     @property
     def current_value(self):
-        """Calculate current total value (cached or computed via service later)"""
-        # We'll implement this properly in a service with caching
+        """Calculate current total value using cached prices (N+1 fix).
+
+        Uses select_related to avoid N+1 queries when accessing asset.last_price.
+        """
         from .holdings import Holding
 
-        return sum(
-            holding.current_value for holding in self.holdings.filter(is_deleted=False)
-        )
+        holdings = self.holdings.select_related('asset').filter(is_deleted=False)
+        return sum(holding.current_value for holding in holdings)
