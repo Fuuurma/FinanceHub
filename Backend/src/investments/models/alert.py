@@ -68,6 +68,10 @@ class Alert(models.Model):
             models.Index(fields=['user', 'status']),
             models.Index(fields=['symbol', 'status']),
             models.Index(fields=['alert_type']),
+            models.Index(fields=['status', 'priority']),
+            models.Index(fields=['user', 'status', '-created_at']),
+            models.Index(fields=['triggered_count']),
+            models.Index(fields=['last_triggered_at']),
         ]
     
     def __str__(self):
@@ -142,6 +146,9 @@ class AlertHistory(models.Model):
         ordering = ['-triggered_at']
         indexes = [
             models.Index(fields=['alert', 'triggered_at']),
+            models.Index(fields=['alert', 'condition_met']),
+            models.Index(fields=['triggered_at', 'condition_met']),
+            models.Index(fields=['condition_met', '-triggered_at']),
         ]
     
     def __str__(self):
@@ -173,6 +180,8 @@ class AlertNotification(models.Model):
             models.Index(fields=['alert_history', 'status']),
             models.Index(fields=['status', 'created_at']),
             models.Index(fields=['channel', 'status']),
+            models.Index(fields=['status', 'sent_at']),
+            models.Index(fields=['retry_count', 'status']),
         ]
 
     def __str__(self):
