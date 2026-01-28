@@ -29,10 +29,10 @@ AUTH_USER_MODEL = "users.User"
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-nmwss$g4$o%6e=z(k#8r2p_l1+o)40^ifmm6fml9vp_w(!2xjq"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-this-in-production-min-50-chars")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # third party
     "django_dramatiq",
-    # "corsheaders",
+    "corsheaders",
     "ninja_jwt",
     "channels",
     # apps
@@ -75,9 +75,9 @@ CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "utils.helpers.logger.middleware.RequestLoggingMiddleware",
@@ -221,3 +221,12 @@ DRAMATIQ_RESULT_BACKEND = {
     },
     "MIDDLEWARE_OPTIONS": {"result_ttl": 1000 * 60 * 10},
 }
+
+# Rate Limiting Configuration
+# Uses django-ratelimit for API rate limiting
+RATELIMIT_ENABLE = True
+RATELIMIT_AUTHENTICATED = True
+RATELIMIT_AUTHENTICATED_RATE = "1000/hour"
+RATELIMIT_ANON_RATE = "100/hour"
+RATELIMIT_USE_REDIS = True
+RATELIMIT_KEY_PREFIX = "ratelimit"

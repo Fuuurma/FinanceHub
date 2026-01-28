@@ -11,6 +11,13 @@ from investments.models.alert import (
     AlertType, AlertStatus, DeliveryChannel
 )
 from users.models.user import User
+from utils.constants.api import (
+    ALERT_LIST_LIMIT,
+    ALERT_HISTORY_LIMIT,
+    ALERT_COOLDOWN_SECONDS,
+    ERROR_NOT_FOUND,
+    ERROR_VALIDATION,
+)
 
 logger = get_logger(__name__)
 
@@ -25,7 +32,7 @@ class AlertCreateIn(Schema):
     condition_operator: str = '>='
     delivery_channels: Optional[List[str]] = None
     priority: int = 5
-    cooldown_seconds: int = 300
+    cooldown_seconds: int = ALERT_COOLDOWN_SECONDS
     valid_until: Optional[datetime] = None
     description: Optional[str] = None
 
@@ -84,8 +91,8 @@ async def list_alerts(
     status: Optional[str] = None,
     symbol: Optional[str] = None,
     alert_type: Optional[str] = None,
-    limit: int = 50,
-    offset: int = 0
+    limit: int = Query(default=ALERT_LIST_LIMIT, ge=1, le=100),
+    offset: int = Query(default=0, ge=0)
 ):
     """List user's alerts with optional filters"""
     try:
@@ -300,8 +307,8 @@ async def resume_alert(request, alert_id: str):
 async def get_alert_history(
     request,
     alert_id: str,
-    limit: int = 20,
-    offset: int = 0
+    limit: int = Query(default=ALERT_HISTORY_LIMIT, ge=1, le=100),
+    offset: int = Query(default=0, ge=0)
 ):
     """Get alert trigger history"""
     try:

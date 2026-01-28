@@ -13,8 +13,14 @@ class Watchlist(UUIDModel, TimestampedModel):
     is_public = models.BooleanField(default=False, help_text="Make this watchlist visible to others")
 
     class Meta:
+        db_table = "watchlists"
         unique_together = ("user", "name")
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["is_public"]),
+            models.Index(fields=["user", "is_public"]),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.user.email})"

@@ -1,11 +1,23 @@
-from typing import List
+from typing import List, Optional, Dict
 from ninja import Router, Query
 from pydantic import BaseModel
 from django.shortcuts import get_object_or_404
 from investments.models.watchlist import Watchlist
 from assets.models.asset import Asset
-from investments.schemas import Message
-from utils.auth import jwt_auth_required
+from ninja_jwt.authentication import JWTAuth
+from utils.constants.api import (
+    DEFAULT_PAGE_SIZE,
+    MAX_PAGE_SIZE,
+    DEFAULT_OFFSET,
+)
+
+
+class Message(BaseModel):
+    message: str
+
+
+# JWT Authentication instance
+jwt_auth = JWTAuth()
 
 router = Router(tags=["Watchlist"])
 
@@ -33,9 +45,27 @@ class WatchlistUpdateIn(BaseModel):
     is_public: bool = False
 
 
-@router.get("/watchlist", response=List[WatchlistOut], auth=jwt_auth_required)
-def list_watchlists(request):
-    watchlists = Watchlist.objects.filter(user=request.user)
+def _get_assets_by_symbol(symbols: List[str]) -> Dict[str, Asset]:
+    """Bulk fetch assets to avoid N+1 queries."""
+    if not symbols:
+        return {}
+    upper_symbols = [s.upper() for s in symbols]
+    return {
+        asset.symbol.upper(): asset
+        for asset in Asset.objects.filter(symbol__in=upper_symbols)
+    }
+
+
+@router.get("/watchlist", response=List[WatchlistOut], auth=jwt_auth)
+def list_watchlists(
+    request,
+    limit: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    offset: int = Query(default=DEFAULT_OFFSET, ge=0),
+):
+    """List user's watchlists with pagination."""
+    watchlists = Watchlist.objects.filter(user=request.user)[
+        offset : offset + limit
+    ]
     return [
         WatchlistOut(
             id=str(w.id),
@@ -48,7 +78,7 @@ def list_watchlists(request):
     ]
 
 
-@router.get("/watchlist/{watchlist_id}", response=WatchlistOut, auth=jwt_auth_required)
+@router.get("/watchlist/{watchlist_id}", response=WatchlistOut, auth=jwt_auth)
 def get_watchlist(request, watchlist_id: str):
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     return WatchlistOut(
@@ -60,17 +90,23 @@ def get_watchlist(request, watchlist_id: str):
     )
 
 
-@router.post("/watchlist", response=WatchlistOut, auth=jwt_auth_required)
+@router.post("/watchlist", response=WatchlistOut, auth=jwt_auth)
 def create_watchlist(request, data: WatchlistCreateIn):
+    """Create a new watchlist with bulk asset lookup (N+1 fix)."""
     watchlist = Watchlist.objects.create(
         user=request.user,
         name=data.name,
         is_public=data.is_public,
     )
-    for symbol in data.symbols:
-        asset = Asset.objects.filter(symbol__iexact=symbol).first()
-        if asset:
-            watchlist.assets.add(asset)
+    if data.symbols:
+        assets_map = _get_assets_by_symbol(data.symbols)
+        assets_to_add = [
+            assets_map[s.upper()]
+            for s in data.symbols
+            if s.upper() in assets_map
+        ]
+        if assets_to_add:
+            watchlist.assets.add(*assets_to_add)
     return WatchlistOut(
         id=str(watchlist.id),
         name=watchlist.name,
@@ -80,16 +116,24 @@ def create_watchlist(request, data: WatchlistCreateIn):
     )
 
 
-@router.put("/watchlist/{watchlist_id}", response=WatchlistOut, auth=jwt_auth_required)
+@router.put("/watchlist/{watchlist_id}", response=WatchlistOut, auth=jwt_auth)
 def update_watchlist(request, watchlist_id: str, data: WatchlistUpdateIn):
+    """Update watchlist with bulk asset lookup (N+1 fix)."""
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     watchlist.name = data.name
     watchlist.is_public = data.is_public
-    watchlist.assets.clear()
-    for symbol in data.symbols:
-        asset = Asset.objects.filter(symbol__iexact=symbol).first()
-        if asset:
-            watchlist.assets.add(asset)
+
+    if data.symbols:
+        assets_map = _get_assets_by_symbol(data.symbols)
+        assets_to_set = [
+            assets_map[s.upper()]
+            for s in data.symbols
+            if s.upper() in assets_map
+        ]
+        watchlist.assets.set(assets_to_set)
+    else:
+        watchlist.assets.clear()
+
     watchlist.save()
     return WatchlistOut(
         id=str(watchlist.id),
@@ -100,14 +144,16 @@ def update_watchlist(request, watchlist_id: str, data: WatchlistUpdateIn):
     )
 
 
-@router.delete("/watchlist/{watchlist_id}", response=Message, auth=jwt_auth_required)
+@router.delete("/watchlist/{watchlist_id}", response=Message, auth=jwt_auth)
 def delete_watchlist(request, watchlist_id: str):
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     watchlist.delete()
     return Message(message="Watchlist deleted successfully")
 
 
-@router.post("/watchlist/{watchlist_id}/assets", response=WatchlistOut, auth=jwt_auth_required)
+@router.post(
+    "/watchlist/{watchlist_id}/assets", response=WatchlistOut, auth=jwt_auth
+)
 def add_asset_to_watchlist(request, watchlist_id: str, symbol: str = Query(...)):
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     asset = get_object_or_404(Asset, symbol__iexact=symbol)
@@ -121,7 +167,11 @@ def add_asset_to_watchlist(request, watchlist_id: str, symbol: str = Query(...))
     )
 
 
-@router.delete("/watchlist/{watchlist_id}/assets/{symbol}", response=WatchlistOut, auth=jwt_auth_required)
+@router.delete(
+    "/watchlist/{watchlist_id}/assets/{symbol}",
+    response=WatchlistOut,
+    auth=jwt_auth,
+)
 def remove_asset_from_watchlist(request, watchlist_id: str, symbol: str):
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     asset = Asset.objects.filter(symbol__iexact=symbol).first()
