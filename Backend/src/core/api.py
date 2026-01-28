@@ -20,8 +20,10 @@ from users.api.base import router as users_router
 from assets.api.asset import router as assets_router
 from portfolios.api.portfolio import router as portfolios_router
 from api.unified_market_data import router as unified_market_data_router
+from api.indicators import router as indicators_router
 
 api.add_router("/users", users_router)
 api.add_router("/assets", assets_router)
 api.add_router("/portfolios", portfolios_router)
 api.add_router("/market", unified_market_data_router)
+api.add_router("/indicators", indicators_router)
