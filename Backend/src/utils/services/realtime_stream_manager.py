@@ -9,9 +9,9 @@ from utils.helpers.logger.logger import get_logger
 from utils.services.data_orchestrator import DataSource
 from utils.services.cache_manager import get_cache_manager
 from data.data_providers.binance.websocket_client import BinanceWebSocketClient
-from data.data_providers.binance.trade_service import TradeService
-from data.data_providers.binance.order_book_service import OrderBookService
-from data.data_providers.finnhub.scraper import FinnhubScraper
+from data.data_providers.binance.trade_service import BinanceTradeService as TradeService
+from data.data_providers.binance.order_book_service import BinanceOrderBookService as OrderBookService
+from data.data_providers.finnHub.scraper import FinnhubScraper
 
 logger = get_logger(__name__)
 

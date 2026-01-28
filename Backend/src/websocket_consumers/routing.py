@@ -3,7 +3,7 @@ WebSocket Routing Configuration
 Defines URL patterns for WebSocket connections
 """
 from django.urls import re_path
-from websockets.consumers import PriceStreamConsumer, MarketDataConsumer
+from websocket_consumers.consumers import PriceStreamConsumer, MarketDataConsumer
 
 ws_urlpatterns = [
     re_path(r'ws/price-stream/$', PriceStreamConsumer.as_asgi()),

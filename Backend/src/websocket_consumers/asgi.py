@@ -13,7 +13,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django_asgi_app = get_asgi_application()
 
 # Import WebSocket routing
-from websockets.routing import ws_urlpatterns
+from websocket_consumers.routing import ws_urlpatterns
 
 # Configure allowed hosts
 allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*').split(',')
