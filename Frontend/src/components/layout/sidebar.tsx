@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, TrendingUp, Wallet, Search, BarChart3,
-  Newspaper, MessageSquare, ChevronUp, User2, Bell, AlertCircle, Layers
+  Newspaper, MessageSquare, ChevronUp, User2, Bell, AlertCircle, Layers, FileText
 } from 'lucide-react'
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarHeader,
@@ -20,6 +20,7 @@ const navItems = [
   { title: 'Markets', href: '/markets', icon: TrendingUp },
   { title: 'Liquidity', href: '/portfolios', icon: Wallet },
   { title: 'Analysis', href: '/analytics', icon: BarChart3 },
+  { title: 'Fundamentals', href: '/fundamentals', icon: FileText },
   { title: 'Intelligence', href: '/news', icon: Newspaper },
 ]
 
