@@ -5,6 +5,7 @@ from datetime import datetime
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from utils.helpers.logger.logger import get_logger
+from utils.services.websocket_monitoring import get_websocket_metrics
 from utils.services.data_orchestrator import get_data_orchestrator
 from utils.services.cache_manager import get_cache_manager
 
@@ -39,14 +40,14 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
         # Register connection in cache
         await self._register_connection()
 
-    async def disconnect(self, close_code):
+    async def disconnect(self, code):
         await self._unregister_connection()
         
         # Cancel all running tasks
         for task in self._tasks:
             task.cancel()
         
-        logger.info(f"WebSocket disconnected for user {self.user_id} with code {close_code}")
+        logger.info(f"WebSocket disconnected for user {self.user_id} with code {code}")
 
     async def receive_json(self, content: dict):
         message_type = content.get('type')
@@ -192,7 +193,9 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
         })
 
     async def _register_connection(self):
-        """Register this connection in cache"""
+        """
+        Register this connection in cache
+        """
         try:
             connections_key = f"ws_connections:{self.user_id}"
             connection_info = {
@@ -207,6 +210,13 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
                 connection_info,
                 ttl=3600
             )
+            
+            # Register connection in metrics
+            metrics = get_websocket_metrics()
+            if metrics:
+                metrics.record_connection(self.user_id, self.channel_name, user_agent=self.scope.get('user_agent'))
+            
+            logger.info(f"WebSocket connected for user {self.user_id}")
         except Exception as e:
             logger.error(f"Error registering connection: {e}")
 
