@@ -56,10 +56,9 @@ def create_portfolio(request, payload: PortfolioCreate):
     "/portfolios",
     response=List[PortfolioOut],
     auth=JWTAuth(),
-    pagination=LimitOffsetPagination,
 )
-def list_portfolios(request):
-    qs = PortfolioService.get_user_portfolios(request.auth)
+def list_portfolios(request, limit: int = 100, offset: int = 0):
+    qs = PortfolioService.get_user_portfolios(request.auth)[offset:offset + limit]
     for p in qs:
         p.current_value = PortfolioService.calculate_portfolio_value(p)
     return qs

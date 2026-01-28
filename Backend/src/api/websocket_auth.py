@@ -5,7 +5,7 @@ from ninja import Router, Schema
 from pydantic import Field, EmailStr
 
 from utils.services.quotas import quota_manager, abuse_detector
-from utils.services.middleware import auth_service, session_manager
+from consumers.middleware import auth_service, session_manager
 
 router = Router()
 

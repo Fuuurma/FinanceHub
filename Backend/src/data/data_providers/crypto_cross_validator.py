@@ -41,7 +41,7 @@ class CrossValidationResult:
         
         # Price match (weight: 0.4)
         if self.price_match is not None:
-            factors.append(0.4 * (1.0 if self.price_match else max(0, 1.0 - min(0.1, abs(float(self.price_difference_percent)))))
+            factors.append(0.4 * (1.0 if self.price_match else max(0, 1.0 - min(0.1, abs(float(self.price_difference_percent))))))
         
         # Volume match (weight: 0.3)
         if self.volume_match is not None:

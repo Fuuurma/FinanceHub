@@ -24,8 +24,8 @@ class Priority(Enum):
 @dataclass(order=True)
 class CallRequest:
     priority: Priority
-    timestamp: datetime = field(default_factory=timezone.now)
     endpoint: str = field(compare=False)
+    timestamp: datetime = field(default_factory=timezone.now, compare=False)
     params: dict = field(default_factory=dict, compare=False)
     callback: callable = field(default=None, compare=False)
     retry_count: int = field(default=0, compare=False)

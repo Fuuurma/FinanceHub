@@ -67,13 +67,13 @@ class NewsAPIScraper(BaseAPIFetcher):
         sources: Optional[str] = None,
         domains: Optional[str] = None,
         exclude_domains: Optional[str] = None,
-        from: Optional[str] = None,
-        to: Optional[str] = None,
+        from_date: Optional[str] = None,
+        to_date: Optional[str] = None,
         language: str = "en",
         sort_by: str = "publishedAt",
         page: int = 1,
-        page_size: int = 100
-        search_in: Optional[str] = "title,description"
+        page_size: int = 100,
+        search_in: Optional[str] = "title,description",
     ) -> Optional[Dict]:
         """
         Get all news matching parameters
@@ -106,10 +106,10 @@ class NewsAPIScraper(BaseAPIFetcher):
             params['domains'] = domains
         if exclude_domains:
             params['excludeDomains'] = exclude_domains
-        if from:
-            params['from'] = from
-        if to:
-            params['to'] = to
+        if from_date:
+            params['from'] = from_date
+        if to_date:
+            params['to'] = to_date
         if search_in:
             params['searchIn'] = search_in
         

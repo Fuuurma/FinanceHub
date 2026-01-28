@@ -306,8 +306,8 @@ class FinnhubScraper(BaseAPIFetcher):
     async def get_news(
         self,
         symbol: Optional[str] = None,
-        min_id: Optional[int] = None
-        limit: int = 20
+        min_id: Optional[int] = None,
+        limit: int = 20,
     ) -> Optional[Dict]:
         """
         Get news with sentiment analysis
@@ -412,8 +412,8 @@ class FinnhubScraper(BaseAPIFetcher):
     async def fetch_and_save_stock(
         self,
         symbol: str,
-        historical_days: int = 365
-        use_websocket: bool = False
+        historical_days: int = 365,
+        use_websocket: bool = False,
     ) -> bool:
         """
         Fetch and save stock data to database
@@ -506,11 +506,11 @@ class FinnhubScraper(BaseAPIFetcher):
                                 AssetPricesHistoric.objects.create,
                                 asset=asset,
                                 timestamp=datetime.strptime(candle['t'][:10], '%Y-%m-%d'),
-                                open=float(candle['o'], 0)),
-                                high=float(candle['h'], 0)),
-                                low=float(candle['l'], 0)),
-                                close=float(candle['c'], 0)),
-                                volume=float(candle['v'], 0))
+                                open=float(candle.get('o', 0) or 0),
+                                high=float(candle.get('h', 0) or 0),
+                                low=float(candle.get('l', 0) or 0),
+                                close=float(candle.get('c', 0) or 0),
+                                volume=float(candle.get('v', 0) or 0),
                             )
                             count += 1
                         except Exception as e:

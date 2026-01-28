@@ -145,12 +145,12 @@ class PolygonIOScraper(BaseAPIFetcher):
         self,
         tickers: Optional[str] = None,
         ticker_gt: Optional[str] = None,
-        limit: int = 100
-        sort: str = "ticker"
-        order: str = "asc"
-        active: bool = True
-        market: str = "stocks"
-        type: Optional[str] = None
+        limit: int = 100,
+        sort: str = "ticker",
+        order: str = "asc",
+        active: bool = True,
+        market: str = "stocks",
+        type: Optional[str] = None,
     ) -> Optional[Dict]:
         """
         Get list of tickers
@@ -185,9 +185,9 @@ class PolygonIOScraper(BaseAPIFetcher):
     async def get_dividends(
         self,
         ticker: str,
-        limit: int = 100
+        limit: int = 100,
         from_date: Optional[str] = None,
-        to_date: Optional[str] = None
+        to_date: Optional[str] = None,
     ) -> Optional[Dict]:
         """
         Get dividends for a ticker

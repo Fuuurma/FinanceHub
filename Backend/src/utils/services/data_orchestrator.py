@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple, Set
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 from django.utils import timezone
@@ -14,7 +14,7 @@ from data.data_providers.crypto_cross_validator import CryptoCrossValidator
 from data.data_providers.unified_crypto_provider import UnifiedCryptoProvider
 from data.data_providers.polygon_io.scraper import PolygonIOScraper
 from data.data_providers.iex_cloud.scraper import IEXCloudScraper
-from data.data_providers.finnhub.scraper import FinnhubScraper
+from data.data_providers.finnHub.scraper import FinnhubScraper
 from data.data_providers.newsapi.scraper import NewsAPIScraper
 from assets.models.asset import Asset
 
