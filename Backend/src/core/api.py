@@ -25,6 +25,10 @@ from api.alerts import router as alerts_router
 from api.monitoring import router as monitoring_router
 from api.websocket_auth import router as websocket_auth_router
 from api.fundamentals import router as fundamentals_router
+from api.market_overview import router as market_overview_router
+from api.news_sentiment import router as news_sentiment_router
+from api.portfolio_analytics import router as portfolio_analytics_router
+from api.realtimedata import router as realtimedata_router
 
 api.add_router("/users", users_router)
 api.add_router("/assets", assets_router)
@@ -35,3 +39,7 @@ api.add_router("/alerts", alerts_router)
 api.add_router("/monitoring", monitoring_router)
 api.add_router("/auth", websocket_auth_router)
 api.add_router("/fundamentals", fundamentals_router)
+api.add_router("/overview", market_overview_router)
+api.add_router("/news", news_sentiment_router)
+api.add_router("/analytics", portfolio_analytics_router)
+api.add_router("/realtime", realtimedata_router)
