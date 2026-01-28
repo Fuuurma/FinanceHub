@@ -445,13 +445,132 @@ Frontend/src/
 6. **Testing**:
    - `tests/test_websocket_consumer.py` - WebSocket integration tests
 
-### Next: Area 3 - Missing Frontend Pages
+    ### Next: Area 4 - Testing
 
-- Create `app/(dashboard)/analytics/page.tsx` - Portfolio analytics dashboard
-- Create `app/(dashboard)/sentiment/page.tsx` - News sentiment page  
-- Create `app/(dashboard)/alerts/page.tsx` - Alert management UI
-- Create `lib/api/alerts.ts` - Alerts API client
-- Create `lib/api/news-sentiment.ts` - News sentiment API client
+    - Write WebSocket integration tests
+    - Create `Backend/tests/test_websocket_consumer.py`
+    - Add connection metrics tests
+    - Create frontend component tests
+    - Add integration tests
+
+---
+
+## Area 3: Missing Frontend Pages ✅ COMPLETED
+
+### Summary
+- Created API clients for alerts and news-sentiment
+- Created type definitions for alerts and news-sentiment
+- Fixed typo in portfolio-analytics filename (portfolio-analyics → portfolio-analytics)
+- Created 3 new frontend pages: Analytics, Sentiment, Alerts
+
+### Files Created (Frontend)
+```
+Frontend/src/
+├── lib/
+│   ├── api/
+│   │   ├── alerts.ts (created)
+│   │   ├── news-sentiment.ts (created)
+│   │   └── index.ts (updated - added exports)
+│   └── types/
+│       ├── alerts.ts (created)
+│       ├── news-sentiment.ts (created)
+│       ├── portfolio-analytics.ts (renamed from portfolio-analyics.ts)
+│       └── index.ts (updated - added exports)
+└── app/(dashboard)/
+    ├── analytics/page.tsx (created)
+    ├── sentiment/page.tsx (created)
+    └── alerts/page.tsx (created)
+```
+
+### Features Implemented
+
+#### 1. Alerts API Client (`lib/api/alerts.ts`)
+- **list**: Get user's alerts with filters (status, symbol, alert_type, limit, offset)
+- **get**: Get single alert by ID
+- **create**: Create new alert (name, alert_type, symbol, condition_value, condition_operator, delivery_channels, priority, cooldown_seconds, valid_until, description)
+- **update**: Update existing alert
+- **delete**: Delete alert
+- **enable/disable**: Enable/disable alert
+- **getHistory**: Get alert trigger history
+- **getStats**: Get alert statistics (total_alerts, active_alerts, triggered_today, type_distribution)
+- **test**: Test alert trigger without saving
+
+#### 2. News Sentiment API Client (`lib/api/news-sentiment.ts`)
+- **getSentiment**: Get sentiment for symbol (with days and min_relevance params)
+- **getMarketTrends**: Get market-wide trends (hot topics, trending symbols, sentiment distribution)
+- **getBatchSentiment**: Get sentiment for multiple symbols
+- **getTrendingTopics**: Get trending news topics
+- **getNewsWithSentiment**: Get news articles with sentiment (with optional sentiment filter)
+- **getSentimentHistory**: Get sentiment history for symbol (hourly/daily intervals)
+
+#### 3. Type Definitions
+
+**Alerts Types (`lib/types/alerts.ts`):**
+- `Alert`: Alert data (id, name, alert_type, symbol, condition_value, condition_operator, status, priority, triggered_count, delivery_channels, cooldown_seconds, valid_from, valid_until, created_at, last_triggered_at)
+- `AlertHistoryItem`: Alert history (id, triggered_at, trigger_value, condition_met, notification_sent, notification_channels)
+- `AlertStats`: Alert statistics (total_alerts, active_alerts, triggered_today, type_distribution)
+- `AlertCreateInput`: Input for creating alerts
+- `AlertUpdateInput`: Input for updating alerts
+
+**News Sentiment Types (`lib/types/news-sentiment.ts`):**
+- `NewsArticle`: Article data (id, title, description, source, author, published_at, url, image_url, symbols, sentiment_score, sentiment_label, relevance_score)
+- `SentimentAnalysis`: Sentiment data (symbol, overall_sentiment, sentiment_score, article_count, positive_count, negative_count, neutral_count, average_sentiment_7d, articles, sentiment_trend, key_topics, analyzed_at)
+- `MarketTrends`: Market trends (time_period, hot_topics, trending_symbols, sentiment_distribution, most_mentioned, fetched_at)
+- `SentimentHistory`: Sentiment history (symbol, history, analyzed_at)
+- `TrendingTopic`: Trending topic (topic, sentiment_score, article_count, related_symbols)
+
+#### 4. Analytics Page (`app/(dashboard)/analytics/page.tsx`)
+- Period selector (1d, 7d, 30d, 90d, 1y)
+- Total return card with profit/loss indicator
+- Total value card with change percentage
+- Performance by asset breakdown with pie chart icons
+- Risk metrics card (volatility, beta, sharpe ratio)
+- Period summary card (start/end dates, transactions)
+- Refresh and Export to JSON buttons
+- Loading skeletons while fetching data
+
+#### 5. Sentiment Page (`app/(dashboard)/sentiment/page.tsx`)
+- Symbol search form with uppercase conversion
+- Day filter selector (1, 7, 14, 30 days)
+- Sentiment overview card:
+  - Overall sentiment badge (Positive/Negative/Neutral)
+  - Sentiment score display
+  - Article count
+  - Positive/negative/neutral breakdown
+  - Key topics tags
+- Sentiment trend visualization (7-day movement)
+- Recent news list:
+  - Title, source, publication date
+  - Sentiment badge
+  - Read more link to original source
+- Loading and error states
+
+#### 6. Alerts Page (`app/(dashboard)/alerts/page.tsx`)
+- Statistics cards row (total_alerts, active_alerts, triggered_today, success rate)
+- Tab-based layout (Alert List / Create New)
+- Alert list with:
+  - Search by name or symbol
+  - Filter by status (all, active, disabled, triggered, expired)
+  - Alert cards showing name, symbol, type, trigger condition, triggered count, created date
+  - Enable/disable toggle (based on status)
+  - View history button
+  - Test alert button
+  - Delete alert button
+  - Status badges
+- Create alert dialog with form fields:
+  - Alert name
+  - Symbol (uppercase input)
+  - Alert type (price above/below, percent change, volume spike)
+  - Trigger value
+  - Operator (>=, <=, ==)
+  - Priority (1-10)
+  - Cooldown seconds
+- Alert history dialog:
+  - List of trigger events
+  - Condition met badge
+  - Notification sent indicator
+- Loading skeletons for list view
+- Create New tab reuses create dialog
 
 ---
 
