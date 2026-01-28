@@ -9,7 +9,16 @@ class Watchlist(UUIDModel, TimestampedModel):
         "users.User", on_delete=models.CASCADE, related_name="watchlists"
     )
     name = models.CharField(max_length=100)
-    assets = models.ManyToManyField("assets.Asset")
+    assets = models.ManyToManyField("assets.Asset", blank=True)
+    is_public = models.BooleanField(default=False, help_text="Make this watchlist visible to others")
 
     class Meta:
         unique_together = ("user", "name")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.user.email})"
+
+    @property
+    def asset_symbols(self):
+        return [asset.symbol for asset in self.assets.all()]
