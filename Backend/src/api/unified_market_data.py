@@ -2,11 +2,14 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from ninja import Router, Query, Schema
 from django.shortcuts import get_object_or_404
+from ratelimit.decorators import ratelimit
+from django.core.cache import cache
 
 from utils.helpers.logger.logger import get_logger
 from utils.services.data_orchestrator import get_data_orchestrator, Priority
 from utils.services.cache_manager import get_cache_manager
 from assets.models.asset import Asset
+from utils.constants.api import RATE_LIMIT_READ, RATE_LIMIT_DATA_INTENSIVE, CACHE_TTL_SHORT
 
 logger = get_logger(__name__)
 router = Router(tags=["Unified Market Data"])

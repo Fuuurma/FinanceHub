@@ -1,12 +1,15 @@
 from typing import List, Optional, Dict, Any
 from ninja import Router, Schema, Query
 from django.shortcuts import get_object_or_404
+from ratelimit.decorators import ratelimit
+from django.core.cache import cache
 
 from utils.helpers.logger.logger import get_logger
 from utils.services.technical_indicators import get_technical_indicators, IndicatorType
 from utils.services.data_orchestrator import get_data_orchestrator
 from utils.services.cache_manager import get_cache_manager
 from assets.models.asset import Asset
+from utils.constants.api import RATE_LIMIT_READ, CACHE_TTL_MEDIUM
 
 logger = get_logger(__name__)
 

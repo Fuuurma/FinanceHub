@@ -3,9 +3,12 @@ from decimal import Decimal
 from ninja import Router
 from pydantic import BaseModel, Field
 from django.utils import timezone
+from ratelimit.decorators import ratelimit
+from django.core.cache import cache
 
 from utils.services.fundamental_service import get_fundamental_service
 from utils.helpers.logger.logger import get_logger
+from utils.constants.api import RATE_LIMIT_READ, RATE_LIMIT_DATA_INTENSIVE, CACHE_TTL_MEDIUM
 
 logger = get_logger(__name__)
 

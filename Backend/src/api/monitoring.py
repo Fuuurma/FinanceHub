@@ -1,9 +1,11 @@
 from typing import Dict, List, Optional
 from ninja import Router, Schema
+from ratelimit.decorators import ratelimit
 
 from utils.helpers.logger.logger import get_logger
 from utils.services.monitor import get_performance_monitor
 from utils.services.health_scorer import get_health_scorer, HealthStatus
+from utils.constants.api import RATE_LIMIT_READ
 
 logger = get_logger(__name__)
 

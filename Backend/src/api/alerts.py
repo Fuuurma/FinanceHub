@@ -3,6 +3,8 @@ from datetime import datetime
 from ninja import Router, Schema, Query
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+from ratelimit.decorators import ratelimit
+from django.core.cache import cache
 
 from utils.helpers.logger.logger import get_logger
 from utils.services.alert_engine import get_alert_engine
@@ -19,8 +21,10 @@ from utils.constants.api import (
     ERROR_NOT_FOUND,
     ERROR_VALIDATION,
     ERROR_DATABASE,
+    RATE_LIMIT_READ,
+    RATE_LIMIT_WRITE,
+    CACHE_TTL_SHORT,
 )
-from utils.constants.api import CACHE_TTL_SHORT
 
 logger = get_logger(__name__)
 
@@ -118,6 +122,7 @@ class AlertStatsOut(Schema):
 
 
 @router.get("/", response=List[AlertOut])
+@ratelimit(key='ip', rate=RATE_LIMIT_READ, block=True)
 async def list_alerts(
     request,
     status: Optional[str] = None,
