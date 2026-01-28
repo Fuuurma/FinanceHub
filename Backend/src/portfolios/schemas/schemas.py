@@ -73,6 +73,11 @@ class HoldingCreate(BaseModel):
     quantity: Decimal = Field(..., gt=0)
 
 
+class HoldingUpdate(BaseModel):
+    quantity: Decimal = Field(..., gt=0)
+    average_buy_price: Optional[Decimal] = Field(None, gt=0)
+
+
 class TransactionType(str):
     BUY = "buy"
     SELL = "sell"

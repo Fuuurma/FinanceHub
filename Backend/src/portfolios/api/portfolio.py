@@ -11,6 +11,7 @@ from portfolios.schemas.schemas import (
     AssetOut,
     HoldingCreate,
     HoldingOut,
+    HoldingUpdate,
     PortfolioCreate,
     PortfolioOut,
     PriceCreate,
@@ -98,6 +99,29 @@ def list_holdings(request, portfolio_id: str):
         h.current_price = latest.close if latest else None
         h.current_value = h.current_price * h.quantity if h.current_price else None
     return holdings
+
+
+@router.put("/portfolios/{portfolio_id}/holdings/{holding_id}", response=HoldingOut, auth=JWTAuth())
+def update_holding(request, portfolio_id: str, holding_id: str, payload: HoldingUpdate):
+    from portfolios.models.holdings import Holding
+    portfolio = get_object_or_404(Portfolio, id=portfolio_id, user=request.auth)
+    holding = get_object_or_404(Holding, id=holding_id, portfolio=portfolio)
+    holding.quantity = payload.quantity
+    if payload.average_buy_price:
+        holding.average_buy_price = payload.average_buy_price
+    holding.save()
+    holding.current_price = holding.current_price
+    holding.current_value = holding.current_value
+    return holding
+
+
+@router.delete("/portfolios/{portfolio_id}/holdings/{holding_id}", auth=JWTAuth())
+def delete_holding(request, portfolio_id: str, holding_id: str):
+    from portfolios.models.holdings import Holding
+    portfolio = get_object_or_404(Portfolio, id=portfolio_id, user=request.auth)
+    holding = get_object_or_404(Holding, id=holding_id, portfolio=portfolio)
+    holding.delete()
+    return {"message": "Holding deleted successfully"}
 
 
 # === TRANSACTIONS ===
