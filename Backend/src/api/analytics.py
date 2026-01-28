@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Any
 from ninja import Router, Schema, Query, Field
 from pydantic import BaseModel, validator
 from datetime import datetime
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from django.core.cache import cache
 
 from utils.services.performance import PerformanceAnalyzer, PerformanceReport, RiskAdjustedReport, FactorReport

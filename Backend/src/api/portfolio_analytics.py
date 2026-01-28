@@ -8,7 +8,7 @@ from ninja import Router
 from pydantic import BaseModel, Field
 from django.utils import timezone
 from datetime import timedelta
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from django.core.cache import cache
 
 from portfolios.models.portfolio import Portfolio

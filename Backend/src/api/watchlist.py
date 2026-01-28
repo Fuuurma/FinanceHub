@@ -3,7 +3,7 @@ from ninja import Router, Query
 from pydantic import BaseModel
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from investments.models.watchlist import Watchlist
 from assets.models.asset import Asset
 from ninja_jwt.authentication import JWTAuth

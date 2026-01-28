@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 from ninja import Router, Schema
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 
 from utils.helpers.logger.logger import get_logger
 from utils.services.monitor import get_performance_monitor

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from django.utils import timezone
 from datetime import timedelta
 import asyncio
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from django.core.cache import cache
 
 from data.data_providers.newsapi.scraper import NewsAPIScraper

@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any
 from ninja import Router, Schema, Query
 from django.shortcuts import get_object_or_404
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from django.core.cache import cache
 
 from utils.helpers.logger.logger import get_logger

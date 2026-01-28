@@ -6,7 +6,7 @@ from decimal import Decimal
 from ninja import Router
 from pydantic import BaseModel
 from django.utils import timezone
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from django.core.cache import cache
 
 from utils.services.fundamental_service import get_fundamental_service
