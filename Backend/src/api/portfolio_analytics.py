@@ -8,11 +8,14 @@ from ninja import Router
 from pydantic import BaseModel, Field
 from django.utils import timezone
 from datetime import timedelta
+from ratelimit.decorators import ratelimit
+from django.core.cache import cache
 
 from portfolios.models.portfolio import Portfolio
 from assets.models.asset import Asset
 from investments.models.alert import Alert
 from utils.helpers.logger.logger import get_logger
+from utils.constants.api import RATE_LIMIT_READ, RATE_LIMIT_ANALYTICS, CACHE_TTL_PORTFOLIO, CACHE_TTL_ANALYTICS
 
 logger = get_logger(__name__)
 
@@ -119,12 +122,18 @@ class ComparisonResponse(BaseModel):
 
 
 @router.get("/{portfolio_id}/summary", response=PortfolioSummaryResponse)
+@ratelimit(key='ip', rate=RATE_LIMIT_READ, block=True)
 async def get_portfolio_summary(request, portfolio_id: str):
     """
     Get comprehensive portfolio summary
     
     Includes total value, performance, allocation, and top/bottom holdings
     """
+    cache_key = f"portfolio_summary_{portfolio_id}"
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return cached_result
+    
     try:
         portfolio = await Portfolio.objects.aget(id=portfolio_id)
         
@@ -134,16 +143,13 @@ async def get_portfolio_summary(request, portfolio_id: str):
                 'error': 'Portfolio not found'
             }
         
-        # Get portfolio holdings
         holdings = portfolio.holdings.select_related('asset').all()
         
-        # Calculate totals
         total_value = sum(h.current_value for h in holdings if h.current_value)
         total_invested = sum(h.purchase_price * h.quantity for h in holdings if h.purchase_price and h.quantity)
         total_pnl = sum(h.unrealized_pnl for h in holdings if h.unrealized_pnl)
         total_pnl_percent = (total_pnl / total_invested * 100) if total_invested > 0 else Decimal('0')
         
-        # Top/bottom performers
         holdings_with_pnl = [
             {
                 'asset': h.asset,
@@ -160,7 +166,6 @@ async def get_portfolio_summary(request, portfolio_id: str):
         top_performers = sorted_holdings[:5]
         worst_performers = sorted_holdings[-5:]
         
-        # Calculate allocation
         allocation = {}
         asset_classes = {'equities': Decimal('0'), 'crypto': Decimal('0'), 'commodities': Decimal('0'), 'cash': Decimal('0')}
         
@@ -176,14 +181,14 @@ async def get_portfolio_summary(request, portfolio_id: str):
                 'percentage': float(value / total) if total > 0 else 0
             }
         
-        return PortfolioSummaryResponse(
+        result = PortfolioSummaryResponse(
             portfolio_id=str(portfolio.id),
             name=portfolio.name,
             total_value=Decimal(str(total_value)),
             total_invested=Decimal(str(total_invested)),
             total_pnl=Decimal(str(total_pnl)),
             total_pnl_percent=total_pnl_percent,
-            total_fees_paid=Decimal('0'),  # Would calculate from transaction fees
+            total_fees_paid=Decimal('0'),
             asset_count=len(holdings),
             top_performers=[{
                 'symbol': p['symbol'],
@@ -201,6 +206,9 @@ async def get_portfolio_summary(request, portfolio_id: str):
             last_updated=portfolio.updated_at.isoformat()
         )
         
+        cache.set(cache_key, result, CACHE_TTL_PORTFOLIO)
+        return result
+        
     except Exception as e:
         logger.error(f"Error fetching portfolio summary for {portfolio_id}: {e}")
         return {
@@ -210,6 +218,7 @@ async def get_portfolio_summary(request, portfolio_id: str):
 
 
 @router.get("/{portfolio_id}/performance", response=PerformanceMetricsResponse)
+@ratelimit(key='ip', rate=RATE_LIMIT_ANALYTICS, block=True)
 async def get_performance_metrics(
     request,
     portfolio_id: str,
@@ -220,6 +229,11 @@ async def get_performance_metrics(
     
     Calculates returns, risk metrics, and benchmark comparisons
     """
+    cache_key = f"portfolio_performance_{portfolio_id}_{period}"
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return cached_result
+    
     try:
         portfolio = await Portfolio.objects.aget(id=portfolio_id)
         holdings = portfolio.holdings.select_related('asset').all()
@@ -284,18 +298,24 @@ async def get_performance_metrics(
 
 
 @router.get("/{portfolio_id}/risk-analysis", response=RiskAnalysisResponse)
+@ratelimit(key='ip', rate=RATE_LIMIT_ANALYTICS, block=True)
 async def get_risk_analysis(request, portfolio_id: str):
     """
     Get risk analysis for a portfolio
     
     Analyzes concentration, diversification, and provides recommendations
     """
+    cache_key = f"portfolio_risk_{portfolio_id}"
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return cached_result
+
     try:
         portfolio = await Portfolio.objects.aget(id=portfolio_id)
         holdings = portfolio.holdings.select_related('asset').all()
         
         if len(holdings) == 0:
-            return RiskAnalysisResponse(
+            result = RiskAnalysisResponse(
                 portfolio_id=portfolio_id,
                 overall_risk_score=1,
                 risk_level='Low',
@@ -366,7 +386,7 @@ async def get_risk_analysis(request, portfolio_id: str):
             recommendations=recommendations,
             analyzed_at=timezone.now().isoformat()
         )
-        
+
     except Exception as e:
         logger.error(f"Error analyzing risk for {portfolio_id}: {e}")
         return {
@@ -376,12 +396,18 @@ async def get_risk_analysis(request, portfolio_id: str):
 
 
 @router.get("/{portfolio_id}/rebalance-suggestions", response=RebalancingSuggestionsResponse)
+@ratelimit(key='ip', rate=RATE_LIMIT_ANALYTICS, block=True)
 async def get_rebalancing_suggestions(request, portfolio_id: str):
     """
     Get rebalancing suggestions for a portfolio
     
     Compares current allocation to target allocation and suggests trades
     """
+    cache_key = f"portfolio_rebalance_{portfolio_id}"
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return cached_result
+    
     try:
         portfolio = await Portfolio.objects.aget(id=portfolio_id)
         holdings = portfolio.holdings.select_related('asset').all()

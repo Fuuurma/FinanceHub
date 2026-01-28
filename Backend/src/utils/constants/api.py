@@ -38,6 +38,20 @@ CACHE_TTL_LONG = 3600
 RATE_LIMIT_ANON = "100/hour"
 RATE_LIMIT_AUTH = "1000/hour"
 
+# Rate Limit Groups (requests per hour)
+RATE_LIMIT_READ = "500/hour"
+RATE_LIMIT_WRITE = "100/hour"
+RATE_LIMIT_ANALYTICS = "200/hour"
+RATE_LIMIT_REALTIME = "1000/hour"
+RATE_LIMIT_DATA_INTENSIVE = "50/hour"
+
+# Cache TTL (seconds)
+CACHE_TTL_SHORT = 60
+CACHE_TTL_MEDIUM = 300
+CACHE_TTL_LONG = 3600
+CACHE_TTL_PORTFOLIO = 300  # 5 minutes for portfolio data
+CACHE_TTL_ANALYTICS = 900  # 15 minutes for analytics
+
 # API Response Codes
 ERROR_NOT_FOUND = "not_found"
 ERROR_VALIDATION = "validation_error"
