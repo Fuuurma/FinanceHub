@@ -312,7 +312,7 @@ class PerformanceAnalyzer:
             {"market": 1.2, "size": 0.3, "value": -0.1}
         """
         if factor_returns is None:
-            factor_returns = {f: pl.Series([0]) for f in DEFAULT_FACTORS}
+            factor_returns = {f: pl.Series([0.0] * len(portfolio_returns)) for f in DEFAULT_FACTORS}
         
         ret_array = portfolio_returns.to_numpy()
         
@@ -326,6 +326,12 @@ class PerformanceAnalyzer:
             return self._empty_factor_report(symbol)
         
         X = np.column_stack([factor_returns[name].to_numpy() for name in factor_names])
+        
+        if X.shape[0] != len(ret_array):
+            min_len = min(X.shape[0], len(ret_array))
+            X = X[:min_len]
+            ret_array = ret_array[:min_len]
+        
         mask = ~(np.isnan(X).any(axis=1) | np.isnan(ret_array))
         X_clean = X[mask]
         y_clean = ret_array[mask]

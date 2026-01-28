@@ -137,11 +137,11 @@ class CorrelationAnalyzer:
                     r2 = returns_dict[asset2]
                     
                     mask = ~(r1.is_null() | r2.is_null())
-                    r1_clean = r1[mask]
-                    r2_clean = r2[mask]
+                    r1_clean = r1.filter(mask).to_numpy()
+                    r2_clean = r2.filter(mask).to_numpy()
                     
                     if len(r1_clean) >= CORRELATION_MIN_OBSERVATIONS:
-                        corr = r1_clean.corr(r2_clean)
+                        corr = np.corrcoef(r1_clean, r2_clean)[0, 1]
                         if not np.isnan(corr):
                             corr_matrix[i][j] = corr
                             corr_matrix[j][i] = corr

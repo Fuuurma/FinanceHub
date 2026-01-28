@@ -159,7 +159,8 @@ class RiskAnalyzer:
         if len(returns) < 2:
             return self._empty_volatility_report(symbol)
         
-        ret_array = returns.drop_null().to_numpy()
+        ret_array = returns.to_numpy()
+        ret_array = ret_array[~np.isnan(ret_array)]
         
         daily_vol = np.std(ret_array, ddof=1)
         annualized_vol = daily_vol * np.sqrt(TRADING_DAYS_PER_YEAR)
@@ -261,7 +262,8 @@ class RiskAnalyzer:
         if len(returns) < 30:
             return self._empty_var_report(symbol, confidence)
         
-        ret_array = returns.drop_null().to_numpy()
+        ret_array = returns.to_numpy()
+        ret_array = ret_array[~np.isnan(ret_array)]
         
         if method == "historical":
             var = -np.percentile(ret_array, (1 - confidence) * 100)
@@ -315,7 +317,8 @@ class RiskAnalyzer:
         if len(returns) < 30:
             return self._empty_cvar_report(symbol, confidence)
         
-        ret_array = returns.drop_null().to_numpy()
+        ret_array = returns.to_numpy()
+        ret_array = ret_array[~np.isnan(ret_array)]
         
         var_threshold = np.percentile(ret_array, (1 - confidence) * 100)
         tail_losses = ret_array[ret_array <= var_threshold]
