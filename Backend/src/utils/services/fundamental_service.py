@@ -385,25 +385,124 @@ class FundamentalDataService:
         symbols: List[str],
         data_type: str = 'fundamentals'
     ) -> Dict[str, Dict[str, Any]]:
-        """Fetch fundamental data for multiple equities"""
+        """Fetch fundamental data for multiple equities with caching"""
         results = {}
-
-        for symbol in symbols:
+        
+        async def fetch_with_cache(symbol: str) -> tuple:
+            cache_key = f"batch_{data_type}:{symbol.upper()}"
+            cached = await self.cache_manager.get(f'batch_{data_type}', symbol.upper())
+            if cached:
+                return symbol.upper(), cached
+            
             try:
                 if data_type == 'fundamentals':
-                    results[symbol.upper()] = await self.get_equity_fundamentals(symbol)
+                    result = await self.get_equity_fundamentals(symbol)
                 elif data_type == 'valuation':
-                    results[symbol.upper()] = await self.get_equity_valuation(symbol)
+                    result = await self.get_equity_valuation(symbol)
                 elif data_type == 'financials':
-                    results[symbol.upper()] = await self.get_equity_financials(symbol)
-
-                await asyncio.sleep(0.2)
-
+                    result = await self.get_equity_financials(symbol)
+                else:
+                    result = {'error': f'Unknown data_type: {data_type}'}
+                
+                await self.cache_manager.set(
+                    f'batch_{data_type}',
+                    symbol.upper(),
+                    value=result,
+                    ttl=86400
+                )
+                return symbol.upper(), result
             except Exception as e:
                 logger.error(f"Error fetching {data_type} for {symbol}: {e}")
-                results[symbol.upper()] = {'error': str(e)}
-
+                return symbol.upper(), {'error': str(e)}
+        
+        tasks = [fetch_with_cache(symbol) for symbol in symbols]
+        results = dict(await asyncio.gather(*tasks))
+        
         return results
+
+    async def get_historical_fundamentals(
+        self,
+        symbol: str,
+        period_type: str = 'annual',
+        limit: int = 5,
+        force_refresh: bool = False
+    ) -> List[Dict[str, Any]]:
+        """Get historical fundamental data with caching"""
+        cache_key = f"historical_fundamentals:{symbol.upper()}:{period_type}:{limit}"
+        
+        if not force_refresh:
+            cached = await self.cache_manager.get('historical_fundamentals', f"{symbol.upper()}:{period_type}")
+            if cached:
+                return cached
+        
+        try:
+            async with FMPFetcher(self.fmp_api_key or "demo") as fmp:
+                key_metrics = await fmp.get_key_metrics(
+                    symbol.upper(),
+                    period=period_type,
+                    limit=limit
+                )
+                
+                await self.cache_manager.set(
+                    'historical_fundamentals',
+                    f"{symbol.upper()}:{period_type}",
+                    value=key_metrics,
+                    ttl=86400
+                )
+                
+                return key_metrics
+        except Exception as e:
+            logger.error(f"Error fetching historical fundamentals for {symbol}: {e}")
+            return []
+
+    async def invalidate_fundamentals_cache(self, symbol: str) -> bool:
+        """Invalidate all cached data for a symbol"""
+        try:
+            keys_to_delete = [
+                ('fundamental_data', symbol.upper()),
+                ('equity_valuation', symbol.upper()),
+                ('historical_fundamentals', f"{symbol.upper()}:annual"),
+                ('historical_fundamentals', f"{symbol.upper()}:quarterly"),
+                ('batch_fundamentals', symbol.upper()),
+                ('batch_valuation', symbol.upper()),
+            ]
+            
+            for key_type, key_value in keys_to_delete:
+                await self.cache_manager.delete(key_type, key_value)
+            
+            logger.info(f"Invalidated cache for {symbol}")
+            return True
+        except Exception as e:
+            logger.error(f"Error invalidating cache for {symbol}: {e}")
+            return False
+
+    async def get_cached_stats(self) -> Dict[str, Any]:
+        """Get caching statistics for fundamentals"""
+        try:
+            stats = self.cache_manager.statistics.get_summary()
+            
+            fundamentals_keys = {
+                'fundamental_data': 'Equity fundamentals (24h TTL)',
+                'equity_valuation': 'Equity valuation metrics (24h TTL)',
+                'crypto_protocol': 'Crypto protocol metrics (1h TTL)',
+                'bond_metrics': 'Bond/macro metrics (1h TTL)',
+                'yield_curve': 'Yield curve data (1h TTL)',
+                'historical_fundamentals': 'Historical fundamentals (24h TTL)',
+            }
+            
+            return {
+                'general_stats': stats,
+                'fundamentals_keys': fundamentals_keys,
+                'cache_ttl_recommendations': {
+                    'equity_valuation': '24h - Updates daily',
+                    'crypto_protocol': '1h - Updates frequently',
+                    'bond_metrics': '1h - Updates intraday',
+                    'historical_data': '24h - Updates quarterly',
+                }
+            }
+        except Exception as e:
+            logger.error(f"Error getting cached stats: {e}")
+            return {'error': str(e)}
 
     async def get_sector_performance(self) -> Dict[str, Any]:
         """Get sector performance data"""
