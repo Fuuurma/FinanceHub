@@ -3,14 +3,32 @@
 import { useEffect } from 'react';
 import { useMarketStore } from '@/stores/marketStore';
 import { useWatchlistStore } from '@/stores/watchlistStore';
+import { useRealtimeStore } from '@/stores/realtimeStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { AssetType } from '@/types/market';
+import { ConnectionStatus } from '@/components/realtime/ConnectionStatus';
+import { LivePriceTicker } from '@/components/realtime/LivePriceTicker';
 
 export default function MarketDashboardPage() {
   const { marketData, selectedAsset, isLoading, error, fetchMarketData, setSelectedAssetType } = useMarketStore();
   const { watchlists, fetchWatchlists } = useWatchlistStore();
+  const { connectionState, error: realtimeError, connect } = useRealtimeStore();
+
+  const handleConnect = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : undefined;
+      await connect(token);
+      
+      const allSymbols = watchlists.flatMap((w) => w.symbols);
+      if (allSymbols.length > 0) {
+        useRealtimeStore.getState().subscribe(allSymbols, ['price']);
+      }
+    } catch (err) {
+      console.error('Failed to connect to real-time data:', err);
+    }
+  };
 
   useEffect(() => {
     fetchMarketData(AssetType.Stock);
@@ -25,11 +43,22 @@ export default function MarketDashboardPage() {
           <p className="text-muted-foreground">Real-time market data and analytics</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => fetchMarketData(AssetType.Stock)}>Stocks</Button>
-          <Button variant="outline" onClick={() => fetchMarketData(AssetType.Crypto)}>Crypto</Button>
-          <Button variant="outline" onClick={() => fetchMarketData(AssetType.ETF)}>ETFs</Button>
+          <ConnectionStatus />
+          {connectionState === 'disconnected' || connectionState === 'error' ? (
+            <Button onClick={handleConnect}>
+              Connect Real-Time Data
+            </Button>
+          ) : null}
         </div>
       </div>
+
+      {realtimeError && (
+        <div className="p-4 border border-red-500 bg-red-500/10 rounded-lg">
+          <p className="text-sm text-red-600">{realtimeError}</p>
+        </div>
+      )}
+
+      <LivePriceTicker />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

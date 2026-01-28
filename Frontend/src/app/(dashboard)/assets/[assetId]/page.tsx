@@ -1,21 +1,57 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
-  TrendingUp, Activity, Globe, Info, 
-  Zap, BarChart3, ShieldCheck, ZapOff 
+   TrendingUp, Activity, Globe, Info, 
+   Zap, BarChart3, ShieldCheck, ZapOff 
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ConnectionStatus } from '@/components/realtime/ConnectionStatus'
+import { RealTimeChart } from '@/components/realtime/RealTimeChart'
+import { OrderBook } from '@/components/realtime/OrderBook'
+import { TradeFeed } from '@/components/realtime/TradeFeed'
+import { useRealtimeStore } from '@/stores/realtimeStore'
 
 export default function AssetDetail() {
+  const { connect, connectionState, prices, subscribeSingle, unsubscribeSingle } = useRealtimeStore()
+  const [assetSymbol, setAssetSymbol] = useState('BTCUSDT')
+
+  const handleConnect = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : undefined;
+      await connect(token);
+      
+      if (assetSymbol) {
+        subscribeSingle(assetSymbol, ['price', 'trades', 'orderbook']);
+      }
+    } catch (err) {
+      console.error('Failed to connect:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (connectionState === 'connected' && assetSymbol) {
+      subscribeSingle(assetSymbol, ['price', 'trades', 'orderbook']);
+    }
+    
+    return () => {
+      if (assetSymbol) {
+        unsubscribeSingle(assetSymbol, ['price', 'trades', 'orderbook']);
+      }
+    };
+  }, [connectionState, assetSymbol, subscribeSingle, unsubscribeSingle]);
+
+  const currentPrice = prices[assetSymbol];
+
   return (
     <div className="space-y-6 p-6">
       {/* HEADER HUD */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 brutalist-glass p-8 bg-primary/5">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
+            <ConnectionStatus />
             <div className="h-12 w-12 bg-foreground text-background flex items-center justify-center font-black text-2xl border-4 border-foreground shadow-[4px_4px_0px_0px_var(--primary)]">
               B
             </div>
@@ -29,11 +65,15 @@ export default function AssetDetail() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 w-full md:w-auto font-mono">
           <div>
             <p className="text-[10px] font-black opacity-50 uppercase">Mark_Price</p>
-            <p className="text-2xl font-black tracking-tighter">$64,210.50</p>
+            <p className="text-2xl font-black tracking-tighter">
+              {currentPrice ? `$${currentPrice.price.toFixed(2)}` : '$64,210.50'}
+            </p>
           </div>
           <div>
             <p className="text-[10px] font-black opacity-50 uppercase">24h_Change</p>
-            <p className="text-2xl font-black tracking-tighter text-green-500">+4.2%</p>
+            <p className={`text-2xl font-black tracking-tighter ${currentPrice?.changePercent && currentPrice.changePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {currentPrice ? `${currentPrice.changePercent > 0 ? '+' : ''}${currentPrice.changePercent.toFixed(2)}%` : '+4.2%'}
+            </p>
           </div>
           <div className="hidden md:block">
             <p className="text-[10px] font-black opacity-50 uppercase">Funding_Rate</p>
@@ -45,25 +85,18 @@ export default function AssetDetail() {
       <div className="grid lg:grid-cols-4 gap-6">
         {/* LEFT: CHART & TOOLS (3/4 Width) */}
         <div className="lg:col-span-3 space-y-6">
-          <div className="brutalist-glass aspect-video bg-zinc-900 flex flex-col items-center justify-center relative overflow-hidden">
-             {/* Mock Chart Area */}
-             <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
-             <BarChart3 className="h-24 w-24 text-primary opacity-20 animate-pulse" />
-             <span className="font-mono text-[10px] uppercase font-black tracking-[0.4em] opacity-40">Loading_TradingView_Engine...</span>
-             
-             {/* Overlay HUD */}
-             <div className="absolute top-4 left-4 flex gap-2">
-                {['1M', '5M', '15M', '1H', '1D'].map(t => (
-                  <Button key={t} variant="outline" className="h-7 rounded-none border-2 border-foreground bg-background font-black text-[10px]">{t}</Button>
-                ))}
-             </div>
-          </div>
+          <RealTimeChart symbol={assetSymbol} />
 
           {/* FUNDAMENTAL ANALYSIS MODULE */}
           <div className="grid md:grid-cols-3 gap-6">
              <Tile label="Market_Cap" value="$1.2T" sub="Rank #1" />
              <Tile label="Circ_Supply" value="19.6M" sub="93% Issued" />
              <Tile label="Volatility" value="Low" sub="Standard Deviation" />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <OrderBook symbol={assetSymbol} />
+            <TradeFeed symbol={assetSymbol} />
           </div>
         </div>
 
@@ -102,11 +135,18 @@ export default function AssetDetail() {
               <p>• Liquidation: $42,000</p>
             </div>
           </section>
+
+          {connectionState === 'disconnected' || connectionState === 'error' ? (
+            <section className="brutalist-glass p-6">
+              <Button onClick={handleConnect} className="w-full h-14 rounded-none border-4 border-foreground bg-primary text-foreground font-black uppercase tracking-tighter shadow-[4px_4px_0px_0px_var(--background)] active:shadow-none translate-y-[-2px] transition-all">
+                Connect Real-Time Data
+              </Button>
+            </section>
+          ) : null}
         </div>
       </div>
     </div>
   )
-}
 
 function Tile({ label, value, sub }: any) {
   return (
