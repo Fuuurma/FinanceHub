@@ -1,0 +1,24 @@
+{
+  "exported_at": "2026-01-29T17:55:15.863725",
+  "article_count": 2,
+  "articles": [
+    {
+      "title": "Test Article 1",
+      "source": "NewsAPI",
+      "sentiment": "positive",
+      "category": "technology",
+      "related_symbols": [
+        "AAPL"
+      ]
+    },
+    {
+      "title": "Test Article 2",
+      "source": "Finnhub",
+      "sentiment": "negative",
+      "category": "finance",
+      "related_symbols": [
+        "GOOGL"
+      ]
+    }
+  ]
+}
