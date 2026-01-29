@@ -48,6 +48,7 @@ from api.currency import router as currency_router
 from api.reference import router as reference_router
 from api.iex_cloud import router as iex_cloud_router
 from api.sec_filings import router as sec_filings_router
+from api.economic import router as economic_router
 
 
 # Register API exception handlers
@@ -92,3 +93,4 @@ api.add_router("/currency", currency_router)
 api.add_router("/reference", reference_router)
 api.add_router("/iex-cloud", iex_cloud_router)
 api.add_router("/sec-filings", sec_filings_router)
+api.add_router("/economic", economic_router)
