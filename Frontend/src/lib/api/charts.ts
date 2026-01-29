@@ -1,5 +1,14 @@
 import { apiClient } from './client'
 
+export interface ChartDataPoint {
+  timestamp: string
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+}
+
 export interface ChartDrawing {
   id: string
   user: string
@@ -52,6 +61,21 @@ export interface DrawingUpdateInput {
 }
 
 class ChartsApi {
+  async getHistoricalData(
+    symbol: string,
+    timeframe: string = '1h',
+    limit: number = 100
+  ): Promise<ChartDataPoint[]> {
+    const params = new URLSearchParams()
+    params.append('timeframe', timeframe)
+    params.append('limit', limit.toString())
+    
+    const response = await apiClient.get<ChartDataPoint[]>(
+      `/charts/historical/${symbol}?${params.toString()}`
+    )
+    return response
+  }
+
   async listDrawings(symbol: string, timeframe?: string): Promise<ChartDrawing[]> {
     const params = new URLSearchParams()
     if (timeframe) params.append('timeframe', timeframe)

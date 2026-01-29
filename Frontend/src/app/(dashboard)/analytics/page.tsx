@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { portfolioAnalyticsApi } from '@/lib/api/portfolio-analytics'
-import type { PortfolioAnalytics as PortfolioAnalyticsType, AnalyticsPeriod } from '@/lib/types'
+import type { AnalyticsPeriod, BenchmarkType } from '@/lib/types/portfolio-analytics'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TrendingUp, TrendingDown, PieChart, BarChart3, RefreshCw, Download, Calendar, DollarSign, Activity, LineChart, Target } from 'lucide-react'
+import { RefreshCw, Download, Calendar, FileJson, FileSpreadsheet } from 'lucide-react'
 import { ChartCard } from '@/components/analytics/ChartCard'
 import { AllocationPieChart } from '@/components/analytics/AllocationPieChart'
 import { PerformanceChart } from '@/components/analytics/PerformanceChart'
@@ -16,46 +16,51 @@ import PerformanceAttributionChart from '@/components/analytics/PerformanceAttri
 import RiskMetricsHistoryChart from '@/components/analytics/RiskMetricsHistoryChart'
 import RollingReturnsChart from '@/components/analytics/RollingReturnsChart'
 import SectorBreakdownChart from '@/components/analytics/SectorBreakdownChart'
+import { ReturnCard, ValueCard, RiskCard, DrawdownCard, CAGRCard } from '@/components/analytics/KPICards'
+import { useAnalyticsStore } from '@/stores/analyticsStore'
+import { cn } from '@/lib/utils'
 
 type TabValue = 'overview' | 'performance' | 'risk' | 'comparison'
 
-export default function AnalyticsPage() {
-  const [period, setPeriod] = useState<AnalyticsPeriod>('7d')
-  const [activeTab, setActiveTab] = useState<TabValue>('overview')
-  const [analytics, setAnalytics] = useState<PortfolioAnalyticsType | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [rollingPeriod, setRollingPeriod] = useState<'7d' | '30d'>('7d')
+const PERIODS: { value: AnalyticsPeriod; label: string }[] = [
+  { value: '1d', label: '1D' },
+  { value: '7d', label: '7D' },
+  { value: '30d', label: '30D' },
+  { value: '90d', label: '90D' },
+  { value: '180d', label: '6M' },
+  { value: '1y', label: '1Y' },
+  { value: '3y', label: '3Y' },
+  { value: '5y', label: '5Y' },
+  { value: 'all', label: 'All' },
+]
 
-  const periods: { value: AnalyticsPeriod, label: string }[] = [
-    { value: '1d', label: '1 Day' },
-    { value: '7d', label: '7 Days' },
-    { value: '30d', label: '30 Days' },
-    { value: '90d', label: '90 Days' },
-    { value: '1y', label: '1 Year' },
-  ]
+const BENCHMARKS: { value: BenchmarkType; label: string }[] = [
+  { value: 'sp500', label: 'S&P 500' },
+  { value: 'nasdaq', label: 'NASDAQ' },
+  { value: 'dow', label: 'Dow Jones' },
+]
+
+export default function AnalyticsPage() {
+  const {
+    selectedPeriod,
+    selectedBenchmark,
+    data: analytics,
+    loading,
+    error,
+    lastUpdated,
+    setSelectedPeriod,
+    setSelectedBenchmark,
+    fetchAnalytics,
+  } = useAnalyticsStore()
+
+  const [activeTab, setActiveTab] = useState<TabValue>('overview')
+  const [rollingPeriod, setRollingPeriod] = useState<'7d' | '30d' | '90d'>('30d')
 
   useEffect(() => {
     fetchAnalytics()
-  }, [period])
+  }, [selectedPeriod, selectedBenchmark, fetchAnalytics])
 
-  const fetchAnalytics = async () => {
-    setLoading(true)
-    setError('')
-    
-    try {
-      const response = await portfolioAnalyticsApi.getAnalytics(period)
-      if (response) {
-        setAnalytics(response)
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch analytics')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleExport = () => {
+  const handleExportJSON = () => {
     if (!analytics) return
     
     const data = JSON.stringify(analytics, null, 2)
@@ -63,7 +68,7 @@ export default function AnalyticsPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `portfolio-analytics-${period}-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `portfolio-analytics-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -73,7 +78,7 @@ export default function AnalyticsPage() {
   const mockAllocationData = analytics?.performance_by_asset?.map(asset => ({
     name: asset.asset_type,
     value: asset.value,
-    percentage: ((asset.value / (analytics?.total_value || 1)) * 100).toFixed(1)
+    percentage: ((asset.value / (analytics?.summary.total_value || 1)) * 100).toFixed(1)
   })) || []
 
   const mockPerformanceData = analytics?.performance_by_asset?.map(asset => ({
@@ -111,21 +116,21 @@ export default function AnalyticsPage() {
   ]
 
   const mockRollingReturnsData = [
-    { date: '2024-01-01', '7d': 2.5, '30d': 8.2 },
-    { date: '2024-01-02', '7d': 2.8, '30d': 8.5 },
-    { date: '2024-01-03', '7d': 3.1, '30d': 8.8 },
-    { date: '2024-01-04', '7d': 2.9, '30d': 8.6 },
-    { date: '2024-01-05', '7d': 3.2, '30d': 9.0 },
-    { date: '2024-01-06', '7d': 3.5, '30d': 9.2 },
-    { date: '2024-01-07', '7d': 3.3, '30d': 9.1 },
+    { date: '2024-01-01', '7d': 2.5, '30d': 8.2, '90d': 15.5 },
+    { date: '2024-01-02', '7d': 2.8, '30d': 8.5, '90d': 15.8 },
+    { date: '2024-01-03', '7d': 3.1, '30d': 8.8, '90d': 16.0 },
+    { date: '2024-01-04', '7d': 2.9, '30d': 8.6, '90d': 15.7 },
+    { date: '2024-01-05', '7d': 3.2, '30d': 9.0, '90d': 16.2 },
+    { date: '2024-01-06', '7d': 3.5, '30d': 9.2, '90d': 16.5 },
+    { date: '2024-01-07', '7d': 3.3, '30d': 9.1, '90d': 16.3 },
   ]
 
   const mockSectorData = [
-    { name: 'Technology', value: 45000, percentage: 35.5 },
-    { name: 'Healthcare', value: 28000, percentage: 22.1 },
-    { name: 'Finance', value: 22000, percentage: 17.3 },
-    { name: 'Consumer', value: 18000, percentage: 14.2 },
-    { name: 'Energy', value: 12000, percentage: 10.9 },
+    { name: 'Technology', value: 45000, percentage: 35.5, return: 12.5 },
+    { name: 'Healthcare', value: 28000, percentage: 22.1, return: 8.2 },
+    { name: 'Finance', value: 22000, percentage: 17.3, return: 6.5 },
+    { name: 'Consumer', value: 18000, percentage: 14.2, return: 4.8 },
+    { name: 'Energy', value: 12000, percentage: 10.9, return: -2.3 },
   ]
 
   return (
@@ -137,28 +142,39 @@ export default function AnalyticsPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={fetchAnalytics} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={cn('w-4 h-4 mr-2', loading && 'animate-spin')} />
             Refresh
           </Button>
-          <Button variant="outline" onClick={handleExport} disabled={!analytics || loading}>
+          <Button variant="outline" onClick={handleExportJSON} disabled={!analytics || loading}>
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
         </div>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {periods.map((p) => (
+      <div className="flex gap-2 flex-wrap items-center">
+        {PERIODS.map((p) => (
           <Button
             key={p.value}
-            variant={period === p.value ? 'default' : 'outline'}
+            variant={selectedPeriod === p.value ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setPeriod(p.value)}
+            onClick={() => setSelectedPeriod(p.value)}
             disabled={loading}
           >
             {p.label}
           </Button>
         ))}
+        <div className="w-px h-6 bg-border mx-2" />
+        <select
+          value={selectedBenchmark}
+          onChange={(e) => setSelectedBenchmark(e.target.value as BenchmarkType)}
+          className="px-3 py-1 border rounded-md text-sm"
+          disabled={loading}
+        >
+          {BENCHMARKS.map((b) => (
+            <option key={b.value} value={b.value}>{b.label}</option>
+          ))}
+        </select>
       </div>
 
       {error && (
@@ -169,15 +185,11 @@ export default function AnalyticsPage() {
       )}
 
       {loading ? (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-32" />
-              </CardContent>
+              <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
+              <CardContent><Skeleton className="h-12" /></CardContent>
             </Card>
           ))}
         </div>
@@ -191,79 +203,23 @@ export default function AnalyticsPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-2 text-green-500" />
-                    Total Return
-                  </CardTitle>
-                  <CardDescription>Portfolio performance</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="text-3xl font-bold">
-                      {analytics.total_return >= 0 ? '+' : ''}{analytics.total_return.toFixed(2)}%
-                    </div>
-                    <p className={`text-sm ${analytics.total_return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {analytics.total_return >= 0 ? 'Profit' : 'Loss'}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <DollarSign className="w-5 h-5 mr-2 text-blue-500" />
-                    Total Value
-                  </CardTitle>
-                  <CardDescription>Current portfolio value</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="text-3xl font-bold">
-                      ${analytics.total_value.toLocaleString()}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {analytics.total_value_change >= 0 ? '+' : ''}${Math.abs(analytics.total_value_change).toLocaleString()} ({analytics.total_value_change_percent.toFixed(2)}%)
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Calendar className="w-5 h-5 mr-2 text-orange-500" />
-                    Period Summary
-                  </CardTitle>
-                  <CardDescription>Selected period overview</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Start Date</p>
-                      <p className="text-lg font-semibold">{new Date(analytics.period_start).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">End Date</p>
-                      <p className="text-lg font-semibold">{new Date(analytics.period_end).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Transactions</p>
-                      <p className="text-lg font-semibold">{analytics.total_transactions}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <ReturnCard value={analytics.performance.total_return_percent} />
+              <ValueCard value={analytics.summary.total_value} change={analytics.summary.total_pnl} />
+              <CAGRCard cagr={analytics.performance.cagr} annualizedReturn={analytics.performance.annualized_return} />
+              <DrawdownCard maxDrawdown={analytics.performance.max_drawdown_percent} maxDrawdownDate={analytics.performance.max_drawdown_date || undefined} recoveryTime={analytics.performance.recovery_time || undefined} />
             </div>
+
+            <RiskCard 
+              volatility={analytics.risk_metrics.volatility} 
+              beta={analytics.risk_metrics.beta} 
+              sharpeRatio={analytics.risk_metrics.sharpe_ratio} 
+            />
 
             <div className="grid gap-6 md:grid-cols-2">
               <ChartCard title="Asset Allocation" description="Portfolio distribution by asset type">
                 <AllocationPieChart data={mockAllocationData} />
               </ChartCard>
-
               <ChartCard title="Performance by Asset" description="Return breakdown by asset">
                 <PerformanceChart data={mockPerformanceData} />
               </ChartCard>
@@ -272,53 +228,28 @@ export default function AnalyticsPage() {
 
           <TabsContent value="performance" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
-              <ChartCard title="Rolling Returns" description="7-day and 30-day rolling returns">
+              <ChartCard title="Rolling Returns" description="7-day, 30-day, and 90-day rolling returns">
                 <RollingReturnsChart 
                   data={mockRollingReturnsData} 
                   selectedPeriod={rollingPeriod}
                   onPeriodChange={setRollingPeriod}
                 />
               </ChartCard>
-
               <ChartCard title="Performance Attribution" description="Sector contribution to returns">
                 <PerformanceAttributionChart data={mockAttributionData} />
               </ChartCard>
             </div>
-
-            <ChartCard title="Benchmark Comparison" description="Portfolio vs S&P 500 performance">
+            <ChartCard title="Benchmark Comparison" description="Portfolio vs benchmark performance">
               <BenchmarkComparisonChart data={mockBenchmarkData} />
             </ChartCard>
           </TabsContent>
 
           <TabsContent value="risk" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Activity className="w-5 h-5 mr-2 text-purple-500" />
-                    Risk Metrics
-                  </CardTitle>
-                  <CardDescription>Portfolio risk analysis</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Volatility</p>
-                      <p className="text-xl font-bold">{analytics.risk_metrics.volatility.toFixed(2)}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Beta</p>
-                      <p className="text-xl font-bold">{analytics.risk_metrics.beta.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Sharpe Ratio</p>
-                      <p className="text-xl font-bold">{analytics.risk_metrics.sharpe_ratio.toFixed(2)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
+            <RiskCard 
+              volatility={analytics.risk_metrics.volatility} 
+              beta={analytics.risk_metrics.beta} 
+              sharpeRatio={analytics.risk_metrics.sharpe_ratio} 
+            />
             <ChartCard title="Risk Metrics History" description="Volatility and Sharpe ratio over time">
               <RiskMetricsHistoryChart data={mockRiskHistoryData} />
             </ChartCard>
@@ -328,19 +259,21 @@ export default function AnalyticsPage() {
             <ChartCard title="Sector Breakdown" description="Performance by economic sector">
               <SectorBreakdownChart data={mockSectorData} />
             </ChartCard>
-
             <div className="grid gap-6 md:grid-cols-2">
               <ChartCard title="Asset Type Performance" description="Returns by asset class">
                 <PerformanceChart data={mockPerformanceData} />
               </ChartCard>
-
               <ChartCard title="Benchmark Comparison" description="Portfolio vs benchmark">
                 <BenchmarkComparisonChart data={mockBenchmarkData} />
               </ChartCard>
             </div>
           </TabsContent>
         </Tabs>
-      ) : null}
+      ) : (
+        <div className="text-center py-12 text-muted-foreground">
+          <p>No analytics data available. Select a portfolio to view analytics.</p>
+        </div>
+      )}
     </div>
   )
 }

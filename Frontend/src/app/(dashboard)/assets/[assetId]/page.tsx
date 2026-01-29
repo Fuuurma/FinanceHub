@@ -14,10 +14,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ConnectionStatus } from '@/components/realtime/ConnectionStatus'
-import { RealTimeChart } from '@/components/realtime/RealTimeChart'
+import { TradingViewChart, ChartControls } from '@/components/charts'
 import { OrderBook } from '@/components/realtime/OrderBook'
 import { TradeFeed } from '@/components/realtime/TradeFeed'
 import { useRealtimeStore } from '@/stores/realtimeStore'
+import type { ChartType, Timeframe } from '@/components/charts'
 
 type TimeFrame = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'
 type IndicatorType = 'SMA' | 'EMA' | 'RSI' | 'MACD' | 'BB'
@@ -85,7 +86,6 @@ export default function AssetDetailPage() {
   
   const { connect, connectionState, prices, subscribeSingle, unsubscribeSingle } = useRealtimeStore()
   const [selectedTimeFrame, setSelectedTimeFrame] = useState<TimeFrame>('1D')
-  const [selectedIndicators, setSelectedIndicators] = useState<IndicatorType[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const [assetData, setAssetData] = useState<AssetData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -262,45 +262,30 @@ export default function AssetDetailPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Price Chart</CardTitle>
-            <div className="flex gap-2">
-              <div className="flex gap-1 border rounded-md p-1">
-                {timeFrames.map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setSelectedTimeFrame(tf)}
-                    className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                      selectedTimeFrame === tf
-                        ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-muted'
-                    }`}
-                  >
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 mb-4">
-            {indicators.map((ind) => (
-              <Button
-                key={ind.value}
-                variant={selectedIndicators.includes(ind.value) ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  if (selectedIndicators.includes(ind.value)) {
-                    setSelectedIndicators(selectedIndicators.filter(i => i !== ind.value))
-                  } else {
-                    setSelectedIndicators([...selectedIndicators, ind.value])
-                  }
-                }}
-              >
-                {ind.label}
-              </Button>
-            ))}
-          </div>
-          <RealTimeChart symbol={assetId} timeframe={getChartTimeframe(selectedTimeFrame)} />
+        <CardContent className="space-y-4">
+          <ChartControls
+            symbol={assetId.toUpperCase()}
+            currentTimeframe={getChartTimeframe(selectedTimeFrame) || '1d'}
+            currentType="candlestick"
+            onSymbolChange={() => {}}
+            onTimeframeChange={(tf) => {
+              const tfMap: Record<string, TimeFrame> = {
+                '1m': '1M', '5m': '1M', '15m': '1M',
+                '1h': '1D', '4h': '1D',
+                '1d': '1D', '1w': '1W', '1M': '1M'
+              }
+              setSelectedTimeFrame(tfMap[tf] || '1D')
+            }}
+          />
+          <TradingViewChart
+            symbol={assetId.toUpperCase()}
+            chartType="candlestick"
+            timeframe={getChartTimeframe(selectedTimeFrame) || '1d'}
+            height={500}
+            showVolume={true}
+          />
         </CardContent>
       </Card>
 

@@ -1,2 +1,5 @@
 export { TradingViewChart, type ChartType, type Timeframe } from './TradingViewChart'
 export { ChartControls } from './ChartControls'
+export { TechnicalIndicators } from './TechnicalIndicators'
+export { DrawingTools } from './DrawingTools'
+export { ComparisonChart } from './ComparisonChart'
