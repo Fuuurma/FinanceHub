@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 interface PerformanceAttributionChartProps {
   data: Array<{
@@ -28,9 +28,13 @@ export default function PerformanceAttributionChart({ data }: PerformanceAttribu
         />
         <Bar
           dataKey="contribution"
-          fill={(entry: { contribution: number }) => (entry.contribution >= 0 ? '#22c55e' : '#ef4444')}
+          fill="#3b82f6"
           name="contribution"
-        />
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.contribution >= 0 ? '#22c55e' : '#ef4444'} />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   )

@@ -20,7 +20,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
-const navItems = [
+interface NavItem {
+  title: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  shortcut: string
+  description: string
+  badge?: string
+  submenu?: Array<{ title: string; href: string }>
+}
+
+const navItems: NavItem[] = [
   {
     title: 'Terminal',
     href: '/dashboard',
@@ -86,15 +96,15 @@ const navItems = [
   },
 ]
 
-const toolItems = [
-  { title: 'Trading', href: '/trading', icon: Activity, shortcut: 'G+T', badge: 'NEW' },
-  { title: 'Screener', href: '/screener', icon: Target, shortcut: 'G+S', badge: 'NEW' },
-  { title: 'Watchlist', href: '/watchlist', icon: History, shortcut: 'G+W' },
-  { title: 'Alerts', href: '/alerts', icon: Bell, shortcut: 'G+A', badge: '3' },
+const toolItems: NavItem[] = [
+  { title: 'Trading', href: '/trading', icon: Activity, shortcut: 'G+T', description: 'Trading interface', badge: 'NEW' },
+  { title: 'Screener', href: '/screener', icon: Target, shortcut: 'G+S', description: 'Stock screener', badge: 'NEW' },
+  { title: 'Watchlist', href: '/watchlist', icon: History, shortcut: 'G+W', description: 'Watchlist' },
+  { title: 'Alerts', href: '/alerts', icon: Bell, shortcut: 'G+A', description: 'Price alerts', badge: '3' },
 ]
 
-const aiItems = [
-  { title: 'AI Advisor', href: '/ai', icon: Cpu, shortcut: 'G+A', badge: 'GLM-4.7' },
+const aiItems: NavItem[] = [
+  { title: 'AI Advisor', href: '/ai', icon: Cpu, shortcut: 'G+A', description: 'AI-powered insights', badge: 'GLM-4.7' },
 ]
 
 export function AppSidebar() {

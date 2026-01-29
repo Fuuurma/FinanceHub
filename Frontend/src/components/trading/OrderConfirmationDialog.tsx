@@ -36,6 +36,7 @@ export function OrderConfirmationDialog({
     limit: 'Limit Order',
     stop: 'Stop Order',
     stop_limit: 'Stop-Limit Order',
+    oco: 'OCO Order',
   }
   const sideColor = orderData.side === 'buy' ? 'text-green-600' : 'text-red-600'
 

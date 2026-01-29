@@ -171,7 +171,7 @@ export interface YieldCurvePoint {
   date: string
 }
 
-export interface ScreenerFilter {
+export interface StockScreenerFilter {
   pe_ratio_min?: number
   pe_ratio_max?: number
   market_cap_min?: number
@@ -179,9 +179,10 @@ export interface ScreenerFilter {
   dividend_yield_min?: number
   sector?: string
   exchange?: string
+  [key: string]: string | number | undefined
 }
 
-export interface ScreenerResult {
+export interface FundamentalScreenerResult {
   symbol: string
   name: string
   sector: string

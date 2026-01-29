@@ -93,8 +93,8 @@ export default function MarketStocksPage() {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <Badge variant="outline">{stock.symbol}</Badge>
-                    <div className={`text-sm ${stock.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                    <div className={`text-sm ${stock.change_percent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {stock.change_percent >= 0 ? '+' : ''}{stock.change_percent.toFixed(2)}%
                     </div>
                   </div>
                   <div className="font-semibold mb-1">{stock.name}</div>

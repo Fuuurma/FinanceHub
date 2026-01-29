@@ -122,7 +122,7 @@ export function TradeFeed({ symbol, limit = WS_CONFIG.TRADE_FEED_LIMIT }: TradeF
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto" ref={scrollContainerRef}>
         <table className="w-full">
           <thead className="sticky top-0 bg-background">
             <tr className="text-xs text-muted-foreground">
@@ -133,7 +133,7 @@ export function TradeFeed({ symbol, limit = WS_CONFIG.TRADE_FEED_LIMIT }: TradeF
               <th className="p-3 text-left">Exchange</th>
             </tr>
           </thead>
-          <tbody ref={scrollContainerRef}>
+          <tbody>
             {filteredTrades.map((trade, index) => (
               <tr
                 key={trade.tradeId}

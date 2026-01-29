@@ -4,7 +4,7 @@
  */
 import { useState, useCallback, useEffect } from 'react'
 import { apiClient } from '@/lib/api/client'
-import type { Asset, AssetDetail, PriceHistory } from '@/lib/types/market'
+import type { Asset, AssetDetail, PriceHistory } from '@/lib/types/asset'
 
 const STALE_TIME = 5 * 60 * 1000
 

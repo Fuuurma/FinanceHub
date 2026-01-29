@@ -5,7 +5,10 @@ Stores options contracts, chains, and Greeks data
 
 from decimal import Decimal
 from django.db import models, transaction
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import (
+    MinValueValidator,
+    MaxValueValidator,
+)
 
 from assets.models.asset import Asset
 from utils.helpers.uuid_model import UUIDModel
@@ -76,7 +79,7 @@ class OptionContract(UUIDModel, TimestampedModel):
 
     contract_size = models.IntegerField(
         default=100,
-        validators=[MinValue(1)],
+        validators=[MinValueValidator(Decimal("1"))],
         help_text="Number of shares per contract (usually 100)",
     )
 
@@ -188,7 +191,10 @@ class OptionContract(UUIDModel, TimestampedModel):
         decimal_places=4,
         null=True,
         blank=True,
-        validators=[MinValue(Decimal("-1.0")), MaxValue(Decimal("1.0"))],
+        validators=[
+            MinValueValidator(Decimal("-1.0")),
+            MaxValueValidator(Decimal("1.0")),
+        ],
         help_text="Delta - price change per $1 move in underlying",
     )
 
@@ -197,7 +203,7 @@ class OptionContract(UUIDModel, TimestampedModel):
         decimal_places=6,
         null=True,
         blank=True,
-        validators=[MinValue(Decimal("0"))],
+        validators=[MinValueValidator(Decimal("0"))],
         help_text="Gamma - delta change per $1 move in underlying",
     )
 
@@ -222,7 +228,10 @@ class OptionContract(UUIDModel, TimestampedModel):
         decimal_places=4,
         null=True,
         blank=True,
-        validators=[MinValue(Decimal("-1.0")), MaxValue(Decimal("1.0"))],
+        validators=[
+            MinValueValidator(Decimal("-1.0")),
+            MaxValueValidator(Decimal("1.0")),
+        ],
         help_text="Rho - sensitivity to interest rates",
     )
 

@@ -11,7 +11,7 @@ def migrate_sector_industry_to_fk(apps, schema_editor):
     Sector = apps.get_model("assets", "Sector")
     Industry = apps.get_model("assets", "Industry")
 
-    assets = Asset.objects.filter(is_deleted=False)
+    assets = Asset.objects.filter(deleted_at__isnull=True)
 
     for asset in assets:
         sector_updated = False
@@ -42,7 +42,9 @@ def migrate_sector_industry_to_fk(apps, schema_editor):
 def reverse_migration(apps, schema_editor):
     """Reverse migration - clear FK fields."""
     Asset = apps.get_model("assets", "Asset")
-    Asset.objects.filter(is_deleted=False).update(sector_fk=None, industry_fk=None)
+    Asset.objects.filter(deleted_at__isnull=True).update(
+        sector_fk=None, industry_fk=None
+    )
 
 
 class Migration(migrations.Migration):

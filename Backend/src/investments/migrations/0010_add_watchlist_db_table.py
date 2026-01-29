@@ -4,28 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('investments', '0009_dataprovider_priority'),
+        ("investments", "0010_add_is_public_to_watchlist"),
     ]
 
     operations = [
         # Add db_table to Watchlist model
         migrations.AlterModelTable(
-            name='watchlist',
-            table='watchlists',
+            name="watchlist",
+            table="watchlists",
         ),
         # Add indexes to Watchlist model
         migrations.AddIndex(
-            model_name='watchlist',
-            index=models.Index(fields=['user'], name='invest_watchl_user_idx'),
+            model_name="watchlist",
+            index=models.Index(fields=["user"], name="invest_watchl_user_idx"),
         ),
         migrations.AddIndex(
-            model_name='watchlist',
-            index=models.Index(fields=['is_public'], name='invest_watchl_is_pub_idx'),
+            model_name="watchlist",
+            index=models.Index(fields=["is_public"], name="invest_watchl_is_pub_idx"),
         ),
         migrations.AddIndex(
-            model_name='watchlist',
-            index=models.Index(fields=['user', 'is_public'], name='invest_watchl_user_pub_idx'),
+            model_name="watchlist",
+            index=models.Index(
+                fields=["user", "is_public"], name="invest_watchl_user_pub_idx"
+            ),
         ),
     ]

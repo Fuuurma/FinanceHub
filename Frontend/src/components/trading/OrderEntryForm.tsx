@@ -40,8 +40,8 @@ export function OrderEntryForm({ onSubmit, defaultSymbol = '' }: OrderEntryFormP
     const stopPriceValue = parseFloat(stopPrice) || 0
 
     let cost = 0
-    if (orderType === 'market' && accountSummary?.currentPrice) {
-      cost = qty * accountSummary.currentPrice
+    if (orderType === 'market') {
+      cost = 0 // Market orders don't have a known price until execution
     } else if (orderType === 'limit') {
       cost = qty * priceValue
     } else if (orderType === 'stop') {
@@ -93,9 +93,8 @@ export function OrderEntryForm({ onSubmit, defaultSymbol = '' }: OrderEntryFormP
             <Button
               type="button"
               variant={side === 'buy' ? 'default' : 'outline'}
-              className={side === 'buy' ? 'bg-green-600 hover:bg-green-700' : ''}
+              className={`flex-1 ${side === 'buy' ? 'bg-green-600 hover:bg-green-700' : ''}`}
               onClick={() => setSide('buy')}
-              className="flex-1"
             >
               <TrendingUp className="h-4 w-4 mr-2" />
               BUY
@@ -103,9 +102,8 @@ export function OrderEntryForm({ onSubmit, defaultSymbol = '' }: OrderEntryFormP
             <Button
               type="button"
               variant={side === 'sell' ? 'default' : 'outline'}
-              className={side === 'sell' ? 'bg-red-600 hover:bg-red-700' : ''}
+              className={`flex-1 ${side === 'sell' ? 'bg-red-600 hover:bg-red-700' : ''}`}
               onClick={() => setSide('sell')}
-              className="flex-1"
             >
               <TrendingDown className="h-4 w-4 mr-2" />
               SELL

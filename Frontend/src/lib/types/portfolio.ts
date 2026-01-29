@@ -21,7 +21,7 @@ export interface AddToWatchlistInput {
   asset_symbols: string[]
 }
 
-export interface Alert {
+export interface PortfolioAlert {
   id: string
   asset_symbol: string
   condition: string

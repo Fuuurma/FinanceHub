@@ -29,9 +29,11 @@ interface AuthContextValue extends AuthContextType {
   register: (data: any) => Promise<void>
   logout: () => Promise<void>
   refreshTokens: () => Promise<void>
-  getMe: () => Promise<void>
+  getMe: () => Promise<void | null | undefined>
   clearError: () => void
+  setError: (error: string | null) => void
   checkAuthStatus: () => boolean
+  updateUser: (data: any) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -169,6 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         error: error instanceof Error ? error.message : 'Logout failed'
       }))
+      return
     }
   }, [])
 
@@ -253,11 +256,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
         error: error instanceof Error ? error.message : 'Failed to fetch user data'
       }))
+      return
     }
   }, [])
 
   const clearError = useCallback(() => {
     setState(prev => ({ ...prev, error: null }))
+  }, [])
+
+  const setError = useCallback((error: string | null) => {
+    setState(prev => ({ ...prev, error }))
+  }, [])
+
+  const updateUser = useCallback(async (data: any) => {
+    try {
+      const token = localStorage.getItem(TOKEN_KEY)
+      const response = await fetch('/api/v1/users/me/', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update user')
+      }
+
+      const updatedUser = await response.json()
+      setState(prev => ({ ...prev, user: updatedUser }))
+      localStorage.setItem(USER_KEY, JSON.stringify(updatedUser))
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Update failed'
+      }))
+    }
   }, [])
 
   const checkAuthStatus = useCallback(() => {
@@ -287,7 +322,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       refreshTokens,
       getMe,
       clearError,
-      checkAuthStatus
+      setError,
+      checkAuthStatus,
+      updateUser
     }}>
       {children}
     </AuthContext.Provider>

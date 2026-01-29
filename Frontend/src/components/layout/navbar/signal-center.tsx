@@ -6,7 +6,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-const SIGNALS = {
+const SIGNALS: {
+  trades: Array<{ id: number; title: string; desc: string; time: string; type: string; tx: string }>
+  security: Array<{ id: number; title: string; desc: string; time: string; type: string }>
+} = {
   trades: [
     { id: 1, title: 'BTC/USDT Fill', desc: '0.450 BTC @ 64,120.00', time: '1m ago', type: 'success', tx: '0x4...21' },
     { id: 2, title: 'Stop Loss Triggered', desc: 'ETH/USD closed at 3,210.00', time: '14m ago', type: 'error', tx: '0x8...ab' },
@@ -56,7 +59,7 @@ export function SignalCenter() {
                           <p className="text-[11px] font-mono opacity-70 italic">{log.desc}</p>
                           <div className="flex gap-2 pt-2">
                             <Button size="sm" className="h-6 rounded-none border-2 border-foreground bg-background text-foreground text-[8px] font-black uppercase brutalist-interactive">ACKNOWLEDGE</Button>
-                            {log.tx && <Button size="sm" className="h-6 rounded-none border-2 border-foreground bg-background text-foreground text-[8px] font-black uppercase brutalist-interactive"><ExternalLink className="h-3 w-3 mr-1"/> TX</Button>}
+                            {'tx' in log && log.tx && <Button size="sm" className="h-6 rounded-none border-2 border-foreground bg-background text-foreground text-[8px] font-black uppercase brutalist-interactive"><ExternalLink className="h-3 w-3 mr-1"/> TX</Button>}
                           </div>
                         </div>
                       </div>

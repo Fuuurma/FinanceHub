@@ -349,9 +349,6 @@ class Migration(migrations.Migration):
                 "ordering": ["-created_at"],
                 "indexes": [
                     models.Index(
-                        fields=["user", "query_type"], name="ai_query_user_idx"
-                    ),
-                    models.Index(
                         fields=["created_at", "success"], name="ai_query_created_idx"
                     ),
                     models.Index(

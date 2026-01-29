@@ -17,8 +17,8 @@ import type {
   CommodityMetrics,
   BondMetrics,
   YieldCurvePoint,
-  ScreenerFilter,
-  ScreenerResult,
+  StockScreenerFilter,
+  FundamentalScreenerResult,
   PeriodType,
   CacheStats,
 } from '../types'
@@ -37,22 +37,24 @@ export const fundamentalsApi = {
   /**
    * Get equity valuation metrics
    */
-  getEquityValuation: (symbol: string, periodType?: PeriodType) =>
-    apiClient.get<EquityValuation>(`/fundamentals/valuation/${symbol}`, {
-      params: { period_type: periodType },
-    }),
+  getEquityValuation: (symbol: string, periodType?: PeriodType) => {
+    const params: Record<string, string | number> = {}
+    if (periodType) params.period_type = periodType
+    return apiClient.get<EquityValuation>(`/fundamentals/valuation/${symbol}`, { params })
+  },
 
   /**
    * Get equity financials (income statement, balance sheet, cash flow)
    */
-  getEquityFinancials: (symbol: string, periodType?: PeriodType) =>
-    apiClient.get<{
+  getEquityFinancials: (symbol: string, periodType?: PeriodType) => {
+    const params: Record<string, string | number> = {}
+    if (periodType) params.period_type = periodType
+    return apiClient.get<{
       income_statement: IncomeStatement | null
       balance_sheet: BalanceSheet | null
       cash_flow: CashFlowStatement | null
-    }>(`/fundamentals/financials/${symbol}`, {
-      params: { period_type: periodType },
-    }),
+    }>(`/fundamentals/financials/${symbol}`, { params })
+  },
 
   /**
    * Get historical fundamentals for trend analysis
@@ -95,10 +97,11 @@ export const fundamentalsApi = {
   /**
    * Get bond metrics
    */
-  getBondMetrics: (symbol?: string) =>
-    apiClient.get<BondMetrics[]>('/fundamentals/bonds/metrics', {
-      params: { symbol },
-    }),
+  getBondMetrics: (symbol?: string) => {
+    const params: Record<string, string | number> = {}
+    if (symbol) params.symbol = symbol
+    return apiClient.get<BondMetrics[]>('/fundamentals/bonds/metrics', { params })
+  },
 
   /**
    * Get yield curve data
@@ -118,10 +121,15 @@ export const fundamentalsApi = {
   /**
    * Screen stocks based on filters
    */
-  screenStocks: (filter: ScreenerFilter) =>
-    apiClient.get<ScreenerResult[]>('/fundamentals/screener', {
-      params: filter,
-    }),
+  screenStocks: (filter: StockScreenerFilter) => {
+    const params: Record<string, string | number> = {}
+    Object.entries(filter).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params[key] = value as string | number
+      }
+    })
+    return apiClient.get<FundamentalScreenerResult[]>('/fundamentals/screener', { params })
+  },
 
   /**
    * Batch fetch equity fundamentals for multiple symbols

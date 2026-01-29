@@ -14,10 +14,12 @@ import {
 } from 'chart.js/auto'
 import { Line, Bar } from 'react-chartjs-2'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useRealtimeStore } from '@/stores/realtimeStore'
 import { CHART_CONFIG } from '@/lib/constants/realtime'
 import type { ChartTimeframe, ChartDataPoint } from '@/lib/constants/realtime'
+import type { IndicatorConfig } from '@/lib/types/indicators'
 import { cn } from '@/lib/utils'
 
 ChartJS.register(

@@ -364,11 +364,6 @@ class AIQueryLog(UUIDModel, TimestampedModel):
         verbose_name = "AI Query Log"
         verbose_name_plural = "AI Query Logs"
         ordering = ["-created_at"]
-        indexes = [
-            models.Index(fields=["user", "query_type"]),
-            models.Index(fields=["created_at", "success"]),
-            models.Index(fields=["session_id", "created_at"]),
-        ]
 
     def __str__(self):
         user_id = self.user.email if self.user else self.session_id

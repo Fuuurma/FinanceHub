@@ -29,11 +29,13 @@ export const screenerApi = {
 
     if (preset) {
       params.append('preset', preset)
-    } else if (filters && filters.length > 0) {
-      return await apiClient.post<ScreenerResponse>(`/screener/screen?${params.toString()}`, filters)
-    } else {
-      return await apiClient.get<ScreenerResponse>(`/screener/screen?${params.toString()}`)
     }
+
+    if (filters && filters.length > 0) {
+      return await apiClient.post<ScreenerResponse>(`/screener/screen?${params.toString()}`, filters)
+    }
+
+    return await apiClient.get<ScreenerResponse>(`/screener/screen?${params.toString()}`)
   },
 
   applyPreset: async (presetName: string): Promise<{ preset_name: string; filters_applied: number; success: boolean }> => {

@@ -167,7 +167,7 @@ export function OrderBook({ symbol, depth = ORDERBOOK_CONFIG.DEFAULT_DEPTH }: Or
         <h3 className="text-lg font-semibold">Order Book - {symbol}</h3>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Depth:</span>
-          <Select value={String(localDepth)} onValueChange={(v) => handleDepthChange(v as OrderBookDepth)}>
+          <Select value={String(localDepth)} onValueChange={(v) => handleDepthChange(v as unknown as OrderBookDepth)}>
             <SelectTrigger className="w-24">
               <SelectValue />
             </SelectTrigger>

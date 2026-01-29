@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { AssetType } from '../types/market';
-import { ScreenerCriteria, ScreenerResult } from '../types/screener';
-import { apiClient } from '../lib/api/client';
+import type { AssetType } from '@/lib/types/asset';
+import { ScreenerCriteria, ScreenerResult } from '@/lib/types/screener';
+import { apiClient } from '@/lib/api/client';
 
 interface ScreenerState {
   criteria: ScreenerCriteria;
@@ -21,7 +21,7 @@ interface ScreenerState {
 }
 
 const defaultCriteria: ScreenerCriteria = {
-  assetTypes: [AssetType.Stock],
+  assetTypes: ['stock'],
   exchanges: [],
   sectors: [],
   marketCap: { min: 0, max: Infinity },

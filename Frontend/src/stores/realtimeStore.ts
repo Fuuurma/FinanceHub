@@ -8,8 +8,9 @@ import type {
   RealTimePrice,
   Trade,
   OrderBook,
+  DataType,
 } from '@/lib/types/realtime'
-import type { ConnectionState, ChartTimeframe, DataType } from '@/lib/constants/realtime'
+import type { ConnectionState, ChartTimeframe } from '@/lib/constants/realtime'
 import { getWebSocketClient } from '@/lib/api/websocket'
 import { WS_CONFIG, CONNECTION_STATES, CHART_CONFIG } from '@/lib/constants/realtime'
 import { apiClient } from '@/lib/api/client'

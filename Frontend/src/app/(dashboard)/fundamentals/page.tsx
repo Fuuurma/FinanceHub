@@ -7,10 +7,10 @@ import type {
   CryptoProtocolMetrics,
   BondMetrics,
   YieldCurvePoint,
-  ScreenerFilter,
-  ScreenerResult,
+  StockScreenerFilter as ScreenerFilter,
+  FundamentalScreenerResult,
   PeriodType,
-} from '@/lib/types'
+} from '@/lib/types/fundamentals'
 import { TrendingUp, TrendingDown, DollarSign, Percent, BarChart2, Search, RefreshCw } from 'lucide-react'
 
 export default function FundamentalsPage() {
@@ -27,7 +27,7 @@ export default function FundamentalsPage() {
   const [yieldCurve, setYieldCurve] = useState<YieldCurvePoint[]>([])
   const [bondsLoading, setBondsLoading] = useState(false)
 
-  const [screenerResults, setScreenerResults] = useState<ScreenerResult[]>([])
+  const [screenerResults, setScreenerResults] = useState<FundamentalScreenerResult[]>([])
   const [screenerLoading, setScreenerLoading] = useState(false)
   const [screenerFilters, setScreenerFilters] = useState<ScreenerFilter>({
     pe_ratio_min: 0,

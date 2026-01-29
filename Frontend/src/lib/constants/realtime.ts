@@ -4,7 +4,7 @@
  */
 
 export const WS_CONFIG = {
-  RECONNECT_DELAYS: [1000, 2000, 4000, 8000, 16000, 30000],
+  RECONNECT_DELAYS: [1000, 2000, 4000, 8000, 16000, 30000] as number[],
   MAX_RECONNECT_ATTEMPTS: 10,
   HEARTBEAT_INTERVAL: 30000,
   CONNECT_TIMEOUT: 10000,
@@ -17,10 +17,15 @@ export const CHART_CONFIG = {
     '1m': 500,
     '5m': 300,
     '15m': 200,
+    '30m': 200,
     '1h': 200,
     '4h': 100,
     '1d': 100,
     '1w': 50,
+    '3m': 100,
+    '6m': 50,
+    '1M': 30,
+    '1y': 20,
   } as const,
   DEFAULT_TIMEFRAME: '1h' as const,
   UPDATE_INTERVAL: 2000,
@@ -29,7 +34,7 @@ export const CHART_CONFIG = {
 export const ORDERBOOK_CONFIG = {
   DEFAULT_DEPTH: 10,
   MAX_DEPTH: 100,
-  DEPTH_OPTIONS: [10, 20, 50, 100],
+  DEPTH_OPTIONS: [10, 20, 50, 100] as const,
   UPDATE_DEBOUNCE_MS: 100,
 } as const
 
@@ -58,3 +63,14 @@ export type ConnectionState = typeof CONNECTION_STATES[keyof typeof CONNECTION_S
 export type ChartTimeframe = keyof typeof CHART_CONFIG.BUFFER_SIZES
 export type OrderBookDepth = typeof ORDERBOOK_CONFIG.DEPTH_OPTIONS[number]
 export type TradeFilter = 'all' | 'buys' | 'sells'
+
+export interface ChartDataPoint {
+  time: number | string
+  price: number
+  volume: number
+  timestamp?: number | string
+  open?: number
+  high?: number
+  low?: number
+  close?: number
+}

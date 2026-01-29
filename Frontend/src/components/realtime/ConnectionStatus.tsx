@@ -41,7 +41,7 @@ export function ConnectionStatus() {
     connectionState === CONNECTION_STATES.ERROR
 
   const handleConnect = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : undefined
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') || undefined : undefined
     connect(token)
   }
 
@@ -71,13 +71,13 @@ export function ConnectionStatus() {
       </div>
 
       {canReconnect && (
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           onClick={handleConnect}
-          disabled={connectionState === CONNECTION_STATES.CONNECTING}
+          disabled={connectionState === 'connecting' as any}
           className="shrink-0"
         >
-          <RefreshCw className={`h-4 w-4 ${connectionState === CONNECTION_STATES.CONNECTING ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${connectionState === 'connecting' as any ? 'animate-spin' : ''}`} />
         </Button>
       )}
     </div>

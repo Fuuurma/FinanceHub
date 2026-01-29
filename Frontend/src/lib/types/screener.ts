@@ -12,6 +12,31 @@ export interface ScreenerFilterOut {
   active: boolean
 }
 
+export interface ScreenerCriteria {
+  assetTypes: string[]
+  exchanges: string[]
+  sectors: string[]
+  marketCap: { min: number; max: number }
+  price: { min: number; max: number }
+  volume: { min: number; max: number }
+  peRatio: { min: number; max: number }
+  dividendYield: { min: number; max: number }
+  beta: { min: number; max: number }
+  epsGrowth: { min: number; max: number }
+  revenueGrowth: { min: number; max: number }
+  profitMargin: { min: number; max: number }
+  roe: { min: number; max: number }
+  debtToEquity: { min: number; max: number }
+  currentRatio: { min: number; max: number }
+  quickRatio: { min: number; max: number }
+  freeCashFlow: { min: number; max: number }
+  operatingMargin: { min: number; max: number }
+  priceToBook: { min: number; max: number }
+  priceToSales: { min: number; max: number }
+  evToEbitda: { min: number; max: number }
+  pegRatio: { min: number; max: number }
+}
+
 export interface ScreenerPreset {
   key: string
   name: string

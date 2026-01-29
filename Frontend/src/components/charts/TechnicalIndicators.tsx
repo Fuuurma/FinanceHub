@@ -19,7 +19,8 @@ import {
   ChevronUp,
   Settings2,
 } from 'lucide-react'
-import { INDICATOR_CATEGORIES, INDICATOR_LABELS, DEFAULT_INDICATORS } from '@/lib/constants/indicators'
+import { INDICATOR_CATEGORIES, INDICATOR_LABELS } from '@/lib/constants/indicators'
+import { DEFAULT_INDICATORS } from '@/lib/types/indicators'
 import type { IndicatorConfig, IndicatorType } from '@/lib/types/indicators'
 import { cn } from '@/lib/utils'
 
@@ -40,20 +41,20 @@ export function TechnicalIndicators({
   const [expandedIndicators, setExpandedIndicators] = useState<Set<string>>(new Set())
   const [configuringIndicator, setConfiguringIndicator] = useState<IndicatorConfig | null>(null)
 
-  const availableIndicators = Object.entries(INDICATOR_CATEGORIES).find(
+  const availableIndicators = (Object.entries(INDICATOR_CATEGORIES).find(
     ([key]) => key === activeCategory
-  )?.[1].indicators as IndicatorType[]
+  )?.[1].indicators || []) as IndicatorType[]
 
-  const handleToggleIndicator = (type: IndicatorType) => {
-    const existingIndex = selectedIndicators.findIndex((ind) => ind.type === type)
+  const handleToggleIndicator = (indicatorType: IndicatorType) => {
+    const existingIndex = selectedIndicators.findIndex((ind) => ind.type === indicatorType)
 
     if (existingIndex >= 0) {
       // Remove indicator
-      const newIndicators = selectedIndicators.filter((ind) => ind.type !== type)
+      const newIndicators = selectedIndicators.filter((ind) => ind.type !== indicatorType)
       onIndicatorsChange(newIndicators)
     } else {
       // Add indicator with default config
-      const defaultConfig = DEFAULT_INDICATORS[type]
+      const defaultConfig: IndicatorConfig = DEFAULT_INDICATORS[indicatorType]
       onIndicatorsChange([...selectedIndicators, defaultConfig])
       setConfiguringIndicator(defaultConfig)
     }

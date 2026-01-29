@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Dict, Optional, List, Any
 
 from data.data_providers.base_fetcher import BaseAPIFetcher
+from investments.models import DataProvider
 from utils.helpers.logger.logger import get_logger
 
 logger = get_logger(__name__)
