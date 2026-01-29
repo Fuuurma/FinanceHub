@@ -34,17 +34,40 @@ ChartJS.register(
 interface RealTimeChartProps {
   symbol: string
   timeframe?: ChartTimeframe
+  indicators?: IndicatorConfig[]
+  onIndicatorsChange?: (indicators: IndicatorConfig[]) => void
+  showDrawingTools?: boolean
+  showIndicatorsPanel?: boolean
 }
 
-export function RealTimeChart({ symbol, timeframe = CHART_CONFIG.DEFAULT_TIMEFRAME }: RealTimeChartProps) {
+export function RealTimeChart({
+  symbol,
+  timeframe = CHART_CONFIG.DEFAULT_TIMEFRAME,
+  indicators = [],
+  onIndicatorsChange,
+  showDrawingTools = false,
+  showIndicatorsPanel = false,
+}: RealTimeChartProps) {
   const { prices, charts, setChartTimeframe } = useRealtimeStore()
   const [chartData, setChartData] = useState<ChartDataPoint[]>([])
   const [isUpdating, setIsUpdating] = useState(false)
+  const [showIndicators, setShowIndicators] = useState(showIndicatorsPanel || indicators.length > 0)
+  const [selectedIndicators, setSelectedIndicators] = useState<IndicatorConfig[]>(indicators)
   const updateIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const chartRef = useRef<ChartJS<'line'> | null>(null)
+  const [drawingMode, setDrawingMode] = useState<string | null>(null)
 
   useEffect(() => {
     setChartTimeframe(symbol, timeframe)
   }, [symbol, timeframe, setChartTimeframe])
+
+  // Sync indicators with parent
+  useEffect(() => {
+    if (indicators.length > 0) {
+      setSelectedIndicators(indicators)
+      setShowIndicators(true)
+    }
+  }, [indicators])
 
   useEffect(() => {
     const bufferSize = CHART_CONFIG.BUFFER_SIZES[timeframe]
@@ -209,7 +232,7 @@ export function RealTimeChart({ symbol, timeframe = CHART_CONFIG.DEFAULT_TIMEFRA
           )}
         </div>
 
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {timeframeOptions.map((tf) => (
             <Button
               key={tf}
@@ -224,6 +247,20 @@ export function RealTimeChart({ symbol, timeframe = CHART_CONFIG.DEFAULT_TIMEFRA
               {tf}
             </Button>
           ))}
+          <Button
+            size="sm"
+            variant={showIndicators ? 'default' : 'outline'}
+            onClick={() => {
+              const newValue = !showIndicators
+              setShowIndicators(newValue)
+              if (!newValue && selectedIndicators.length === 0) {
+                setSelectedIndicators([])
+              }
+            }}
+            className="text-xs"
+          >
+            {showIndicators ? 'Hide Indicators' : 'Show Indicators'}
+          </Button>
         </div>
       </div>
 
@@ -241,13 +278,39 @@ export function RealTimeChart({ symbol, timeframe = CHART_CONFIG.DEFAULT_TIMEFRA
             <Bar data={volumeData} options={commonOptions} />
           </div>
         </TabsContent>
-
-        <TabsContent value="volume">
-          <div className="h-96">
-            <Bar data={volumeData} options={commonOptions} />
-          </div>
-        </TabsContent>
       </Tabs>
+      {/* Technical Indicators Panel */}
+      {showIndicators && (
+        <div className="mt-4 border-t pt-4">
+          <h4 className="text-sm font-semibold mb-3">Active Indicators</h4>
+          {selectedIndicators.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No indicators applied. Add indicators from the panel above.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {selectedIndicators.map((ind) => (
+                <Badge
+                  key={ind.type}
+                  variant="outline"
+                  className="px-3 py-1"
+                  style={{ borderColor: ind.color, color: ind.color }}
+                >
+                  {ind.type.toUpperCase()} ({ind.params.period || 'default'})
+                  <button
+                    onClick={() => {
+                      const newIndicators = selectedIndicators.filter((i) => i.type !== ind.type)
+                      setSelectedIndicators(newIndicators)
+                      onIndicatorsChange?.(newIndicators)
+                    }}
+                    className="ml-2 hover:text-destructive"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
