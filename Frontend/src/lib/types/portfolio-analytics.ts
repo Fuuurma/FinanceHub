@@ -136,6 +136,60 @@ export interface PortfolioAnalytics {
   period_start: string
   period_end: string
   total_transactions: number
+  summary?: {
+    portfolio_id: string
+    name: string
+    total_value: number
+    total_invested: number
+    total_pnl: number
+    total_pnl_percent: number
+    total_fees_paid: number
+    asset_count: number
+    top_performers: Array<{ symbol: string; pnl: number; pnl_percent: number; current_value: number }>
+    worst_performers: Array<{ symbol: string; pnl: number; pnl_percent: number; current_value: number }>
+    allocation: Record<string, { value: number; percentage: number }>
+    last_updated: string
+  }
+  performance?: {
+    portfolio_id: string
+    time_period: string
+    cagr: number
+    total_return: number
+    total_return_percent: number
+    annualized_return: number
+    volatility: number | null
+    sharpe_ratio: number | null
+    sortino_ratio: number | null
+    max_drawdown: number | null
+    max_drawdown_percent: number | null
+    max_drawdown_date: string | null
+    recovery_time: number | null
+    best_day: { date: string; value: number } | null
+    worst_day: { date: string; value: number } | null
+    win_rate: number | null
+    alpha_vs_sp500: number | null
+    beta_vs_sp500: number | null
+    var_95: number | null
+    var_99: number | null
+    avg_win: number | null
+    avg_loss: number | null
+    profit_factor: number | null
+  }
+  risk?: {
+    portfolio_id: string
+    overall_risk_score: number
+    risk_level: 'Low' | 'Medium' | 'High'
+    concentration_risk: number
+    diversification_score: number
+    sector_exposure: Record<string, { value: number; percentage: number }>
+    largest_holding_percent: number
+    volatility_exposure: number | null
+    liquidity_score: number | null
+    beta: number | null
+    correlation: number | null
+    recommendations: string[]
+    analyzed_at: string
+  }
 }
 
 export interface SectorData {
@@ -167,8 +221,6 @@ export interface RiskHistoryData {
   volatility: number
   sharpeRatio: number
 }
-
-export type AnalyticsPeriod = '1d' | '7d' | '30d' | '90d' | '180d' | '1y' | '3y' | '5y' | 'all'
 
 export type BenchmarkType = 'sp500' | 'nasdaq' | 'dow' | 'custom'
 
@@ -253,7 +305,7 @@ export interface AnalyticsState {
   error: string | null
   lastUpdated: string | null
 
-  setSelectedPortfolio: (id: string) => void
+  setSelectedPortfolio: (id: string | null) => void
   setSelectedPeriod: (period: AnalyticsPeriod) => void
   setSelectedBenchmark: (benchmark: BenchmarkType) => void
   fetchAnalytics: () => Promise<void>

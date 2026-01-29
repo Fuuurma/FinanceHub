@@ -12,6 +12,7 @@ const API_PERIOD_MAP: Record<AnalyticsPeriod, '1y' | '6m' | '3m'> = {
   '1y': '1y',
   '3y': '1y',
   '5y': '1y',
+  'ytd': '1y',
   'all': '1y',
 }
 
@@ -26,9 +27,11 @@ export const useAnalyticsStore = create<AnalyticsState>()(
       error: null,
       lastUpdated: null,
 
-      setSelectedPortfolio: (id: string) => {
+      setSelectedPortfolio: (id: string | null) => {
         set({ selectedPortfolioId: id })
-        get().fetchAnalytics()
+        if (id) {
+          get().fetchAnalytics()
+        }
       },
 
       setSelectedPeriod: (period: AnalyticsPeriod) => {
@@ -62,12 +65,11 @@ export const useAnalyticsStore = create<AnalyticsState>()(
           ])
 
           const analyticsData: PortfolioAnalytics = {
-            summary: {
-              ...summary,
-              period_start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-              period_end: new Date().toISOString(),
-              total_transactions: 0,
-            },
+            total_return: performance.total_return || 0,
+            total_value: summary.total_value,
+            total_value_change: summary.total_pnl,
+            total_value_change_percent: summary.total_pnl_percent,
+            summary: { ...summary },
             performance: {
               portfolio_id: selectedPortfolioId,
               time_period: selectedPeriod,
@@ -78,8 +80,8 @@ export const useAnalyticsStore = create<AnalyticsState>()(
               volatility: performance.volatility,
               sharpe_ratio: performance.sharpe_ratio,
               sortino_ratio: null,
-              max_drawdown: performance.max_drawdown || 0,
-              max_drawdown_percent: performance.max_drawdown_percent || 0,
+              max_drawdown: performance.max_drawdown || null,
+              max_drawdown_percent: performance.max_drawdown_percent || null,
               max_drawdown_date: null,
               recovery_time: null,
               best_day: performance.best_day,
@@ -89,36 +91,15 @@ export const useAnalyticsStore = create<AnalyticsState>()(
               beta_vs_sp500: performance.beta_vs_sp500,
               var_95: null,
               var_99: null,
-              avg_win: performance.avg_win || null,
-              avg_loss: performance.avg_loss || null,
-              profit_factor: performance.profit_factor || null,
-            },
-            risk: {
-              portfolio_id: selectedPortfolioId,
-              overall_risk_score: risk.overall_risk_score,
-              risk_level: risk.risk_level,
-              concentration_risk: risk.concentration_risk,
-              diversification_score: risk.diversification_score,
-              sector_exposure: risk.sector_exposure,
-              largest_holding_percent: risk.largest_holding_percent,
-              volatility_exposure: risk.volatility_exposure,
-              liquidity_score: risk.liquidity_score,
-              beta: risk.volatility_exposure,
-              correlation: null,
-              recommendations: risk.recommendations,
-              analyzed_at: risk.analyzed_at,
+              avg_win: null,
+              avg_loss: null,
+              profit_factor: null,
             },
             performance_by_asset: [],
             risk_metrics: {
               volatility: risk.volatility_exposure || 0,
               beta: risk.volatility_exposure || 0,
-              alpha: performance.alpha_vs_sp500 || 0,
               sharpe_ratio: performance.sharpe_ratio || 0,
-              sortino_ratio: null,
-              max_drawdown: performance.max_drawdown || 0,
-              max_drawdown_percent: performance.max_drawdown_percent || 0,
-              var_95: null,
-              correlation: null,
             },
             period_start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
             period_end: new Date().toISOString(),

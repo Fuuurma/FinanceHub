@@ -7,9 +7,10 @@ interface RollingReturnsChartProps {
     date: string
     '7d': number
     '30d': number
+    '90d': number
   }>
-  selectedPeriod: '7d' | '30d'
-  onPeriodChange: (period: '7d' | '30d') => void
+  selectedPeriod: '7d' | '30d' | '90d'
+  onPeriodChange: (period: '7d' | '30d' | '90d') => void
 }
 
 export default function RollingReturnsChart({ data, selectedPeriod, onPeriodChange }: RollingReturnsChartProps) {
@@ -35,6 +36,16 @@ export default function RollingReturnsChart({ data, selectedPeriod, onPeriodChan
           }`}
         >
           30-Day
+        </button>
+        <button
+          onClick={() => onPeriodChange('90d')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            selectedPeriod === '90d'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          90-Day
         </button>
       </div>
       <ResponsiveContainer width="100%" height={300}>

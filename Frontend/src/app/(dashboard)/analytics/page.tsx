@@ -17,8 +17,18 @@ import RiskMetricsHistoryChart from '@/components/analytics/RiskMetricsHistoryCh
 import RollingReturnsChart from '@/components/analytics/RollingReturnsChart'
 import SectorBreakdownChart from '@/components/analytics/SectorBreakdownChart'
 import { ReturnCard, ValueCard, RiskCard, DrawdownCard, CAGRCard } from '@/components/analytics/KPICards'
+import { PortfolioSelector } from '@/components/analytics/PortfolioSelector'
+import { PortfolioComparison } from '@/components/analytics/PortfolioComparison'
 import { useAnalyticsStore } from '@/stores/analyticsStore'
+import { portfoliosApi, type Portfolio } from '@/lib/api/portfolio'
+import { exportAnalytics } from '@/lib/utils/analytics-export'
 import { cn } from '@/lib/utils'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 type TabValue = 'overview' | 'performance' | 'risk' | 'comparison'
 
@@ -42,12 +52,14 @@ const BENCHMARKS: { value: BenchmarkType; label: string }[] = [
 
 export default function AnalyticsPage() {
   const {
+    selectedPortfolioId,
     selectedPeriod,
     selectedBenchmark,
     data: analytics,
     loading,
     error,
     lastUpdated,
+    setSelectedPortfolio,
     setSelectedPeriod,
     setSelectedBenchmark,
     fetchAnalytics,
@@ -55,30 +67,43 @@ export default function AnalyticsPage() {
 
   const [activeTab, setActiveTab] = useState<TabValue>('overview')
   const [rollingPeriod, setRollingPeriod] = useState<'7d' | '30d' | '90d'>('30d')
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([])
 
   useEffect(() => {
     fetchAnalytics()
+    const fetchPortfolios = async () => {
+      try {
+        const data = await portfoliosApi.list()
+        setPortfolios(data)
+      } catch (err) {
+        console.error('Failed to fetch portfolios:', err)
+      }
+    }
+    fetchPortfolios()
   }, [selectedPeriod, selectedBenchmark, fetchAnalytics])
 
   const handleExportJSON = () => {
     if (!analytics) return
-    
-    const data = JSON.stringify(analytics, null, 2)
-    const blob = new Blob([data], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `portfolio-analytics-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+
+    exportAnalytics(analytics, {
+      format: 'json',
+      period: selectedPeriod,
+    })
+  }
+
+  const handleExportCSV = () => {
+    if (!analytics) return
+
+    exportAnalytics(analytics, {
+      format: 'csv',
+      period: selectedPeriod,
+    })
   }
 
   const mockAllocationData = analytics?.performance_by_asset?.map(asset => ({
     name: asset.asset_type,
     value: asset.value,
-    percentage: ((asset.value / (analytics?.summary.total_value || 1)) * 100).toFixed(1)
+    percentage: ((asset.value / (analytics?.total_value || 1)) * 100).toFixed(1)
   })) || []
 
   const mockPerformanceData = analytics?.performance_by_asset?.map(asset => ({
@@ -140,15 +165,33 @@ export default function AnalyticsPage() {
           <h1 className="text-3xl font-bold">Portfolio Analytics</h1>
           <p className="text-muted-foreground">Detailed portfolio performance analysis</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <PortfolioSelector
+            selectedPortfolioId={selectedPortfolioId}
+            onSelectPortfolio={setSelectedPortfolio}
+          />
           <Button variant="outline" onClick={fetchAnalytics} disabled={loading}>
             <RefreshCw className={cn('w-4 h-4 mr-2', loading && 'animate-spin')} />
             Refresh
           </Button>
-          <Button variant="outline" onClick={handleExportJSON} disabled={!analytics || loading}>
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={!analytics || loading}>
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportJSON}>
+                <FileJson className="w-4 h-4 mr-2" />
+                Export as JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportCSV}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -204,10 +247,10 @@ export default function AnalyticsPage() {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <ReturnCard value={analytics.performance.total_return_percent} />
-              <ValueCard value={analytics.summary.total_value} change={analytics.summary.total_pnl} />
-              <CAGRCard cagr={analytics.performance.cagr} annualizedReturn={analytics.performance.annualized_return} />
-              <DrawdownCard maxDrawdown={analytics.performance.max_drawdown_percent} maxDrawdownDate={analytics.performance.max_drawdown_date || undefined} recoveryTime={analytics.performance.recovery_time || undefined} />
+              <ReturnCard value={analytics.performance?.total_return_percent || 0} />
+              <ValueCard value={analytics.summary?.total_value || 0} change={analytics.summary?.total_pnl} />
+              <CAGRCard cagr={analytics.performance?.cagr || 0} annualizedReturn={analytics.performance?.annualized_return || 0} />
+              <DrawdownCard maxDrawdown={analytics.performance?.max_drawdown_percent || 0} maxDrawdownDate={analytics.performance?.max_drawdown_date || undefined} recoveryTime={analytics.performance?.recovery_time || undefined} />
             </div>
 
             <RiskCard 
@@ -256,17 +299,21 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           <TabsContent value="comparison" className="space-y-6">
+            <PortfolioComparison
+              portfolios={portfolios.map(p => ({
+                id: p.id,
+                name: p.name,
+                return: p.total_pnl_percent,
+                volatility: 15,
+                sharpeRatio: 1.2,
+                maxDrawdown: 5,
+              }))}
+              selectedId={selectedPortfolioId || ''}
+              onSelect={setSelectedPortfolio}
+            />
             <ChartCard title="Sector Breakdown" description="Performance by economic sector">
               <SectorBreakdownChart data={mockSectorData} />
             </ChartCard>
-            <div className="grid gap-6 md:grid-cols-2">
-              <ChartCard title="Asset Type Performance" description="Returns by asset class">
-                <PerformanceChart data={mockPerformanceData} />
-              </ChartCard>
-              <ChartCard title="Benchmark Comparison" description="Portfolio vs benchmark">
-                <BenchmarkComparisonChart data={mockBenchmarkData} />
-              </ChartCard>
-            </div>
           </TabsContent>
         </Tabs>
       ) : (
