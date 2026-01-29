@@ -7,8 +7,8 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
 from django.core.cache import cache
-from ninja import Router, Schema, Field
-from ninja.pagination import paginate, Page
+from ninja import Router, Schema
+from ninja.pagination import paginate
 
 from investments.models.economic_indicator import (
     EconomicIndicator,
@@ -181,7 +181,6 @@ def get_data_points(
     series_id: str,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    limit: int = 1000,
 ):
     """
     Get time series data points for an indicator.
@@ -200,7 +199,7 @@ def get_data_points(
             date__lte=datetime.strptime(end_date, "%Y-%m-%d").date()
         )
 
-    return queryset[:limit]
+    return list(queryset)
 
 
 @router.get("/yield-curve", response=Dict[str, YieldCurveOut])
