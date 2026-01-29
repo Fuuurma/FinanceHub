@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { SCREENER_CATEGORIES, SCREENER_PRESETS } from '@/lib/constants/screener'
+import { SCREENER_CATEGORIES } from '@/lib/constants/screener'
 import type { ScreenerFilter } from '@/lib/types/screener'
 import { useScreenerStore } from '@/stores/screenerStore'
 
@@ -23,33 +24,43 @@ interface FilterRowProps {
 export function FilterRow({ index, filter }: FilterRowProps) {
   const { updateFilter, removeFilter } = useScreenerStore()
 
-  const getFilterOptions = () => {
+  const filterDef = useMemo(() => {
     for (const category of SCREENER_CATEGORIES) {
       const found = category.filters.find(f => f.key === filter.key)
       if (found) return found
     }
     return null
-  }
+  }, [filter.key])
 
-  const filterDef = getFilterOptions()
-
-  const handleFieldChange = (value: string) => {
+  const handleFieldChange = useCallback((value: string) => {
     updateFilter(index, { key: value })
     updateFilter(index, { value: '' })
-  }
+  }, [index, updateFilter])
 
   return (
-    <div className="flex gap-2 items-start p-3 border rounded-lg bg-card">
+    <div
+      role="group"
+      aria-label={`Filter ${index + 1}`}
+      className="flex gap-2 items-start p-3 border rounded-lg bg-card"
+    >
       <div className="flex-1 space-y-2">
-        <Label className="text-xs text-muted-foreground">Field</Label>
+        <Label htmlFor={`filter-field-${index}`} className="text-xs text-muted-foreground">
+          Field
+        </Label>
         <Select value={filter.key} onValueChange={handleFieldChange}>
-          <SelectTrigger className="h-9">
+          <SelectTrigger id={`filter-field-${index}`} className="h-9" aria-label="Select filter field">
             <SelectValue placeholder="Select field" />
           </SelectTrigger>
           <SelectContent>
             {SCREENER_CATEGORIES.map(category => (
-              <div key={category.id} className="px-2 py-1.5">
-                <p className="text-xs font-medium text-muted-foreground mb-1">{category.name}</p>
+              <div key={category.id} role="group" aria-labelledby={`category-${category.id}`}>
+                <p
+                  id={`category-${category.id}`}
+                  className="px-2 py-1.5 text-xs font-medium text-muted-foreground mb-1"
+                  role="separator"
+                >
+                  {category.name}
+                </p>
                 {category.filters.map(f => (
                   <SelectItem key={f.key} value={f.key}>
                     {f.label}
@@ -62,13 +73,15 @@ export function FilterRow({ index, filter }: FilterRowProps) {
       </div>
 
       <div className="flex-1 space-y-2">
-        <Label className="text-xs text-muted-foreground">Operator</Label>
+        <Label htmlFor={`filter-operator-${index}`} className="text-xs text-muted-foreground">
+          Operator
+        </Label>
         <Select
           value={filter.operator}
           onValueChange={(value) => updateFilter(index, { operator: value })}
           disabled={!filter.key}
         >
-          <SelectTrigger className="h-9">
+          <SelectTrigger id={`filter-operator-${index}`} className="h-9" aria-label="Select operator">
             <SelectValue placeholder="Operator" />
           </SelectTrigger>
           <SelectContent>
@@ -88,14 +101,16 @@ export function FilterRow({ index, filter }: FilterRowProps) {
       </div>
 
       <div className="flex-[1.5] space-y-2">
-        <Label className="text-xs text-muted-foreground">Value</Label>
+        <Label htmlFor={`filter-value-${index}`} className="text-xs text-muted-foreground">
+          Value
+        </Label>
         {filterDef?.type === 'select' || filterDef?.type === 'multiselect' ? (
           <Select
             value={String(filter.value)}
             onValueChange={(value) => updateFilter(index, { value })}
             disabled={!filter.key}
           >
-            <SelectTrigger className="h-9">
+            <SelectTrigger id={`filter-value-${index}`} className="h-9" aria-label="Select value">
               <SelectValue placeholder="Select value" />
             </SelectTrigger>
             <SelectContent>
@@ -107,11 +122,12 @@ export function FilterRow({ index, filter }: FilterRowProps) {
             </SelectContent>
           </Select>
         ) : filterDef?.type === 'range' ? (
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="group" aria-label="Range values">
             <Input
               type="number"
               placeholder="Min"
               className="h-9"
+              aria-label="Minimum value"
               value={Array.isArray(filter.value) ? filter.value[0] || '' : ''}
               onChange={(e) => updateFilter(index, { value: [e.target.value, Array.isArray(filter.value) ? filter.value[1] || '' : ''] })}
             />
@@ -119,6 +135,7 @@ export function FilterRow({ index, filter }: FilterRowProps) {
               type="number"
               placeholder="Max"
               className="h-9"
+              aria-label="Maximum value"
               value={Array.isArray(filter.value) ? filter.value[1] || '' : ''}
               onChange={(e) => updateFilter(index, { value: [Array.isArray(filter.value) ? filter.value[0] || '' : '', e.target.value] })}
             />
@@ -128,6 +145,8 @@ export function FilterRow({ index, filter }: FilterRowProps) {
             type={filterDef?.type === 'number' ? 'number' : 'text'}
             placeholder={filterDef?.placeholder || 'Enter value'}
             className="h-9"
+            id={`filter-value-${index}`}
+            aria-label="Enter value"
             value={filter.value as string}
             onChange={(e) => updateFilter(index, { value: e.target.value })}
             disabled={!filter.key}
@@ -140,6 +159,7 @@ export function FilterRow({ index, filter }: FilterRowProps) {
         size="icon"
         className="mt-6 h-9 w-9"
         onClick={() => removeFilter(index)}
+        aria-label={`Remove filter ${index + 1}`}
       >
         <X className="h-4 w-4" />
       </Button>
