@@ -44,6 +44,11 @@ export const coinmarketcapApi = {
     }),
 
   // Trending
+  getTrending: (sort = 'percent_change_24h', limit = 50) =>
+    apiClient.get<{ data: TrendingCrypto[] }>(`/api/v1/cmc/trending`, {
+      params: { sort, limit }
+    }),
+
   getTrendingGainersLosers: (sort = 'percent_change_24h', limit = 50) =>
     apiClient.get<{ data: TrendingCrypto[] }>(`/api/v1/cmc/trending`, {
       params: { sort, limit }
