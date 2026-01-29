@@ -2225,99 +2225,321 @@ Route (app)                              Size     First Load JS
 
 ---
 
-## Phase 11: User's Portfolio Page 📋 IN PROGRESS
+## Phase 11: User's Portfolio Page ✅ COMPLETED
+
+### Summary
+Created comprehensive Analytics Dashboard with portfolio selector, comparison, and export functionality.
+
+### Files Created/Modified
+```
+Frontend/src/
+├── components/analytics/
+│   ├── PortfolioSelector.tsx (created)
+│   ├── PortfolioComparison.tsx (created)
+│   ├── PerformanceBreakdown.tsx (created)
+│   └── KPICards/__tests__/KPICards.test.tsx (created)
+├── lib/utils/
+│   ├── analytics-export.ts (created)
+│   └── __tests__/analytics-export.test.ts (created)
+├── stores/
+│   └── __tests__/analyticsStore.test.ts (created)
+└── app/(dashboard)/analytics/page.tsx (updated)
+```
+
+### Features Implemented
+1. **Portfolio Selector Dropdown**
+   - Fetches portfolios from API
+   - Shows portfolio name, value, P&L %
+   - Supports "Aggregate View (All Portfolios)"
+   - Default portfolio badge
+
+2. **Portfolio Comparison Component**
+   - Compare multiple portfolios side-by-side
+   - Rankings by performance
+   - Best/worst performer badges
+   - Click to select portfolio
+
+3. **Performance Breakdown**
+   - Top/bottom contributors to returns
+   - All holdings table with sorting
+   - Weight, return, contribution columns
+   - Visual indicators (green/red)
+
+4. **Export Functionality**
+   - JSON export with full analytics data
+   - CSV export with Summary, Performance, Risk, Allocation sections
+   - Dropdown menu for format selection
+
+5. **KPI Cards (5 cards)**
+   - ReturnCard - Total return with P/L indicator
+   - ValueCard - Portfolio value with change
+   - RiskCard - Volatility, Beta, Sharpe
+   - DrawdownCard - Max drawdown with recovery time
+   - CAGRCard - CAGR/Annualized return
+
+### Test Results
+```
+Test Suites: 4 passed, 4 total
+Tests:       54 passed, 54 total
+
+├── indicator-calculations: 24 tests
+├── analyticsStore: 6 tests
+├── analytics-export: 8 tests
+└── KPICards: 16 tests
+```
+
+---
+
+## Phase 12: Holdings API Integration 📋 IN PROGRESS
 
 ### Overview
-Create a comprehensive User's Portfolio Page with holdings, transactions, performance metrics, and real-time updates.
+Integrate real holdings data from backend with shadcn data-table. Enable users to manage positions, add transactions, and visualize portfolio performance.
 
 ### Features to Implement
 
-#### 1. Portfolio Overview Section
-- Total portfolio value with change indicator
-- Day's gain/loss with percentage
-- Total gain/loss (absolute and percentage)
-- Portfolio allocation by asset class (Stocks, Crypto, Bonds, Cash)
-- Pie chart visualization of allocation
+#### 1. Holdings Data Table (shadcn)
+- Sortable columns (symbol, quantity, price, value, P&L, weight)
+- Filterable by asset class (Stocks, Crypto, Bonds, Cash, ETFs)
+- Search by symbol or name
+- Pagination for large portfolios
+- Column visibility toggle
 
-#### 2. Holdings Table
-- List of all holdings with current value
-- Cost basis and unrealized P&L
-- Day's change and percentage
-- Weight in portfolio
-- Sortable and filterable columns
-- Search functionality by symbol or name
+#### 2. Position Management
+- **Buy/Sell Transactions**: Add new positions or adjust existing
+- **Quantity Updates**: Increase/decrease holdings
+- **Cost Basis Editing**: Update average cost
+- **Remove Holdings**: Delete positions from portfolio
+- **Add New Assets**: Search and add new symbols
 
-#### 3. Performance Tab
-- Time period selector (1D, 1W, 1M, 3M, 6M, YTD, 1Y, All)
-- Performance chart (line chart)
-- Comparison with benchmark (S&P 500)
-- Key metrics: Total Return, CAGR, Volatility, Sharpe Ratio
-
-#### 4. Transactions Tab
-- List of all transactions (buy, sell, dividend)
+#### 3. Transaction History
+- Date-ordered transaction log
+- Transaction types: buy, sell, dividend, transfer, split
 - Filter by type, date range, asset
-- Transaction details modal
+- Transaction details modal with full info
 - Export transactions to CSV
 
-#### 5. Real-Time Updates (Optional)
-- WebSocket connection for live price updates
-- Auto-refresh holdings value
-- Price change indicators
+#### 4. Portfolio Rotation
+- Quick switch between portfolios via dropdown
+- Portfolio summary on switch
+- Last viewed portfolio persistence
+- Keyboard shortcuts (Ctrl+1, Ctrl+2, etc.)
+
+#### 5. Chart Visualizations
+- **PnL Chart**: Cumulative P&L over time
+- **Allocation Pie Chart**: By asset class, sector, geography
+- **Performance Line Chart**: Portfolio vs benchmark
+- **Holdings Bar Chart**: Top 10 by value
+- **Risk Metrics Chart**: Volatility, drawdown
+
+#### 6. Export Functionality
+- Holdings as CSV/JSON
+- Transactions as CSV
+- Full portfolio report as PDF (future)
+- Email reports (future)
+
+### Asset Classes Supported
+| Class | Examples | Price Source |
+|-------|----------|--------------|
+| Stocks | AAPL, MSFT, GOOGL | Polygon/Finnhub |
+| Crypto | BTC, ETH, SOL | CoinGecko |
+| Bonds | Treasury, Corporate | FRED |
+| ETFs | SPY, QQQ, VTI | Polygon |
+| Options | SPY240120C500 | Polygon |
+| Cash | USD, EUR | Fixed |
 
 ### Files to Create
 ```
 Frontend/src/
 ├── app/(dashboard)/portfolios/
-│   └── page.tsx (main portfolio page)
-├── components/portfolio/
-│   ├── PortfolioOverview.tsx
-│   ├── HoldingsTable.tsx
-│   ├── PortfolioPerformance.tsx
-│   ├── TransactionsList.tsx
-│   ├── AllocationChart.tsx
-│   └── PortfolioSummaryCard.tsx
+│   ├── page.tsx (main holdings page)
+│   └── [portfolioId]/
+│       └── page.tsx (individual portfolio)
+├── components/holdings/
+│   ├── HoldingsDataTable.tsx
+│   ├── HoldingsToolbar.tsx
+│   ├── AddTransactionDialog.tsx
+│   ├── EditHoldingDialog.tsx
+│   └── TransactionHistory.tsx
+├── components/charts/
+│   ├── HoldingsPnLChart.tsx
+│   ├── HoldingsAllocationChart.tsx
+│   └── TopHoldingsChart.tsx
 ├── lib/types/
-│   └── portfolio.ts (create/update)
+│   ├── holdings.ts (created/updated)
+│   └── transactions.ts (created)
 ├── lib/api/
-│   └── portfolio.ts (API client)
+│   ├── holdings.ts (created)
+│   └── transactions.ts (created)
 └── stores/
-    └── portfolioStore.ts (Zustand store)
+    └── holdingsStore.ts (Zustand store)
 ```
 
 ### Backend API Endpoints Needed
 ```
-GET  /portfolios/              - List user's portfolios
-GET  /portfolios/{id}/         - Get portfolio details
-POST /portfolios/              - Create portfolio
-PUT  /portfolios/{id}/         - Update portfolio
-DELETE /portfolios/{id}/       - Delete portfolio
-GET  /portfolios/{id}/holdings - Get holdings
-GET  /portfolios/{id}/history  - Portfolio value history
-GET  /portfolios/{id}/metrics  - Performance metrics
+GET    /portfolios/{id}/holdings/           - List holdings
+POST   /portfolios/{id}/holdings/           - Create holding
+PUT    /portfolios/{id}/holdings/{hid}/     - Update holding
+DELETE /portfolios/{id}/holdings/{hid}/     - Delete holding
+
+GET    /portfolios/{id}/transactions/       - List transactions
+POST   /portfolios/{id}/transactions/       - Create transaction
+GET    /portfolios/{id}/transactions/{tid}/ - Get transaction
+DELETE /portfolios/{id}/transactions/{tid}/ - Delete transaction
+
+GET    /portfolios/{id}/pnl/                - P&L history
+GET    /portfolios/{id}/allocation/         - Allocation breakdown
 ```
 
-### Mock Data Structure (for development)
+### Type Definitions
 ```typescript
-interface Portfolio {
-  id: string
-  name: string
-  total_value: number
-  total_cost: number
-  total_pnl: number
-  day_pnl: number
-  holdings: Holding[]
-  transactions: Transaction[]
-}
-
 interface Holding {
   id: string
+  portfolio_id: string
   symbol: string
   name: string
+  asset_class: 'stocks' | 'crypto' | 'bonds' | 'etf' | 'options' | 'cash'
   quantity: number
   average_cost: number
   current_price: number
   current_value: number
   unrealized_pnl: number
+  unrealized_pnl_percent: number
+  day_change: number
+  day_change_percent: number
+  weight: number
+  sector?: string
+  exchange?: string
+  created_at: string
+  updated_at: string
+}
+
+interface Transaction {
+  id: string
+  portfolio_id: string
+  holding_id?: string
+  type: 'buy' | 'sell' | 'dividend' | 'transfer' | 'split' | 'fee'
+  symbol: string
+  quantity: number
+  price: number
+  total: number
+  fees: number
+  date: string
+  notes?: string
+  created_at: string
+}
+
+interface PortfolioSummary {
+  total_value: number
+  total_cost: number
+  total_pnl: number
+  total_pnl_percent: number
+  day_change: number
+  day_change_percent: number
+  holdings_count: number
+  asset_allocation: { class: string; value: number; percentage: number }[]
+}
+```
+
+### Implementation Steps
+
+#### Step 1: Create Holdings Types & API Client
+- [ ] Define TypeScript interfaces for holdings, transactions
+- [ ] Create API client functions
+- [ ] Add mock data for development
+
+#### Step 2: Create Holdings Store
+- [ ] Zustand store with holdings state
+- [ ] Actions: fetch, add, update, remove
+- [ ] Computed: totalValue, totalPnl, allocation
+
+#### Step 3: Build Holdings Data Table
+- [ ] Install @tanstack/react-table
+- [ ] Create columns with sorting/filtering
+- [ ] Add pagination and column visibility
+- [ ] Style with shadcn components
+
+#### Step 4: Add Transaction Dialogs
+- [ ] Buy/Sell transaction form
+- [ ] Add new asset search
+- [ ] Edit existing holding
+- [ ] Delete confirmation
+
+#### Step 5: Build Charts
+- [ ] P&L line chart (Recharts)
+- [ ] Allocation pie chart
+- [ ] Top holdings bar chart
+- [ ] Responsive design
+
+#### Step 6: Export & Integration
+- [ ] CSV/JSON export for holdings
+- [ ] CSV export for transactions
+- [ ] Integrate with portfolio selector
+- [ ] Add keyboard navigation
+
+### Mock Data for Development
+```typescript
+const mockHoldings: Holding[] = [
+  {
+    id: '1',
+    portfolio_id: 'p1',
+    symbol: 'AAPL',
+    name: 'Apple Inc.',
+    asset_class: 'stocks',
+    quantity: 100,
+    average_cost: 150.00,
+    current_price: 178.50,
+    current_value: 17850,
+    unrealized_pnl: 2850,
+    unrealized_pnl_percent: 19,
+    day_change: 125,
+    day_change_percent: 0.7,
+    weight: 15.2,
+    sector: 'Technology',
+  },
+  // ... more holdings
+]
+
+const mockTransactions: Transaction[] = [
+  {
+    id: 't1',
+    portfolio_id: 'p1',
+    type: 'buy',
+    symbol: 'AAPL',
+    quantity: 100,
+    price: 150.00,
+    total: 15000,
+    fees: 0,
+    date: '2024-01-15T10:00:00Z',
+  },
+  // ... more transactions
+]
+```
+
+### Usage Examples
+```typescript
+// Fetch holdings
+const { holdings, fetchHoldings } = useHoldingsStore()
+useEffect(() => { fetchHoldings('portfolio-1') }, [])
+
+// Add transaction
+await transactionsApi.create({
+  portfolio_id: 'p1',
+  type: 'buy',
+  symbol: 'NVDA',
+  quantity: 50,
+  price: 500.00,
+})
+
+// Export holdings
+exportHoldingsToCSV(holdings, 'my-holdings.csv')
+```
+
+### API Integration
+Use existing patterns from `lib/api/portfolio.ts`:
+- Consistent error handling
+- Loading states
+- Optimistic updates
+- Cache invalidation
   day_change: number
   weight: number
 }
