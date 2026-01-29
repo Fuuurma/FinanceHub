@@ -80,6 +80,73 @@ export interface TradingSignal {
   description: string
 }
 
+// Indicator-specific data types
+export interface MovingAverageData {
+  symbol: string
+  timeframe: TimeFrame
+  ma_type: 'sma' | 'ema' | 'wma'
+  period: number
+  values: Array<{
+    timestamp: string
+    ma: number
+    price: number
+  }>
+}
+
+export interface BollingerBandsData {
+  symbol: string
+  timeframe: TimeFrame
+  period: number
+  standard_deviation: number
+  values: Array<{
+    timestamp: string
+    upper: number
+    middle: number
+    lower: number
+    price: number
+    bandwidth: number
+    percent_b: number
+  }>
+}
+
+export interface MACDData {
+  symbol: string
+  timeframe: TimeFrame
+  fast_period: number
+  slow_period: number
+  signal_period: number
+  values: Array<{
+    timestamp: string
+    macd: number
+    signal: number
+    histogram: number
+  }>
+}
+
+export interface StochasticData {
+  symbol: string
+  timeframe: TimeFrame
+  k_period: number
+  d_period: number
+  values: Array<{
+    timestamp: string
+    k: number
+    d: number
+    signal: string
+  }>
+}
+
+export interface RSIData {
+  symbol: string
+  timeframe: TimeFrame
+  period: number
+  values: Array<{
+    timestamp: string
+    rsi: number
+    signal: string
+  }>
+}
+
 // Default indicator configurations
 export const DEFAULT_INDICATORS: Record<IndicatorType, IndicatorConfig> = {
   sma: {

@@ -64,7 +64,7 @@ export interface AdvancedStats {
 }
 
 // Earnings
-export interface EarningsReport {
+export interface IEXEarningsReport {
   actualEPS: number
   estimatedEPS: number
   EPSSurprisePercent: number
@@ -79,8 +79,18 @@ export interface EarningsReport {
 }
 
 // Earnings with additional fields for UI
-export interface Earnings extends EarningsReport {
-  fiscalPeriod: string
+export interface Earnings {
+  actualEPS: number
+  estimatedEPS: number
+  EPSSurprisePercent: number
+  EPSSurpriseDollar?: number
+  reportDate: string
+  fiscalDate: string
+  fiscalYear: number
+  fiscalPeriod: number | null | string
+  period: 'quarterly' | 'annual'
+  announcementTime?: string
+  currency?: string
   surprisePercent?: number
 }
 
@@ -149,7 +159,7 @@ export interface Peer extends PeerCompany {
 }
 
 // Market Movers
-export interface MarketMover {
+export interface IEXMarketMover {
   symbol: string
   latestPrice: number
   price?: number
@@ -162,14 +172,14 @@ export interface MarketMover {
 }
 
 // Sector Performance
-export interface SectorPerformance {
+export interface IEXSectorPerformance {
   name: string
   performance: number
   sectorKey?: string
 }
 
 // Chart Data
-export interface ChartDataPoint {
+export interface IEXChartDataPoint {
   date: string
   open: number
   high: number
@@ -220,7 +230,7 @@ export interface StockSplit {
 }
 
 // News
-export interface NewsArticle {
+export interface IEXNewsArticle {
   datetime: number
   headline: string
   source: string

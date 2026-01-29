@@ -121,14 +121,14 @@ export interface EconomicIndicatorCard {
   description?: string
 }
 
-export interface YieldCurvePoint {
+export interface FREDYieldCurvePoint {
   maturity: string
   name: string
   rate: number
   date: string
 }
 
-export interface ChartDataPoint {
+export interface FREDChartDataPoint {
   date: string
   value: number
   label?: string

@@ -4,7 +4,16 @@
  */
 
 import { apiClient } from './client'
-import type { MacroDashboardData, EconomicIndicator, EconomicDataPoint, YieldCurveData, CreditSpreadsData, InflationData, ChartDataPoint } from '@/lib/types'
+import type {
+  MacroDashboardData,
+  EconomicIndicator,
+  EconomicDataPoint,
+  YieldCurveData,
+  CreditSpreadsData,
+  InflationData,
+  ChartDataPoint,
+  YieldCurvePoint,
+} from '@/lib/types'
 
 export const economicApi = {
   /**
@@ -30,7 +39,15 @@ export const economicApi = {
     limit?: number
   }): Promise<EconomicIndicator | null> {
     try {
-      const response = await apiClient.get<EconomicIndicator>(`/economic/indicators/${seriesId}`, params)
+      const queryParams: Record<string, string | number> = {}
+      if (params?.observation_start) queryParams.observation_start = params.observation_start
+      if (params?.observation_end) queryParams.observation_end = params.observation_end
+      if (params?.frequency) queryParams.frequency = params.frequency
+      if (params?.limit) queryParams.limit = params.limit
+
+      const response = await apiClient.get<EconomicIndicator>(`/economic/indicators/${seriesId}`, {
+        params: queryParams
+      })
       return response
     } catch (error) {
       console.error(`Failed to fetch indicator ${seriesId}:`, error)
@@ -47,7 +64,14 @@ export const economicApi = {
     limit?: number
   }): Promise<EconomicDataPoint[] | null> {
     try {
-      const response = await apiClient.get<EconomicDataPoint[]>(`/economic/data/${seriesId}`, params)
+      const queryParams: Record<string, string | number> = {}
+      if (params?.start_date) queryParams.start_date = params.start_date
+      if (params?.end_date) queryParams.end_date = params.end_date
+      if (params?.limit) queryParams.limit = params.limit
+
+      const response = await apiClient.get<EconomicDataPoint[]>(`/economic/data/${seriesId}`, {
+        params: queryParams
+      })
       return response
     } catch (error) {
       console.error(`Failed to fetch data points for ${seriesId}:`, error)
@@ -63,7 +87,13 @@ export const economicApi = {
     end_date?: string
   }): Promise<YieldCurveData | null> {
     try {
-      const response = await apiClient.get<YieldCurveData>('/economic/yield-curve', params)
+      const queryParams: Record<string, string | number> = {}
+      if (params?.start_date) queryParams.start_date = params.start_date
+      if (params?.end_date) queryParams.end_date = params.end_date
+
+      const response = await apiClient.get<YieldCurveData>('/economic/yield-curve', {
+        params: queryParams
+      })
       return response
     } catch (error) {
       console.error('Failed to fetch yield curve:', error)
@@ -106,7 +136,14 @@ export const economicApi = {
     end_date?: string
   }): Promise<ChartDataPoint[] | null> {
     try {
-      const response = await apiClient.get<ChartDataPoint[]>('/economic/gdp', params)
+      const queryParams: Record<string, string | number> = {}
+      if (params?.real_gdp !== undefined) queryParams.real_gdp = params.real_gdp ? 1 : 0
+      if (params?.start_date) queryParams.start_date = params.start_date
+      if (params?.end_date) queryParams.end_date = params.end_date
+
+      const response = await apiClient.get<ChartDataPoint[]>('/economic/gdp', {
+        params: queryParams
+      })
       return response
     } catch (error) {
       console.error('Failed to fetch GDP data:', error)
@@ -122,7 +159,13 @@ export const economicApi = {
     end_date?: string
   }): Promise<ChartDataPoint[] | null> {
     try {
-      const response = await apiClient.get<ChartDataPoint[]>('/economic/unemployment', params)
+      const queryParams: Record<string, string | number> = {}
+      if (params?.start_date) queryParams.start_date = params.start_date
+      if (params?.end_date) queryParams.end_date = params.end_date
+
+      const response = await apiClient.get<ChartDataPoint[]>('/economic/unemployment', {
+        params: queryParams
+      })
       return response
     } catch (error) {
       console.error('Failed to fetch unemployment data:', error)
@@ -139,7 +182,14 @@ export const economicApi = {
     end_date?: string
   }): Promise<ChartDataPoint[] | null> {
     try {
-      const response = await apiClient.get<ChartDataPoint[]>('/economic/interest-rates', params)
+      const queryParams: Record<string, string | number> = {}
+      if (params?.maturity) queryParams.maturity = params.maturity
+      if (params?.start_date) queryParams.start_date = params.start_date
+      if (params?.end_date) queryParams.end_date = params.end_date
+
+      const response = await apiClient.get<ChartDataPoint[]>('/economic/interest-rates', {
+        params: queryParams
+      })
       return response
     } catch (error) {
       console.error('Failed to fetch interest rates:', error)
@@ -155,7 +205,13 @@ export const economicApi = {
     end_date?: string
   }): Promise<any | null> {
     try {
-      const response = await apiClient.get<any>('/economic/housing', params)
+      const queryParams: Record<string, string | number> = {}
+      if (params?.start_date) queryParams.start_date = params.start_date
+      if (params?.end_date) queryParams.end_date = params.end_date
+
+      const response = await apiClient.get<any>('/economic/housing', {
+        params: queryParams
+      })
       return response
     } catch (error) {
       console.error('Failed to fetch housing data:', error)
@@ -195,8 +251,7 @@ export const economicApi = {
   async searchIndicators(query: string, limit: number = 20): Promise<EconomicIndicator[] | null> {
     try {
       const response = await apiClient.get<EconomicIndicator[]>('/economic/search', {
-        search: query,
-        limit
+        params: { search: query, limit }
       })
       return response
     } catch (error) {

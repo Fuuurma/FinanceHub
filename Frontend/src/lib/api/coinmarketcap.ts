@@ -9,7 +9,7 @@ import type {
   CryptoInfo,
   GlobalMetrics,
   MarketPair,
-  ExchangeInfo,
+  CMCExchangeInfo as ExchangeInfo,
   TrendingCrypto,
   CryptoOHLCV,
 } from '@/lib/types/coinmarketcap'

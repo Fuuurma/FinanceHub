@@ -140,7 +140,7 @@ export interface MarketPair {
 }
 
 // Exchange Info
-export interface ExchangeInfo {
+export interface CMCExchangeInfo {
   id: number
   name: string
   slug: string

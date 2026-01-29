@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { iexCloudApi } from '@/lib/api/iex-cloud'
-import type { MarketMover } from '@/lib/types/iex-cloud'
+import type { IEXMarketMover as MarketMover } from '@/lib/types/iex-cloud'
 import { TrendingUp, TrendingDown, Activity, RefreshCw, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 

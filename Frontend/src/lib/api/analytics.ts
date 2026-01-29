@@ -59,8 +59,10 @@ export const analyticsApi = {
     apiClient.post<VaRResult>('/api/v1/advanced-risk-management/var', data),
 
   getHistoricalVaR: (returns: number[][], weights: number[], confidence_level = 0.95) =>
-    apiClient.get<VaRResult>('/api/v1/advanced-risk-management/var-historical', {
-      params: { returns, weights, confidence_level }
+    apiClient.post<VaRResult>('/api/v1/advanced-risk-management/var-historical', {
+      returns,
+      weights,
+      confidence_level
     }),
 
   runStressTest: (data: StressTestRequest) =>

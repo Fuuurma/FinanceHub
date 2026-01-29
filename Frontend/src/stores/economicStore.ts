@@ -5,7 +5,7 @@
 
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import type { MacroDashboardData, DashboardConfig, DEFAULT_DASHBOARD_CONFIG } from '@/lib/types'
+import { MacroDashboardData, DashboardConfig, DEFAULT_DASHBOARD_CONFIG } from '@/lib/types'
 
 interface EconomicStore {
   macroData: MacroDashboardData | null
