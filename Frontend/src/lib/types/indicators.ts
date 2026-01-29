@@ -1,0 +1,179 @@
+// Technical Indicator Types
+export type IndicatorType =
+  | 'sma'     // Simple Moving Average
+  | 'ema'     // Exponential Moving Average
+  | 'wma'     // Weighted Moving Average
+  | 'bollinger' // Bollinger Bands
+  | 'rsi'     // Relative Strength Index
+  | 'macd'    // Moving Average Convergence Divergence
+  | 'stochastic' // Stochastic Oscillator
+  | 'cci'     // Commodity Channel Index
+  | 'williams_r' // Williams %R
+  | 'atr'     // Average True Range
+  | 'obv'     // On-Balance Volume
+  | 'mfi'     // Money Flow Index
+  | 'ad'      // Accumulation/Distribution Line
+  | 'ichimoku' // Ichimoku Cloud
+  | 'parabolic_sar' // Parabolic SAR
+
+export type TimeFrame = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w'
+
+export interface IndicatorConfig {
+  type: IndicatorType
+  params: Record<string, number>
+  visible: boolean
+  color: string
+  secondary_yaxis?: boolean
+}
+
+export interface IndicatorData {
+  indicator: IndicatorType
+  symbol: string
+  timeframe: TimeFrame
+  values: Array<{
+    timestamp: string
+    value: number
+    signal?: 'buy' | 'sell' | 'neutral'
+  }>
+  params: Record<string, number>
+  calculated_at: string
+}
+
+export interface ChartDataPoint {
+  timestamp: string
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+}
+
+export interface TechnicalAnalysis {
+  symbol: string
+  timeframe: TimeFrame
+  trend: 'bullish' | 'bearish' | 'neutral'
+  strength: number // 0-100
+  support_levels: number[]
+  resistance_levels: number[]
+  indicators: {
+    [key: string]: IndicatorData
+  }
+  signals: TradingSignal[]
+  analyzed_at: string
+}
+
+export interface TradingSignal {
+  type: 'buy' | 'sell' | 'hold'
+  indicator: string
+  strength: 'weak' | 'moderate' | 'strong'
+  price: number
+  timestamp: string
+  description: string
+}
+
+// Default indicator configurations
+export const DEFAULT_INDICATORS: Record<IndicatorType, IndicatorConfig> = {
+  sma: {
+    type: 'sma',
+    params: { period: 20 },
+    visible: true,
+    color: '#3b82f6',
+  },
+  ema: {
+    type: 'ema',
+    params: { period: 12 },
+    visible: true,
+    color: '#8b5cf6',
+  },
+  wma: {
+    type: 'wma',
+    params: { period: 10 },
+    visible: false,
+    color: '#06b6d4',
+  },
+  bollinger: {
+    type: 'bollinger',
+    params: { period: 20, stdDev: 2 },
+    visible: false,
+    color: '#f59e0b',
+  },
+  rsi: {
+    type: 'rsi',
+    params: { period: 14 },
+    visible: false,
+    color: '#ef4444',
+    secondary_yaxis: true,
+  },
+  macd: {
+    type: 'macd',
+    params: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
+    visible: false,
+    color: '#10b981',
+    secondary_yaxis: true,
+  },
+  stochastic: {
+    type: 'stochastic',
+    params: { kPeriod: 14, dPeriod: 3 },
+    visible: false,
+    color: '#f97316',
+    secondary_yaxis: true,
+  },
+  cci: {
+    type: 'cci',
+    params: { period: 20 },
+    visible: false,
+    color: '#06b6d4',
+    secondary_yaxis: true,
+  },
+  williams_r: {
+    type: 'williams_r',
+    params: { period: 14 },
+    visible: false,
+    color: '#eab308',
+    secondary_yaxis: true,
+  },
+  atr: {
+    type: 'atr',
+    params: { period: 14 },
+    visible: false,
+    color: '#a855f7',
+    secondary_yaxis: true,
+  },
+  obv: {
+    type: 'obv',
+    params: {},
+    visible: false,
+    color: '#22c55e',
+    secondary_yaxis: true,
+  },
+  mfi: {
+    type: 'mfi',
+    params: { period: 14 },
+    visible: false,
+    color: '#ec4899',
+    secondary_yaxis: true,
+  },
+  ad: {
+    type: 'ad',
+    params: {},
+    visible: false,
+    color: '#14b8a6',
+    secondary_yaxis: true,
+  },
+  ichimoku: {
+    type: 'ichimoku',
+    params: {
+      tenkanPeriod: 9,
+      kijunPeriod: 26,
+      senkouSpanBPeriod: 52,
+    },
+    visible: false,
+    color: '#6366f1',
+  },
+  parabolic_sar: {
+    type: 'parabolic_sar',
+    params: { step: 0.02, max: 0.2 },
+    visible: false,
+    color: '#f43f5e',
+  },
+}
