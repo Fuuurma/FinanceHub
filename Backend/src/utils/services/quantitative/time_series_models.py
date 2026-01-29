@@ -44,6 +44,24 @@ class KalmanFilterResult:
     compute_time_ms: float
 
 
+@dataclass
+class HalfLifeResult:
+    """Result container for half-life calculation."""
+    half_life: float
+    hurst_exponent: float
+    mean_reversion_strength: str
+    compute_time_ms: float
+
+
+@dataclass
+class HurstExponentResult:
+    """Result container for Hurst exponent estimation."""
+    hurst_exponent: float
+    trend_type: str
+    interpretation: str
+    compute_time_ms: float
+
+
 class TimeSeriesModels:
     """
     Time series forecasting and volatility models.
@@ -366,7 +384,7 @@ class TimeSeriesModels:
         self,
         data: np.ndarray,
         lookback: Optional[int] = None
-    ) -> float:
+    ) -> HalfLifeResult:
         """
         Calculate mean reversion half-life.
         
@@ -375,6 +393,9 @@ class TimeSeriesModels:
         
         where phi is the speed of mean reversion.
         """
+        import time
+        start_time = time.perf_counter()
+        
         if lookback is None:
             lookback = len(data)
         
@@ -389,11 +410,94 @@ class TimeSeriesModels:
         
         # Half-life
         if phi >= 1 or phi <= -1:
-            return float('inf')
+            half_life = float('inf')
+        else:
+            half_life = -np.log(2) / np.log(phi)
         
-        half_life = -np.log(2) / np.log(phi)
+        # Hurst exponent for context
+        hurst = self.hurst_exponent(data)
         
-        return max(0, half_life)
+        # Interpret mean reversion strength
+        if half_life == float('inf'):
+            strength = "non_mean_reverting"
+        elif half_life < 10:
+            strength = "strong_mean_reversion"
+        elif half_life < 50:
+            strength = "moderate_mean_reversion"
+        elif half_life < 200:
+            strength = "weak_mean_reversion"
+        else:
+            strength = "non_mean_reverting"
+        
+        compute_time_ms = (time.perf_counter() - start_time) * 1000
+        
+        return HalfLifeResult(
+            half_life=max(0, half_life),
+            hurst_exponent=hurst,
+            mean_reversion_strength=strength,
+            compute_time_ms=compute_time_ms
+        )
+    
+    def estimate_hurst_exponent(
+        self,
+        data: np.ndarray,
+        max_scale: int = 10
+    ) -> HurstExponentResult:
+        """
+        Estimate Hurst exponent for long-term memory using R/S analysis.
+        
+        H < 0.5: Mean-reverting (anti-persistent)
+        H = 0.5: Random walk (Brownian motion)
+        H > 0.5: Trending (persistent)
+        """
+        import time
+        start_time = time.perf_counter()
+        
+        n = len(data)
+        
+        # Calculate R/S for different scales
+        scales = range(2, min(max_scale + 1, n // 4))
+        rs_ratios = []
+        
+        for tau in scales:
+            rs_tau = 0
+            for i in range(0, n - tau, tau):
+                segment = data[i:i+tau]
+                mean = np.mean(segment)
+                cumdev = np.cumsum(segment - mean)
+                R = np.max(cumdev) - np.min(cumdev)
+                S = np.std(segment, ddof=1)
+                if S > 0:
+                    rs_tau += R / S
+            rs_ratios.append(rs_tau / (n // tau))
+        
+        # Log-log regression: log(R/S) = H * log(n) + c
+        log_scales = np.log(list(scales))
+        log_rs = np.log(rs_ratios)
+        
+        slope, intercept, r_value, p_value, std_err = stats.linregress(log_scales, log_rs)
+        
+        hurst = max(0, min(1, slope))
+        
+        # Interpret
+        if hurst < 0.45:
+            trend_type = "mean_reverting"
+            interpretation = "H < 0.5: Anti-persistent, mean-reverting behavior"
+        elif hurst < 0.55:
+            trend_type = "random_walk"
+            interpretation = "H ≈ 0.5: Random walk, no predictable pattern"
+        else:
+            trend_type = "trending"
+            interpretation = "H > 0.5: Persistent, trending behavior"
+        
+        compute_time_ms = (time.perf_counter() - start_time) * 1000
+        
+        return HurstExponentResult(
+            hurst_exponent=hurst,
+            trend_type=trend_type,
+            interpretation=interpretation,
+            compute_time_ms=compute_time_ms
+        )
     
     def hurst_exponent(
         self,
@@ -401,7 +505,7 @@ class TimeSeriesModels:
         max_scale: int = 10
     ) -> float:
         """
-        Estimate Hurst exponent for long-term memory.
+        Simple Hurst exponent estimation.
         
         H < 0.5: Mean-reverting
         H = 0.5: Random walk
@@ -426,7 +530,7 @@ class TimeSeriesModels:
         
         slope, _, _, _, _ = stats.linregress(log_scales, log_rms)
         
-        return slope
+        return max(0, min(1, slope))
 
 
 def get_time_series_models() -> TimeSeriesModels:
