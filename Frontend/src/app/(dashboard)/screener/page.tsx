@@ -14,7 +14,10 @@ import {
   TrendingUp,
   TrendingDown,
   X,
-  Loader2
+  Loader2,
+  Download,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { screenerApi } from '@/lib/api/screener'
 import type {
@@ -34,6 +37,8 @@ export default function ScreenerPage() {
   const [sortOrder, setSortOrder] = useState('desc')
   const [limit, setLimit] = useState(20)
   const [selectedFilters, setSelectedFilters] = useState<ScreenerFilter[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('json')
 
   useEffect(() => {
     loadFilters()
@@ -60,6 +65,7 @@ export default function ScreenerPage() {
     try {
       setLoading(true)
       setError('')
+      setCurrentPage(1)
       const response = await screenerApi.screenAssets(
         selectedFilters.length > 0 ? selectedFilters : undefined,
         selectedPreset,
@@ -107,10 +113,65 @@ export default function ScreenerPage() {
     setSelectedFilters(selectedFilters.filter((_, i) => i !== index))
   }
 
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
+
   const filteredResults = results.filter(result =>
     result.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
     result.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const paginatedResults = filteredResults.slice(
+    (currentPage - 1) * limit,
+    currentPage * limit
+  )
+
+  const totalPages = Math.ceil(filteredResults.length / limit)
+
+  const handleExport = () => {
+    if (filteredResults.length === 0) return
+
+    if (exportFormat === 'json') {
+      const data = JSON.stringify(filteredResults, null, 2)
+      const blob = new Blob([data], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `screener-results-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } else {
+      const headers = ['Symbol', 'Name', 'Asset Type', 'Price', 'Change %', 'Volume', 'Market Cap', 'P/E Ratio']
+      const rows = filteredResults.map(r => [
+        r.symbol,
+        r.name,
+        r.asset_type,
+        r.price?.toFixed(2) || 'N/A',
+        r.change_percent !== null ? `${r.change_percent >= 0 ? '+' : ''}${r.change_percent.toFixed(2)}%` : 'N/A',
+        r.volume ? (r.volume / 1000000).toFixed(2) + 'M' : 'N/A',
+        r.market_cap ? `$${(r.market_cap / 1000000000).toFixed(2)}B` : 'N/A',
+        r.pe_ratio !== null ? r.pe_ratio.toFixed(2) : 'N/A'
+      ])
+      
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n')
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `screener-results-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -133,6 +194,19 @@ export default function ScreenerPage() {
               <Filter className="h-4 w-4 mr-2" />
             )}
             Run Screener
+          </Button>
+          <Select value={exportFormat} onValueChange={(v: 'csv' | 'json') => setExportFormat(v)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="json">JSON</SelectItem>
+              <SelectItem value="csv">CSV</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" onClick={handleExport} disabled={filteredResults.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Export {exportFormat.toUpperCase()}
           </Button>
         </div>
       </div>
@@ -268,7 +342,7 @@ export default function ScreenerPage() {
                 </div>
               </div>
               <CardDescription>
-                Showing {filteredResults.length} of {results.length} results
+                Showing {((currentPage - 1) * limit) + 1}-{Math.min(currentPage * limit, filteredResults.length)} of {filteredResults.length} results
                 {results.length > 0 && ` • Screened ${results.length} assets`}
               </CardDescription>
             </CardHeader>
@@ -283,7 +357,7 @@ export default function ScreenerPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {filteredResults.map((result) => (
+                  {paginatedResults.map((result) => (
                     <div
                       key={result.id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -349,13 +423,41 @@ export default function ScreenerPage() {
                         <Button variant="ghost" size="sm">
                           View
                         </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               )}
+               
+               {filteredResults.length > limit && (
+                 <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                   <div className="text-sm text-muted-foreground">
+                     Page {currentPage} of {totalPages}
+                   </div>
+                   <div className="flex gap-2">
+                     <Button
+                       variant="outline"
+                       size="sm"
+                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                       disabled={currentPage === 1}
+                     >
+                       <ChevronLeft className="h-4 w-4 mr-1" />
+                       Previous
+                     </Button>
+                     <Button
+                       variant="outline"
+                       size="sm"
+                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                       disabled={currentPage === totalPages}
+                     >
+                       Next
+                       <ChevronRight className="h-4 w-4 ml-1" />
+                     </Button>
+                   </div>
+                 </div>
+               )}
+             </CardContent>
+           </Card>
         </div>
       </div>
     </div>
