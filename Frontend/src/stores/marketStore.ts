@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { MarketData, AssetType } from '../types/market';
-import { apiClient } from '../utils/api';
+import { MarketData, AssetType } from '../lib/types/market';
+import { apiClient } from '../lib/api/client';
 
 interface MarketState {
   marketData: MarketData[];

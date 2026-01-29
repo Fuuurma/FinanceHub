@@ -53,24 +53,31 @@ const navItems = [
     ]
   },
   {
+    title: 'Charts',
+    href: '/charts/advanced',
+    icon: BarChart3,
+    shortcut: '4',
+    description: 'Advanced charting tools'
+  },
+  {
     title: 'Analysis',
     href: '/analytics',
     icon: BarChart3,
-    shortcut: '4',
+    shortcut: '5',
     description: 'Analytics & reports'
   },
   {
     title: 'Fundamentals',
     href: '/fundamentals',
     icon: FileText,
-    shortcut: '5',
+    shortcut: '6',
     description: 'Fundamental analysis'
   },
   {
     title: 'Intelligence',
     href: '/news',
     icon: Newspaper,
-    shortcut: '6',
+    shortcut: '7',
     description: 'News & sentiment',
     submenu: [
       { title: 'News Feed', href: '/news' },
@@ -112,7 +119,7 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupLabel className="text-[9px] font-black uppercase text-foreground/40 px-3 mb-1 group-data-[collapsible=icon]:hidden flex items-center justify-between">
               <span>Core_Navigation</span>
-              <kbd className="h-4 px-1 border border-foreground/20 text-[8px] font-mono rounded-none">⌘1-6</kbd>
+              <kbd className="h-4 px-1 border border-foreground/20 text-[8px] font-mono rounded-none">⌘1-7</kbd>
             </SidebarGroupLabel>
             <SidebarMenu className="px-2 gap-1">
               {navItems.map((item) => (

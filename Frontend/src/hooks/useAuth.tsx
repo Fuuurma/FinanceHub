@@ -6,10 +6,10 @@
 
 import { useCallback } from 'react'
 import { useAuth as useAuthContext } from '@/contexts/AuthContext'
-import type { LoginInput, RegisterInput, User, AuthContextType } from '@/lib/types'
+import type { LoginInput, RegisterInput } from '@/lib/types'
 
 export function useLogin() {
-  const { login, setIsLoading, error, clearError } = useAuthContext()
+  const { login, setIsLoading, clearError } = useAuthContext()
 
   return useCallback(async (credentials: LoginInput) => {
     clearError()
@@ -18,15 +18,15 @@ export function useLogin() {
     try {
       await login(credentials.username, credentials.password)
     } catch (error) {
-      error(error)
+      throw error
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [login, setIsLoading, clearError])
 }
 
 export function useRegister() {
-  const { register, setIsLoading, error, clearError } = useAuthContext()
+  const { register, setIsLoading, clearError } = useAuthContext()
 
   return useCallback(async (data: RegisterInput) => {
     clearError()
@@ -35,25 +35,25 @@ export function useRegister() {
     try {
       await register(data)
     } catch (error) {
-      error(error)
+      throw error
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [register, setIsLoading, clearError])
 }
 
 export function useLogout() {
-  const { logout, error } = useAuthContext()
+  const { logout, setError } = useAuthContext()
 
   return useCallback(async () => {
-    error(null)
+    setError(null)
 
     try {
       await logout()
     } catch (error) {
-      error(error)
+      throw error
     }
-  }
+  }, [logout, setError])
 }
 
 export function useAuthCheck() {
@@ -90,7 +90,7 @@ export function useUpdateProfile() {
     } catch (error) {
       throw error
     }
-  }
+  }, [updateUser])
 }
 
 export function useRefreshToken() {

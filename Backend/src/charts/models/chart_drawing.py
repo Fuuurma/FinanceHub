@@ -187,7 +187,7 @@ class ChartDrawingManager(UUIDModel, TimestampedModel):
     # Show/hide options
     show_volume = models.BooleanField(default=True)
     show_indicators = models.BooleanField(default=True)
-    show_drawings = models.BooleanField(default=true)
+    show_drawings = models.BooleanField(default=True)
 
     is_default = models.BooleanField(default=False)
 

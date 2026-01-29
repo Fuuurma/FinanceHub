@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { AssetType } from '@/types/market';
+import { AssetType } from '@/lib/types/market';
 
 export default function MarketStocksPage() {
   const { marketData, isLoading, error, fetchMarketData, setSelectedAsset } = useMarketStore();

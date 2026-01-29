@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AssetType } from '@/types/market';
+import { AssetType } from '@/lib/types/market';
 
 export default function MarketOverviewPage() {
   const { marketData, isLoading, error, fetchMarketData, setTimeRange } = useMarketStore();

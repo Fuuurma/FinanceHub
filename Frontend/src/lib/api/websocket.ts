@@ -7,9 +7,9 @@ import type {
   WebSocketMessage,
   SubscriptionRequest,
   WebSocketConfig,
-} from '@lib/types/realtime'
-import type { ConnectionState } from '@lib/constants/realtime'
-import { WS_CONFIG, CONNECTION_STATES } from '@lib/constants/realtime'
+} from '@/lib/types/realtime'
+import type { ConnectionState } from '@/lib/constants/realtime'
+import { WS_CONFIG, CONNECTION_STATES } from '@/lib/constants/realtime'
 
 type EventHandler = (data: any) => void
 

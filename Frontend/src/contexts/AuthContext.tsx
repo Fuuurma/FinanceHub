@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: true,
         isLoading: false,
         error: null
-      })
+      }))
 
     } catch (error) {
       setState(prev => ({

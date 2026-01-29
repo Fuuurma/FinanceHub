@@ -6,18 +6,10 @@ from assets.models.asset import Asset
 class CryptoAsset(Asset):
     """Digital Asset-specific supply metrics."""
 
-    circulating_supply = models.DecimalField(
-        max_digits=40, decimal_places=10, null=True
+    # Blockchain/contract info
+    blockchain = models.CharField(
+        max_length=100, blank=True, null=True, help_text="Blockchain network"
     )
-    total_supply = models.DecimalField(max_digits=40, decimal_places=10, null=True)
-    max_supply = models.DecimalField(max_digits=40, decimal_places=10, null=True)
-    fdv = models.DecimalField(
-        max_digits=30, decimal_places=2, null=True, help_text="Fully Diluted Valuation"
-    )
-    contract_address = models.CharField(max_length=255, blank=True, null=True)
-    blockchain = models.CharField(max_length=255, blank=True, null=True)
-
-    tvl = models.DecimalField(max_digits=40, decimal_places=10, null=True)
 
     class Meta:
         db_table = "assets_crypto"

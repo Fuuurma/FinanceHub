@@ -7,7 +7,7 @@ import { useRealtimeStore } from '@/stores/realtimeStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { AssetType } from '@/types/market';
+import { AssetType } from '@/lib/types/market';
 import { ConnectionStatus } from '@/components/realtime/ConnectionStatus';
 import { LivePriceTicker } from '@/components/realtime/LivePriceTicker';
 

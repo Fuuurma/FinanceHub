@@ -83,6 +83,145 @@ class Asset(UUIDModel, TimestampedModel, SoftDeleteModel):
         default=dict, blank=True
     )  # Extra data (sector, dividend yield, etc.)
 
+    # Type-specific fields (nullable - used for Stock, Crypto, ETF, etc.)
+    industry = models.CharField(
+        max_length=150, blank=True, null=True, help_text="Industry for stocks/ETFs"
+    )
+    sector = models.CharField(
+        max_length=150, blank=True, null=True, help_text="Sector for stocks/ETFs"
+    )
+    country_of_incorporation = models.CharField(
+        max_length=100, blank=True, null=True, help_text="Country for stocks"
+    )
+
+    # Stock-specific
+    isin = models.CharField(
+        max_length=12,
+        blank=True,
+        null=True,
+        help_text="International Securities Identification Number",
+    )
+    cusip = models.CharField(
+        max_length=9, blank=True, null=True, help_text="CUSIP for US stocks"
+    )
+    ticker_symbol = models.CharField(
+        max_length=20, blank=True, null=True, help_text="Ticker symbol for stocks"
+    )
+    exchange = models.CharField(
+        max_length=100, blank=True, null=True, help_text="Exchange name"
+    )
+
+    # Valuation metrics (nullable - available for stocks/crypto)
+    pe_ratio = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Price-to-Earnings ratio",
+    )
+    pb_ratio = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Price-to-Book ratio",
+    )
+    ps_ratio = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Price-to-Sales ratio",
+    )
+    dividend_yield = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Dividend yield percentage",
+    )
+    eps = models.DecimalField(
+        max_digits=15,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Earnings per share",
+    )
+    revenue_ttm = models.DecimalField(
+        max_digits=30,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Revenue Trailing Twelve Months",
+    )
+
+    # Market cap (nullable - for stocks/crypto)
+    market_cap_usd = models.DecimalField(
+        max_digits=30,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Market cap in USD",
+    )
+    circulating_supply = models.BigIntegerField(
+        null=True, blank=True, help_text="Circulating supply (for crypto)"
+    )
+    total_supply = models.BigIntegerField(
+        null=True, blank=True, help_text="Total supply (for crypto)"
+    )
+
+    # Crypto-specific
+    contract_address = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Blockchain contract address (for crypto)",
+    )
+    price_btc = models.DecimalField(
+        max_digits=20, decimal_places=8, null=True, blank=True, help_text="Price in BTC"
+    )
+
+    # ETF-specific
+    expense_ratio = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Expense ratio percentage",
+    )
+    aum = models.DecimalField(
+        max_digits=30,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Assets Under Management",
+    )
+
+    # Forex-specific
+    base_currency = models.CharField(
+        max_length=3, blank=True, null=True, help_text="Base currency for forex pairs"
+    )
+    quote_currency = models.CharField(
+        max_length=3, blank=True, null=True, help_text="Quote currency for forex pairs"
+    )
+    pip_size = models.DecimalField(
+        max_digits=10, decimal_places=5, null=True, blank=True, help_text="PIP size"
+    )
+
+    # Index-specific
+    index_type = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Type of index (e.g., 'Sector Index', 'Market Index')",
+    )
+    underlying_tickers = models.JSONField(
+        default=list, blank=True, help_text="Underlying assets/tickers"
+    )
+    rebalance_frequency = models.CharField(
+        max_length=50, blank=True, null=True, help_text="Rebalance frequency"
+    )
+
     class Meta:
         verbose_name = "Asset"
         verbose_name_plural = "Assets"

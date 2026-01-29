@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AssetType } from '@/types/market';
+import { AssetType } from '@/lib/types/market';
 
 export default function MarketIndicesPage() {
   const { marketData, isLoading, error, fetchMarketData } = useMarketStore();
