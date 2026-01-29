@@ -2,308 +2,116 @@
  * Data Fetching Hooks
  * Provides convenient hooks for fetching data from the API
  */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useCallback, useEffect } from 'react'
+import { apiClient } from '@/lib/api/client'
+import type { Asset, AssetDetail, PriceHistory } from '@/lib/types/market'
 
-import type { 
-  Asset, 
-  AssetDetail, 
-  PriceHistory, 
-  AssetFilter,
-  MarketOverview,
-  MarketMover,
-  SectorPerformance,
-  MarketIndex,
-  MarketType,
-  TimeInterval,
-  MoverType
-} from '@/lib/types'
+const STALE_TIME = 5 * 60 * 1000
 
-import * as assetsApi from '@/lib/api/assets'
-import * as marketsApi from '@/lib/api/markets'
-import * as userDataApi from '@/lib/api/userData'
+export function useAssetData(symbol: string, interval: string = '1d') {
+  const [data, setData] = useState<PriceHistory | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-const STALE_TIME = 5 * 60 * 1000 // 5 minutes
-const CACHE_TIME = 10 * 60 * 1000 // 10 minutes
+  useEffect(() => {
+    if (!symbol) return
 
-export function useAssetData(symbol: string, interval: TimeInterval = '1d') {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['asset', symbol, interval],
-    queryFn: () => assetsApi.getHistorical(symbol, interval),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
+    const fetchData = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const result = await apiClient.get<PriceHistory>(`/api/assets/${symbol}/history?interval=${interval}`)
+        setData(result)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch asset data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [symbol, interval])
+
+  return { data, loading, error }
 }
 
 export function useAssetDetail(symbol: string) {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['asset', symbol, 'detail'],
-    queryFn: () => assetsApi.get(symbol),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
+  const [data, setData] = useState<AssetDetail | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!symbol) return
+
+    const fetchData = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const result = await apiClient.get<AssetDetail>(`/api/assets/${symbol}`)
+        setData(result)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch asset detail')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [symbol])
+
+  return { data, loading, error }
 }
 
 export function useAssetPrice(symbol: string) {
-  const { token } =Auth()
-  
-  return useQuery({
-    queryKey: ['asset', symbol, 'price'],
-    queryFn: () => assetsApi.getPrice(symbol),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME * 3, // Price data cached longer
-    refetchInterval: 30, // Refetch price every 30s
-  })
+  const [data, setData] = useState<{ price: number; change: number; changePercent: number } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchPrice = useCallback(async () => {
+    if (!symbol) return
+
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await apiClient.get<{ price: number; change: number; changePercent: number }>(`/api/assets/${symbol}/price`)
+      setData(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch price')
+    } finally {
+      setLoading(false)
+    }
+  }, [symbol])
+
+  useEffect(() => {
+    fetchPrice()
+    const interval = setInterval(fetchPrice, 30000)
+    return () => clearInterval(interval)
+  }, [fetchPrice])
+
+  return { data, loading, error, refetch: fetchPrice }
 }
 
-export function useAssetFundamentals(symbol: string) {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['asset', symbol, 'fundamentals'],
-    queryFn: () => assetsApi.getFundamentals(symbol),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME * 6, // Fundamentals cached longer
-  })
-}
+export function useAssets(type?: string, limit: number = 20, page: number = 1) {
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-export function useAssetNews(symbol: string, limit: number = 10) {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['asset', symbol, 'news', limit],
-    queryFn: () => assetsApi.getNews(symbol, limit),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME * 3,
-  })
-}
+  const fetchAssets = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await apiClient.get<Asset[]>(`/api/assets?type=${type || ''}&limit=${limit}&page=${page}`)
+      setAssets(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch assets')
+    } finally {
+      setLoading(false)
+    }
+  }, [type, limit, page])
 
-export function useAssets(filter: AssetFilter, limit: number = 20, page: number = 1) {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['assets', 'filter', 'limit', 'page'],
-    queryFn: () => assetsApi.list(filter, limit, (page - 1) * limit),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
+  useEffect(() => {
+    fetchAssets()
+  }, [fetchAssets])
 
-export function useMarketOverview() {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['market', 'overview'],
-    queryFn: () => marketsApi.getOverview(),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function useMarketMovers(type: MoverType = 'gainers', limit: number = 10) {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['market', 'movers', type, limit],
-    queryFn: () => marketsApi.getMovers(type, limit),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function useSectors() {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['market', 'sectors'],
-    queryFn: () => marketsApi.getSectors(),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function useIndices() {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['market', 'indices'],
-    queryFn: () => marketsApi.getIndices(),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function useTrending(assetType?: string, limit: number = 20) {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['market', 'trending', assetType, limit],
-    queryFn: () => marketsApi.getTrending(assetType, limit),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function useWatchlists() {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['data', 'watchlists'],
-    queryFn: () => userDataApi.getWatchlists(),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function useAlerts(activeOnly: boolean = false) {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['data', 'alerts', 'activeOnly'],
-    queryFn: () => userDataApi.getAlerts(activeOnly),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function usePortfolios() {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['data', 'portfolios'],
-    queryFn: () => userDataApi.getPortfolios(),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function usePortfolioHoldings(portfolioId: string) {
-  const { token } = useAuth()
-  
-  return useQuery({
-    queryKey: ['data', 'portfolios', 'holdings', portfolioId],
-    queryFn: () => userDataApi.getPortfolioHoldings(portfolioId),
-    enabled: !!token,
-    staleTime: STALE_TIME,
-    cacheTime: CACHE_TIME,
-  })
-}
-
-export function useCreateWatchlist() {
-  const queryClient = useQueryClient()
-  const { token } = useAuth()
-  
-  return useMutation({
-    mutationFn: (data: { name: string }) => userDataApi.createWatchlist(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['data', 'watchlists'])
-    },
-    })
-}
-
-export function useAddToWatchlist() {
-  const queryClient = useQueryClient()
-  const { token } = useAuth()
-  
-  return useMutation({
-    mutationFn: ({ watchlistId, assetSymbols }: { watchlistId: string; assetSymbols: string[] }) =>
-      userDataApi.addAssetsToWatchlist(watchlistId, { assetSymbols }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['data', 'watchlists'])
-    },
-  })
-}
-
-export function useDeleteWatchlist() {
-  const queryClient = useQueryClient()
-  const { token } = useAuth()
-  
-  return useMutation({
-    mutationFn: (watchlistId: string) =>
-      userDataApi.deleteWatchlist(watchlistId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['data', 'watchlists'])
-    },
-  })
-}
-
-export function useCreateAlert() {
-  const queryClient = useQueryClient()
-  const { token } = useAuth()
-  
-  return useMutation({
-    mutationFn: (data: { assetSymbol: string; condition: string; threshold: number }) =>
-      userDataApi.createAlert(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['data', 'alerts'])
-    },
-  })
-}
-
-export function useDeleteAlert() {
-  const queryClient = useQueryClient()
-  const { token } = useAuth()
-  
-  return useMutation({
-    mutationFn: (alertId: string) => userDataApi.deleteAlert(alertId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['data', 'alerts'])
-    },
-  })
-}
-
-export function useCreatePortfolio() {
-  const queryClient = useQueryClient()
-  const { token } = useAuth()
-  
-  return useMutation({
-    mutationFn: (data: { name: string }) =>
-      userDataApi.createPortfolio(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['data', 'portfolios'])
-    },
-  })
-}
-
-export function useAddHolding() {
-  const queryClient = useQueryClient()
-  const { token } = useAuth()
-  
-  return useMutation({
-    mutationFn: ({ portfolioId, data }: { portfolioId: string; data: any }) =>
-      userDataApi.addHolding(portfolioId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['data', 'portfolios'])
-    },
-  })
-}
-
-export function useDeletePortfolio() {
-  const queryClient = useQueryClient()
-  const { token } = useAuth()
-  
-  return useMutation({
-    mutationFn: (portfolioId: string) =>
-      userDataApi.deletePortfolio(portfolioId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['data', 'portfolios'])
-    },
-  })
+  return { assets, loading, error, refetch: fetchAssets }
 }

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { AssetType } from '../types/market';
 import { ScreenerCriteria, ScreenerResult } from '../types/screener';
-import { apiClient } from '../utils/api';
+import { apiClient } from '../lib/api/client';
 
 interface ScreenerState {
   criteria: ScreenerCriteria;

@@ -88,3 +88,5 @@ export const DRAWING_TOOLS = [
 ] as const
 
 export const FIBONACCI_LEVELS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1] as const
+
+export const DEFAULT_INDICATORS: string[] = ['sma', 'rsi', 'macd']

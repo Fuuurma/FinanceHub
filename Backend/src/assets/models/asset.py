@@ -83,12 +83,37 @@ class Asset(UUIDModel, TimestampedModel, SoftDeleteModel):
         default=dict, blank=True
     )  # Extra data (sector, dividend yield, etc.)
 
+    # Reference data FKs (new fields)
+    sector_fk = models.ForeignKey(
+        "assets.Sector",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assets",
+        help_text="Sector (foreign key)",
+    )
+    industry_fk = models.ForeignKey(
+        "assets.Industry",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assets",
+        help_text="Industry (foreign key)",
+    )
+
     # Type-specific fields (nullable - used for Stock, Crypto, ETF, etc.)
+    # Keep original CharField for data migration, mark as deprecated
     industry = models.CharField(
-        max_length=150, blank=True, null=True, help_text="Industry for stocks/ETFs"
+        max_length=150,
+        blank=True,
+        null=True,
+        help_text="[DEPRECATED] Use industry_fk instead",
     )
     sector = models.CharField(
-        max_length=150, blank=True, null=True, help_text="Sector for stocks/ETFs"
+        max_length=150,
+        blank=True,
+        null=True,
+        help_text="[DEPRECATED] Use sector_fk instead",
     )
     country_of_incorporation = models.CharField(
         max_length=100, blank=True, null=True, help_text="Country for stocks"

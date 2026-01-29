@@ -6,3 +6,6 @@ from .asset_class import AssetClass
 from .asset_provider import AssetProviderMapping
 from .exchange import Exchange
 from .country import Country
+from .sector import Sector
+from .industry import Industry
+from .timezone import Timezone

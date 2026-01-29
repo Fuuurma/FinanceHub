@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "ai_advisor",
     "trading",
     "charts",
+    "utils",
 ]
 
 

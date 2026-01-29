@@ -7,13 +7,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { AssetType } from '@/lib/types/market';
 
 export default function MarketStocksPage() {
   const { marketData, isLoading, error, fetchMarketData, setSelectedAsset } = useMarketStore();
 
   useEffect(() => {
-    fetchMarketData(AssetType.Stock);
+    fetchMarketData('stock');
   }, []);
 
   const handleAssetClick = (symbol: string) => {
@@ -29,7 +28,7 @@ export default function MarketStocksPage() {
         </div>
         <div className="flex gap-2">
           <Input placeholder="Search stocks..." className="w-64" />
-          <Button onClick={() => fetchMarketData(AssetType.Stock)}>Refresh</Button>
+          <Button onClick={() => fetchMarketData('stock')}>Refresh</Button>
         </div>
       </div>
 

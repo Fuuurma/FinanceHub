@@ -22,6 +22,19 @@ import { useRealtimeStore } from '@/stores/realtimeStore'
 type TimeFrame = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'
 type IndicatorType = 'SMA' | 'EMA' | 'RSI' | 'MACD' | 'BB'
 
+const TIMEFRAME_MAP: Record<string, string> = {
+  '1D': '1d',
+  '1W': '1w',
+  '1M': '1m',
+  '3M': '3m',
+  '1Y': '1y',
+  'ALL': '1y',
+}
+
+function getChartTimeframe(tf: TimeFrame): '1d' | '1w' | '1m' | '1h' | '5m' | '15m' | '4h' | undefined {
+  return TIMEFRAME_MAP[tf] as '1d' | '1w' | '1m' | '1h' | '5m' | '15m' | '4h' | undefined
+}
+
 interface AssetData {
   symbol: string
   name: string
@@ -167,7 +180,7 @@ export default function AssetDetailPage() {
 
   const handleConnect = async () => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : undefined
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') || undefined : undefined
       await connect(token)
     } catch (err) {
       console.error('Failed to connect:', err)
@@ -287,7 +300,7 @@ export default function AssetDetailPage() {
               </Button>
             ))}
           </div>
-          <RealTimeChart symbol={assetId} timeframe={selectedTimeFrame.toLowerCase()} />
+          <RealTimeChart symbol={assetId} timeframe={getChartTimeframe(selectedTimeFrame)} />
         </CardContent>
       </Card>
 

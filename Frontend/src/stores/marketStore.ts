@@ -27,7 +27,7 @@ export const useMarketStore = create<MarketState>((set, get) => ({
   selectedAsset: null,
   isLoading: false,
   error: null,
-  selectedAssetType: AssetType.Stock,
+  selectedAssetType: 'stock',
   timeRange: '1D',
 
   setMarketData: (data) => set({ marketData: data }),

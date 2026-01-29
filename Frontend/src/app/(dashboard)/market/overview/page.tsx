@@ -6,14 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AssetType } from '@/lib/types/market';
 
 export default function MarketOverviewPage() {
   const { marketData, isLoading, error, fetchMarketData, setTimeRange } = useMarketStore();
   const timeRanges = ['1D', '1W', '1M', '3M', '1Y', 'ALL'];
 
   useEffect(() => {
-    fetchMarketData(AssetType.Stock);
+    fetchMarketData('stock');
   }, []);
 
   return (

@@ -2,7 +2,7 @@
  * Alert Types
  */
 
-export interface Alert {
+export interface PriceAlert {
   id: string
   name: string
   alert_type: string
@@ -19,6 +19,8 @@ export interface Alert {
   created_at: string
   last_triggered_at: string | null
 }
+
+export type Alert = PriceAlert
 
 export interface AlertHistoryItem {
   id: string

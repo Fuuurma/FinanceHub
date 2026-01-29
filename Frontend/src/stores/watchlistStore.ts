@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { WatchlistItem } from '../types/watchlist';
-import { apiClient } from '../utils/api';
+import { apiClient } from '../lib/api/client';
 
 interface WatchlistState {
   watchlists: WatchlistItem[];

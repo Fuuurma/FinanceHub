@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from './client'
-import type { Alert, AlertHistoryItem, AlertStats } from '@/lib/types'
+import type { PriceAlert, AlertHistoryItem, AlertStats } from '@/lib/types'
 
 interface ListParams {
   status?: string
@@ -39,11 +39,11 @@ interface UpdateParams {
 }
 
 export const alertsApi = {
-  list(params?: ListParams): Promise<Alert[]> {
+  list(params?: ListParams): Promise<PriceAlert[]> {
     return apiClient.get('/alerts/', { params: { limit: 50, offset: 0, ...params } })
   },
 
-  get(id: string): Promise<Alert> {
+  get(id: string): Promise<PriceAlert> {
     return apiClient.get(`/alerts/${id}`)
   },
 
@@ -51,7 +51,7 @@ export const alertsApi = {
     return apiClient.post('/alerts/', data)
   },
 
-  update(id: string, data: UpdateParams): Promise<Alert> {
+  update(id: string, data: UpdateParams): Promise<PriceAlert> {
     return apiClient.put(`/alerts/${id}`, data)
   },
 
@@ -59,11 +59,11 @@ export const alertsApi = {
     return apiClient.delete(`/alerts/${id}`)
   },
 
-  enable(id: string): Promise<Alert> {
+  enable(id: string): Promise<PriceAlert> {
     return apiClient.post(`/alerts/${id}/enable`, {})
   },
 
-  disable(id: string): Promise<Alert> {
+  disable(id: string): Promise<PriceAlert> {
     return apiClient.post(`/alerts/${id}/disable`, {})
   },
 

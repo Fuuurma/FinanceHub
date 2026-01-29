@@ -132,7 +132,7 @@ DATA_PROVIDERS = [
         "base_url": "https://finnhub.io/api/v1",
         "rate_limit_per_minute": 60,
         "rate_limit_daily": 10000,
-        "is_active": False,  # Requires API key
+        "is_active": True,  # Activated for real-time WebSocket
         "config": {
             "free_tier": False,
             "requires_auth": True,
@@ -144,6 +144,7 @@ DATA_PROVIDERS = [
             "historical_data": True,
             "realtime": True,
             "technical_indicators": True,
+            "websocket": True,
         },
     },
     {

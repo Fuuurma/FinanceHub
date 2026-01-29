@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { alertsApi } from '@/lib/api/alerts'
-import type { Alert, AlertCreateInput, AlertHistoryItem, AlertStats } from '@/lib/types'
+import type { PriceAlert, AlertCreateInput, AlertHistoryItem, AlertStats } from '@/lib/types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertCircle, Check, X, Plus, RefreshCw, Play, Pause, Trash2 } from 'lucide-react'
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<Alert[]>([])
+  const [alerts, setAlerts] = useState<PriceAlert[]>([])
   const [stats, setStats] = useState<AlertStats | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -23,7 +23,7 @@ export default function AlertsPage() {
   const [filter, setFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null)
+  const [selectedAlert, setSelectedAlert] = useState<PriceAlert | null>(null)
   const [showHistory, setShowHistory] = useState<string | null>(null)
   const [history, setHistory] = useState<AlertHistoryItem[]>([])
 
@@ -81,7 +81,7 @@ export default function AlertsPage() {
     }
   }
 
-  const handleToggleAlert = async (alert: Alert) => {
+  const handleToggleAlert = async (alert: PriceAlert) => {
     try {
       if (alert.status === 'active') {
         await alertsApi.disable(alert.id)
@@ -98,9 +98,9 @@ export default function AlertsPage() {
     try {
       const result = await alertsApi.test(id)
       if (result.success) {
-        alert(`Alert test successful! Trigger value: ${result.trigger_value}`)
+        window.alert(`Alert test successful! Trigger value: ${result.trigger_value}`)
       } else {
-        alert(`Alert test failed: ${result.message}`)
+        window.alert(`Alert test failed: ${result.message}`)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to test alert')
@@ -418,7 +418,7 @@ export default function AlertsPage() {
             </DialogHeader>
             <div className="max-h-96 overflow-y-auto">
               {history.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No trigger history</p>
+                <p className="center text-muted-foreground py-8">No trigger history</p>
               ) : (
                 <div className="space-y-2">
                   {history.map((item) => (

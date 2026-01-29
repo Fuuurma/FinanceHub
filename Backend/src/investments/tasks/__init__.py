@@ -1,0 +1,13 @@
+"""
+Investments Tasks Module
+"""
+
+from .finnhub_tasks import *
+
+__all__ = [
+    "fetch_technical_indicators",
+    "fetch_news_with_sentiment",
+    "fetch_pattern_recognition",
+    "update_technical_indicators_batch",
+    "start_websocket_for_symbols",
+]

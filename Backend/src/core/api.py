@@ -44,6 +44,7 @@ from ai_advisor.api.reports import router as ai_reports_router
 from api.quantitative_models import router as quantitative_models_router
 from trading.api.trading import router as trading_router
 from charts.api.charts import router as charts_router
+from api.currency import router as currency_router
 
 
 # Register API exception handlers
@@ -84,3 +85,4 @@ api.add_router("/ai/v2/reports", ai_reports_router)
 api.add_router("/quantitative", quantitative_models_router)
 api.add_router("/trading", trading_router)
 api.add_router("/charts", charts_router)
+api.add_router("/currency", currency_router)

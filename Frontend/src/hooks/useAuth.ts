@@ -1,78 +1,113 @@
 /**
- * Custom React Hooks for Authentication
- * Provides convenient authentication operations
+ * React Hooks for Authentication
+ * Tailwind CSS and Radix UI
  */
+
 import { useCallback } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import type { LoginInput, RegisterInput, UpdateProfileInput } from '@/lib/types'
+import { useAuth as useAuthContext } from '@/contexts/AuthContext'
 
 export function useLogin() {
-  const { login } = useAuth()
-  
+  const { login, setIsLoading, clearError } = useAuthContext()
+
   return useCallback(async (credentials: LoginInput) => {
-    await login(credentials.username, credentials.password)
-  }, [login])
+    clearError()
+    setIsLoading(true)
+
+    try {
+      await login(credentials.username, credentials.password)
+    } catch (error) {
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }, [login, setIsLoading, clearError])
 }
 
 export function useRegister() {
-  const { register } = useAuth()
-  
+  const { register, setIsLoading, clearError } = useAuthContext()
+
   return useCallback(async (data: RegisterInput) => {
-    await register(data)
-  }, [register])
+    clearError()
+    setIsLoading(true)
+
+    try {
+      await register(data)
+    } catch (error) {
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }, [register, setIsLoading, clearError])
 }
 
 export function useLogout() {
-  const { logout } = useAuth()
-  
+  const { logout, setError } = useAuthContext()
+
   return useCallback(async () => {
-    await logout()
-  }, [logout])
+    setError(null)
+
+    try {
+      await logout()
+    } catch (error) {
+      throw error
+    }
+  }, [logout, setError])
 }
 
 export function useAuthCheck() {
-  const { checkAuthStatus } = useAuth()
-  
-  return useCallback(() => {
-    return checkAuthStatus()
-  }, [checkAuthStatus])
+  const { checkAuthStatus } = useAuthContext()
+  return checkAuthStatus()
 }
 
 export function useCurrentUser() {
-  const { user } = useAuth()
+  const { user } = useAuthContext()
   return user
 }
 
 export function useIsAuthenticated() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuthContext()
   return isAuthenticated
 }
 
 export function useAuthLoading() {
-  const { isLoading, error } = useAuth()
-  return { isLoading, error }
+  const { isLoading, error } = useAuthContext()
+  return isLoading || error !== null
+}
+
+export function useAuthError() {
+  const { error } = useAuthContext()
+  return error
+}
+
+export function useAuth() {
+  const context = useAuthContext()
+  return {
+    ...context,
+    login: context.login,
+    register: context.register,
+    logout: context.logout,
+    checkAuthStatus: context.checkAuthStatus,
+    refreshTokens: context.refreshTokens,
+    updateUser: context.updateUser,
+  }
 }
 
 export function useUpdateProfile() {
-  const { updateUser } = useAuth()
-  
-  return useCallback(async (data: UpdateProfileInput) => {
-    await updateUser(data)
+  const { updateUser } = useAuthContext()
+
+  return useCallback(async (data: any) => {
+    try {
+      await updateUser(data)
+    } catch (error) {
+      throw error
+    }
   }, [updateUser])
 }
 
 export function useRefreshToken() {
-  const { refreshTokens } = useAuth()
-  
-  return useCallback(async () => {
-    await refreshTokens()
-  }, [refreshTokens])
-}
+  const { refreshTokens } = useAuthContext()
 
-export function useClearAuthError() {
-  const { clearError } = useAuth()
-  
   return useCallback(() => {
-    clearError()
-  }, [clearError])
+    refreshTokens()
+  }, [refreshTokens])
 }

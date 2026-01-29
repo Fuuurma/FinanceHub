@@ -11,12 +11,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp, TrendingDown, Plus, Trash2, Edit2, DollarSign } from 'lucide-react'
 
-interface HoldingsPageProps {
-  portfolioId: string
-  portfolioName: string
-}
-
-export default function HoldingsPage({ portfolioId, portfolioName }: HoldingsPageProps) {
+export default function HoldingsPage() {
+  const [portfolioId] = useState('default')
+  const [portfolioName] = useState('My Portfolio')
   const [holdings, setHoldings] = useState<Holding[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

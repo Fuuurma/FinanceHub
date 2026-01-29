@@ -1,10 +1,6 @@
-/**
- * Authentication Context for Next.js
- * Tailwind CSS and Radix UI
- */
 'use client'
 
-import { createContext, useContext, useEffect, useState, useMemo } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 
 interface AuthContextType {
   user: User | null
@@ -28,27 +24,17 @@ interface User {
   roles: string[]
 }
 
-interface AuthTokens {
-  access: string
-  refresh: string
-}
-
 interface AuthContextValue extends AuthContextType {
-  user: User | null
-  token: string | null
-  refreshToken: string | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  error: string | null
   login: (username: string, password: string) => Promise<void>
   register: (data: any) => Promise<void>
   logout: () => Promise<void>
   refreshTokens: () => Promise<void>
   getMe: () => Promise<void>
   clearError: () => void
+  checkAuthStatus: () => boolean
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 const TOKEN_KEY = 'access_token'
 const REFRESH_TOKEN_KEY = 'refresh_token'
@@ -71,8 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-        'Authorization': `Bearer ${prev.token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ username, password })
       })
@@ -99,7 +84,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
         error: null
       }))
-
     } catch (error) {
       setState(prev => ({
         ...prev,
@@ -107,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error: error instanceof Error ? error.message : 'Login failed'
       }))
     }
-  }
+  }, [])
 
   const register = useCallback(async (data: any) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
@@ -126,24 +110,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(error.message || 'Registration failed')
       }
 
-      const data = await response.json()
+      const responseData = await response.json()
 
-      if (data.access && data.refresh && data.user) {
-        localStorage.setItem(TOKEN_KEY, data.access)
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh)
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user))
+      if (responseData.access && responseData.refresh && responseData.user) {
+        localStorage.setItem(TOKEN_KEY, responseData.access)
+        localStorage.setItem(REFRESH_TOKEN_KEY, responseData.refresh)
+        localStorage.setItem(USER_KEY, JSON.stringify(responseData.user))
       }
 
       setState(prev => ({
         ...prev,
-        user: data.user,
-        token: data.access,
-        refreshToken: data.refresh,
+        user: responseData.user,
+        token: responseData.access,
+        refreshToken: responseData.refresh,
         isAuthenticated: true,
         isLoading: false,
         error: null
-      })
-
+      }))
     } catch (error) {
       setState(prev => ({
         ...prev,
@@ -151,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error: error instanceof Error ? error.message : 'Registration failed'
       }))
     }
-  }
+  }, [])
 
   const logout = useCallback(async () => {
     try {
@@ -180,15 +163,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: false,
         isLoading: false,
         error: null
-      })
-
+      }))
     } catch (error) {
       setState(prev => ({
         ...prev,
         error: error instanceof Error ? error.message : 'Logout failed'
       }))
     }
-  }
+  }, [])
 
   const refreshTokens = useCallback(async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
@@ -227,7 +209,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
         error: null
       }))
-
     } catch (error) {
       setState(prev => ({
         ...prev,
@@ -235,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error: error instanceof Error ? error.message : 'Token refresh failed'
       }))
     }
-  }
+  }, [])
 
   const getMe = useCallback(async () => {
     const token = localStorage.getItem(TOKEN_KEY)
@@ -266,7 +247,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
         error: null
       }))
-
     } catch (error) {
       setState(prev => ({
         ...prev,
@@ -274,20 +254,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error: error instanceof Error ? error.message : 'Failed to fetch user data'
       }))
     }
-  }
+  }, [])
 
   const clearError = useCallback(() => {
     setState(prev => ({ ...prev, error: null }))
-  }
+  }, [])
 
   const checkAuthStatus = useCallback(() => {
     const token = localStorage.getItem(TOKEN_KEY)
     const userData = localStorage.getItem(USER_KEY)
-
     return !!token && !!userData && JSON.parse(userData)
   }, [state.token, state.user])
 
-  // Auto-refresh token before 15 minutes
   useEffect(() => {
     if (state.token) {
       const refreshTimer = setInterval(() => {
@@ -298,20 +276,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearInterval(refreshTimer)
       }
     }
+  }, [state.token, refreshTokens])
 
-    return (
-      <AuthContext.Provider value={{
-        ...state,
-        login,
-        register,
-        logout,
-        refreshTokens,
-        getMe,
-        clearError,
-        checkAuthStatus
-      }}>
-        {children}
-      </AuthContext.Provider>
-    )
-  }, [state.token, state.user])
+  return (
+    <AuthContext.Provider value={{
+      ...state,
+      login,
+      register,
+      logout,
+      refreshTokens,
+      getMe,
+      clearError,
+      checkAuthStatus
+    }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
 }

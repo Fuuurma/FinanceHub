@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import {
   Minus,
-  MinusVertical,
   TrendingUp,
   Square,
   Type,
@@ -101,7 +100,7 @@ export function DrawingTools({
       case 'horizontal_line':
         return <Minus className="h-4 w-4" />
       case 'vertical_line':
-        return <MinusVertical className="h-4 w-4" />
+        return <Minus className="h-4 w-4 rotate-90" />
       case 'trend_line':
         return <TrendingUp className="h-4 w-4" />
       case 'fibonacci':

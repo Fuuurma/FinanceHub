@@ -6,13 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AssetType } from '@/lib/types/market';
 
 export default function MarketIndicesPage() {
   const { marketData, isLoading, error, fetchMarketData } = useMarketStore();
 
   useEffect(() => {
-    fetchMarketData(AssetType.Index);
+    fetchMarketData('index');
   }, []);
 
   const indices = [
@@ -35,7 +34,7 @@ export default function MarketIndicesPage() {
           <h1 className="text-3xl font-bold">Market Indices</h1>
           <p className="text-muted-foreground">Global market indices and performance</p>
         </div>
-        <Button onClick={() => fetchMarketData(AssetType.Index)}>Refresh</Button>
+        <Button onClick={() => fetchMarketData('index')}>Refresh</Button>
       </div>
 
       <Card>

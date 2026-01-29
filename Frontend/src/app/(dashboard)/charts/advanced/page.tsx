@@ -21,12 +21,8 @@ import {
 import type { IndicatorConfig, DrawingType, TimeFrame } from '@/lib/types/indicators'
 import { cn } from '@/lib/utils'
 
-interface AdvancedChartPageProps {
-  symbol: string
-}
-
-export default function AdvancedChartPage({ symbol: defaultSymbol = 'AAPL' }: AdvancedChartPageProps) {
-  const [symbol, setSymbol] = useState(defaultSymbol)
+export default function AdvancedChartPage() {
+  const [symbol, setSymbol] = useState('AAPL')
   const [timeframe, setTimeframe] = useState<TimeFrame>('1d')
   const [indicators, setIndicators] = useState<IndicatorConfig[]>([])
   const [drawings, setDrawings] = useState<any[]>([])
@@ -230,9 +226,9 @@ export default function AdvancedChartPage({ symbol: defaultSymbol = 'AAPL' }: Ad
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Tips</h4>
-                  <ul className="text-sm text-muted-space-y-1">
+                  <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• Drawings are saved per symbol and timeframe</li>
-li>• Toggle visibility to show/hide without deleting</li>
+                    <li>• Toggle visibility to show/hide without deleting</li>
                     <li>• Use contrasting colors for multiple drawings</li>
                     <li>• Combine multiple indicators for confirmation</li>
                   </ul>

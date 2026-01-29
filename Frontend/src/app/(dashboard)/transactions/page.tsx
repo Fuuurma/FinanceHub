@@ -12,12 +12,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge'
 import { Plus, Download, Filter, ArrowUpRight, ArrowDownRight, DollarSign, Calendar, Trash2 } from 'lucide-react'
 
-interface TransactionsPageProps {
-  portfolioId: string
-  portfolioName: string
-}
-
-export default function TransactionsPage({ portfolioId, portfolioName }: TransactionsPageProps) {
+export default function TransactionsPage() {
+  const [portfolioId] = useState('default')
+  const [portfolioName] = useState('My Portfolio')
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
