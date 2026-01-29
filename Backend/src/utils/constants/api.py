@@ -48,6 +48,7 @@ RATE_LIMITS = {
     'data_intensive': '50/hour',
     'anon': '100/hour',
     'auth': '1000/hour',
+    'premium': '100/hour',  # AI features (paid)
 }
 
 # Cache TTL - Individual (for backward compatibility)
