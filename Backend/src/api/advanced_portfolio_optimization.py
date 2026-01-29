@@ -7,7 +7,7 @@ from decimal import Decimal
 from ninja import Router, Query, Field
 from pydantic import BaseModel
 
-from utils.services.portfolio.advanced_optimization import (
+from utils.services.portfolio import (
     get_portfolio_optimizer,
     OptimizationResult,
     BlackLittermanResult,

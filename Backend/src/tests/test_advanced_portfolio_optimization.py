@@ -3,7 +3,7 @@ Tests for Advanced Portfolio Optimization
 """
 import pytest
 import numpy as np
-from utils.services.portfolio.advanced_optimization import (
+from utils.services.portfolio import (
     PortfolioOptimizer,
     OptimizationResult,
     BlackLittermanResult,

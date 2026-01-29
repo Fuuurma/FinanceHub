@@ -28,7 +28,7 @@ from assets.models import Asset
 from utils.helpers.logger.audit_logger import AuditLogger
 from utils.helpers.logger.logger import get_logger
 from utils.services.holding import HoldingService
-from utils.services.portfolio import PortfolioService
+from utils.services.portfolio_service import PortfolioService
 
 from django.shortcuts import get_object_or_404
 

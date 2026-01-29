@@ -2,6 +2,7 @@
 Background Tasks for Scheduled Data Fetching
 Implements scheduled jobs for fetching and updating financial data
 """
+
 import dramatiq
 import orjson
 import polars as pl
@@ -23,7 +24,7 @@ logger = get_logger(__name__)
 # Initialize Dramatiq broker
 broker = StubBroker()
 broker.add_middleware(AgeLimit(max_age=1000 * 60 * 60))  # 1 hour
-broker.add_middleware(TimeLimit(limit=1000 * 60 * 30))  # 30 minutes
+broker.add_middleware(TimeLimit(time_limit=1000 * 60 * 30))  # 30 minutes
 broker.add_middleware(Retries(max_retries=3))
 
 # Initialize scrapers with new BaseAPIFetcher-based architecture
@@ -33,34 +34,92 @@ coinmarketcap_scraper = CoinMarketCapScraper()
 
 # Popular stocks to fetch regularly
 POPULAR_STOCKS = [
-    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM',
-    'V', 'JNJ', 'WMT', 'PG', 'XOM', 'BAC', 'KO', 'PEP', 'COST',
-    'DIS', 'NFLX', 'ADBE', 'INTC', 'AMD', 'CRM', 'QCOM', 'AVGO',
-    'CSCO', 'IBM', 'ORCL', 'ACN', 'TXN', 'NOW', 'INTU', 'LMT',
-    'BA', 'NOC', 'RTX', 'GD', 'HON', 'MMM', 'CAT', 'DE', 'GE'
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "TSLA",
+    "META",
+    "NVDA",
+    "JPM",
+    "V",
+    "JNJ",
+    "WMT",
+    "PG",
+    "XOM",
+    "BAC",
+    "KO",
+    "PEP",
+    "COST",
+    "DIS",
+    "NFLX",
+    "ADBE",
+    "INTC",
+    "AMD",
+    "CRM",
+    "QCOM",
+    "AVGO",
+    "CSCO",
+    "IBM",
+    "ORCL",
+    "ACN",
+    "TXN",
+    "NOW",
+    "INTU",
+    "LMT",
+    "BA",
+    "NOC",
+    "RTX",
+    "GD",
+    "HON",
+    "MMM",
+    "CAT",
+    "DE",
+    "GE",
 ]
 
 # Popular cryptocurrencies to fetch regularly
 POPULAR_CRYPTOS = [
-    'BTC', 'ETH', 'BNB', 'XRP', 'ADA', 'DOGE', 'SOL', 'DOT',
-    'MATIC', 'LTC', 'AVAX', 'LINK', 'UNI', 'ATOM', 'XLM',
-    'ETC', 'XMR', 'ALGO', 'VET', 'FIL', 'NEAR', 'AAVE', 'XTZ'
+    "BTC",
+    "ETH",
+    "BNB",
+    "XRP",
+    "ADA",
+    "DOGE",
+    "SOL",
+    "DOT",
+    "MATIC",
+    "LTC",
+    "AVAX",
+    "LINK",
+    "UNI",
+    "ATOM",
+    "XLM",
+    "ETC",
+    "XMR",
+    "ALGO",
+    "VET",
+    "FIL",
+    "NEAR",
+    "AAVE",
+    "XTZ",
 ]
+
 
 # Performance optimized batch processor using polars
 def process_batch_data(data: List[Dict]) -> pl.DataFrame:
     """
     Process batch financial data using polars for performance
-    
+
     Args:
         data: List of dictionaries containing financial data
-        
+
     Returns:
         Polars DataFrame with processed data
     """
     if not data:
         return pl.DataFrame()
-    
+
     # Convert to polars DataFrame for fast processing
     try:
         # Use orjson for fast JSON serialization if data is JSON string
@@ -71,21 +130,26 @@ def process_batch_data(data: List[Dict]) -> pl.DataFrame:
             df = pl.DataFrame(parsed_data)
         else:
             df = pl.DataFrame(data)
-        
+
         # Process data efficiently
         processed_df = (
-            df
-            .with_columns([
-                # Add calculated columns if they exist
-                pl.col('close').alias('price') if 'close' in df.columns else pl.lit(None).alias('price'),
-                pl.col('volume').alias('trading_volume') if 'volume' in df.columns else pl.lit(None).alias('trading_volume'),
-            ])
+            df.with_columns(
+                [
+                    # Add calculated columns if they exist
+                    pl.col("close").alias("price")
+                    if "close" in df.columns
+                    else pl.lit(None).alias("price"),
+                    pl.col("volume").alias("trading_volume")
+                    if "volume" in df.columns
+                    else pl.lit(None).alias("trading_volume"),
+                ]
+            )
             # Fill nulls efficiently
             .fill_null(0)
             # Sort by timestamp if available
-            .sort('timestamp' if 'timestamp' in df.columns else 'date')
+            .sort("timestamp" if "timestamp" in df.columns else "date")
         )
-        
+
         return processed_df
     except Exception as e:
         logger.error(f"Error processing batch data: {str(e)}")
@@ -97,36 +161,40 @@ async def fetch_stocks_alpha(symbols: Optional[List[str]] = None) -> dict:
     """
     Fetch stock data from Alpha Vantage using new key rotation system
     Runs every 5 minutes (rate limited)
-    
+
     Performance optimized with async and batch processing
     """
     try:
         if symbols is None:
             symbols = POPULAR_STOCKS[:10]  # Fetch top 10 due to rate limits
-        
-        logger.info(f"Fetching stock data from Alpha Vantage for {len(symbols)} symbols")
-        
+
+        logger.info(
+            f"Fetching stock data from Alpha Vantage for {len(symbols)} symbols"
+        )
+
         results = await alpha_scraper.fetch_multiple_stocks(symbols)
         success_count = sum(1 for v in results.values() if v)
-        
-        logger.info(f"Alpha Vantage: {success_count}/{len(symbols)} stocks fetched successfully")
-        
+
+        logger.info(
+            f"Alpha Vantage: {success_count}/{len(symbols)} stocks fetched successfully"
+        )
+
         # Process batch data efficiently
         if success_count > 0:
             successful_data = [data for data in results.values() if data]
             processed_df = process_batch_data(successful_data)
             logger.info(f"Processed {len(processed_df)} records with polars")
-        
+
         return {
-            'source': 'alpha_vantage',
-            'total': len(symbols),
-            'success': success_count,
-            'failed': len(symbols) - success_count,
-            'timestamp': datetime.now().isoformat()
+            "source": "alpha_vantage",
+            "total": len(symbols),
+            "success": success_count,
+            "failed": len(symbols) - success_count,
+            "timestamp": datetime.now().isoformat(),
         }
     except Exception as e:
         logger.error(f"Error in fetch_stocks_alpha: {str(e)}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 @dramatiq.actor(broker=broker, max_retries=3)
@@ -138,28 +206,30 @@ async def fetch_cryptos_coingecko(symbols: Optional[List[str]] = None) -> dict:
     try:
         if symbols is None:
             symbols = POPULAR_CRYPTOS[:20]
-        
+
         logger.info(f"Fetching crypto data from CoinGecko for {len(symbols)} symbols")
-        
+
         results = await coingecko_scraper.fetch_multiple_cryptos(symbols)
         success_count = sum(1 for v in results.values() if v)
-        
-        logger.info(f"CoinGecko: {success_count}/{len(symbols)} cryptos fetched successfully")
-        
+
+        logger.info(
+            f"CoinGecko: {success_count}/{len(symbols)} cryptos fetched successfully"
+        )
+
         # Process batch data efficiently
         if success_count > 0:
             logger.info(f"Processed {success_count} crypto records with key rotation")
-        
+
         return {
-            'source': 'coingecko',
-            'total': len(symbols),
-            'success': success_count,
-            'failed': len(symbols) - success_count,
-            'timestamp': datetime.now().isoformat()
+            "source": "coingecko",
+            "total": len(symbols),
+            "success": success_count,
+            "failed": len(symbols) - success_count,
+            "timestamp": datetime.now().isoformat(),
         }
     except Exception as e:
         logger.error(f"Error in fetch_cryptos_coingecko: {str(e)}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 @dramatiq.actor(broker=broker, max_retries=3)
@@ -171,28 +241,32 @@ async def fetch_cryptos_coinmarketcap(symbols: Optional[List[str]] = None) -> di
     try:
         if symbols is None:
             symbols = POPULAR_CRYPTOS[:20]
-        
-        logger.info(f"Fetching crypto data from CoinMarketCap for {len(symbols)} symbols")
-        
+
+        logger.info(
+            f"Fetching crypto data from CoinMarketCap for {len(symbols)} symbols"
+        )
+
         results = await coinmarketcap_scraper.fetch_multiple_cryptos(symbols)
         success_count = sum(1 for v in results.values() if v)
-        
-        logger.info(f"CoinMarketCap: {success_count}/{len(symbols)} cryptos fetched successfully")
-        
+
+        logger.info(
+            f"CoinMarketCap: {success_count}/{len(symbols)} cryptos fetched successfully"
+        )
+
         # Process batch data efficiently
         if success_count > 0:
             logger.info(f"Processed {success_count} crypto records with key rotation")
-        
+
         return {
-            'source': 'coinmarketcap',
-            'total': len(symbols),
-            'success': success_count,
-            'failed': len(symbols) - success_count,
-            'timestamp': datetime.now().isoformat()
+            "source": "coinmarketcap",
+            "total": len(symbols),
+            "success": success_count,
+            "failed": len(symbols) - success_count,
+            "timestamp": datetime.now().isoformat(),
         }
     except Exception as e:
         logger.error(f"Error in fetch_cryptos_coinmarketcap: {str(e)}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 @dramatiq.actor(broker=broker, max_retries=2)
@@ -203,55 +277,55 @@ async def fetch_all_markets() -> dict:
     """
     try:
         logger.info("Starting full market data fetch from all sources")
-        
+
         # Run tasks concurrently for better performance
         stock_task = fetch_stocks_alpha()
         coingecko_task = fetch_cryptos_coingecko()
         coinmarketcap_task = fetch_cryptos_coinmarketcap()
-        
+
         results = {
-            'stocks_alpha': await stock_task,
-            'cryptos_coingecko': await coingecko_task,
-            'cryptos_coinmarketcap': await coinmarketcap_task,
+            "stocks_alpha": await stock_task,
+            "cryptos_coingecko": await coingecko_task,
+            "cryptos_coinmarketcap": await coinmarketcap_task,
         }
-        
+
         logger.info(f"Full market fetch completed: {results}")
-        
+
         return {
-            'completed_at': datetime.now().isoformat(),
-            'sources': list(results.keys())
+            "completed_at": datetime.now().isoformat(),
+            "sources": list(results.keys()),
         }
     except Exception as e:
         logger.error(f"Error in fetch_all_markets: {str(e)}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 @dramatiq.actor(broker=broker, max_retries=2)
-async def update_asset_price(symbol: str, source: str = 'alpha_vantage') -> dict:
+async def update_asset_price(symbol: str, source: str = "alpha_vantage") -> dict:
     """
     Update price for a single asset using async operations
     Can be triggered manually or via alerts
     """
     try:
         logger.info(f"Updating price for {symbol} from {source}")
-        
-        if source == 'alpha_vantage':
+
+        if source == "alpha_vantage":
             scraper = alpha_scraper
         else:
-            return {'error': f'Unknown source: {source}'}
-        
+            return {"error": f"Unknown source: {source}"}
+
         # Use async fetch_and_save_stock method
         success = await scraper.fetch_and_save_stock(symbol)
-        
+
         return {
-            'symbol': symbol,
-            'source': source,
-            'success': success,
-            'timestamp': datetime.now().isoformat()
+            "symbol": symbol,
+            "source": source,
+            "success": success,
+            "timestamp": datetime.now().isoformat(),
         }
     except Exception as e:
         logger.error(f"Error in update_asset_price for {symbol}: {str(e)}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 @dramatiq.actor(broker=broker, max_retries=1)
@@ -262,102 +336,103 @@ def clean_old_data(days: int = 365) -> dict:
     """
     try:
         logger.info(f"Cleaning price data older than {days} days")
-        
+
         from assets.models.historic.prices import AssetPricesHistoric
         from django.utils import timezone
         from django.db.models import Q
-        
+
         cutoff_date = timezone.now() - timedelta(days=days)
-        
+
         # Batch delete for performance
         deleted_count = 0
         batch_size = 1000
-        
+
         while True:
             # Use efficient bulk delete with limit
             batch_ids = AssetPricesHistoric.objects.filter(
                 timestamp__lt=cutoff_date
-            ).values_list('id', flat=True)[:batch_size]
-            
+            ).values_list("id", flat=True)[:batch_size]
+
             if not batch_ids:
                 break
-                
+
             _, deleted = AssetPricesHistoric.objects.filter(
                 id__in=list(batch_ids)
             ).delete()
-            
+
             deleted_count += deleted[0]
             logger.info(f"Deleted batch of {deleted[0]} records")
-        
+
         logger.info(f"Cleaned {deleted_count} old price records")
-        
+
         return {
-            'deleted_count': deleted_count,
-            'cutoff_days': days,
-            'timestamp': datetime.now().isoformat()
+            "deleted_count": deleted_count,
+            "cutoff_days": days,
+            "timestamp": datetime.now().isoformat(),
         }
     except Exception as e:
         logger.error(f"Error in clean_old_data: {str(e)}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 @dramatiq.actor(broker=broker, max_retries=3)
-async def batch_update_assets(symbols: List[str], source: str = 'alpha_vantage') -> dict:
+async def batch_update_assets(
+    symbols: List[str], source: str = "alpha_vantage"
+) -> dict:
     """
     Batch update multiple assets efficiently using async operations
-    
+
     Args:
         symbols: List of asset symbols to update
         source: Data source provider
-        
+
     Returns:
         Dictionary with batch update results
     """
     try:
         logger.info(f"Batch updating {len(symbols)} assets from {source}")
-        
-        if source == 'alpha_vantage':
+
+        if source == "alpha_vantage":
             scraper = alpha_scraper
         else:
-            return {'error': f'Unsupported source for batch update: {source}'}
-        
+            return {"error": f"Unsupported source for batch update: {source}"}
+
         # Process in smaller batches for rate limiting
         batch_size = 5
         results = []
-        
+
         for i in range(0, len(symbols), batch_size):
-            batch = symbols[i:i + batch_size]
+            batch = symbols[i : i + batch_size]
             batch_results = []
-            
+
             # Process batch concurrently
-            tasks = [
-                scraper.fetch_and_save_stock(symbol)
-                for symbol in batch
-            ]
+            tasks = [scraper.fetch_and_save_stock(symbol) for symbol in batch]
             batch_success = await asyncio.gather(*tasks, return_exceptions=True)
-            
+
             for symbol, success in zip(batch, batch_success):
                 if isinstance(success, Exception):
                     logger.error(f"Error updating {symbol}: {str(success)}")
-                    results.append({'symbol': symbol, 'success': False, 'error': str(success)})
+                    results.append(
+                        {"symbol": symbol, "success": False, "error": str(success)}
+                    )
                 else:
-                    results.append({'symbol': symbol, 'success': success})
-            
+                    results.append({"symbol": symbol, "success": success})
+
             # Rate limiting between batches
             await asyncio.sleep(1)
-        
-        success_count = sum(1 for r in results if r.get('success', False))
-        
+
+        success_count = sum(1 for r in results if r.get("success", False))
+
         return {
-            'total': len(symbols),
-            'success': success_count,
-            'failed': len(symbols) - success_count,
-            'results': results,
-            'timestamp': datetime.now().isoformat()
+            "total": len(symbols),
+            "success": success_count,
+            "failed": len(symbols) - success_count,
+            "results": results,
+            "timestamp": datetime.now().isoformat(),
         }
     except Exception as e:
         logger.error(f"Error in batch_update_assets: {str(e)}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 def schedule_tasks():
@@ -366,59 +441,59 @@ def schedule_tasks():
     This should be called during application startup
     """
     logger.info("Scheduling background tasks...")
-    
+
     # Fetch stocks every 5 minutes (rate limited)
     fetch_stocks_alpha.send_with_options(
         delay=1000 * 60 * 5,  # 5 minutes
-        repeat=True
+        repeat=True,
     )
-    
+
     # Fetch cryptos from CoinGecko every 15 minutes (rate limited)
     fetch_cryptos_coingecko.send_with_options(
         delay=1000 * 60 * 15,  # 15 minutes
-        repeat=True
+        repeat=True,
     )
-    
+
     # Fetch cryptos from CoinMarketCap every 15 minutes (rate limited)
     fetch_cryptos_coinmarketcap.send_with_options(
         delay=1000 * 60 * 15,  # 15 minutes
-        repeat=True
+        repeat=True,
     )
-    
+
     # Fetch all markets every 30 minutes
     fetch_all_markets.send_with_options(
         delay=1000 * 60 * 30,  # 30 minutes
-        repeat=True
+        repeat=True,
     )
-    
+
     # Clean old data daily
     clean_old_data.send_with_options(
         delay=1000 * 60 * 60 * 24,  # 24 hours
-        repeat=True
+        repeat=True,
     )
-    
+
     # Batch update popular cryptos hourly
     batch_update_assets.send_with_options(
-        args=[POPULAR_CRYPTOS[:20], 'coingecko'],
+        args=[POPULAR_CRYPTOS[:20], "coingecko"],
         delay=1000 * 60 * 60,  # 60 minutes
-        repeat=True
+        repeat=True,
     )
-    
+
     logger.info("All background tasks scheduled successfully")
 
 
 if __name__ == "__main__":
     # Run a single task for testing
     print("Testing background tasks...")
-    
+
     # Test stock fetch
-    result = asyncio.run(fetch_stocks_alpha(['AAPL', 'GOOGL', 'MSFT']))
+    result = asyncio.run(fetch_stocks_alpha(["AAPL", "GOOGL", "MSFT"]))
     print(f"Stock fetch result: {result}")
-    
+
     # Test single asset update
-    result = asyncio.run(update_asset_price('TSLA', 'alpha_vantage'))
+    result = asyncio.run(update_asset_price("TSLA", "alpha_vantage"))
     print(f"Asset update result: {result}")
-    
+
     # Test batch update
-    result = asyncio.run(batch_update_assets(['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA']))
+    result = asyncio.run(batch_update_assets(["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA"]))
     print(f"Batch update result: {result}")
