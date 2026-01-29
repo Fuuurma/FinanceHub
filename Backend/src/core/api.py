@@ -36,6 +36,7 @@ from api.optimization import router as optimization_router
 from api.options_pricing import router as options_pricing_router
 from api.advanced_portfolio_optimization import router as advanced_portfolio_opt_router
 from api.advanced_risk_management import router as advanced_risk_management_router
+from api.fixed_income_analytics import router as fixed_income_analytics_router
 
 
 # Register API exception handlers
@@ -67,3 +68,5 @@ api.add_router("/analytics/v2", analytics_router)
 api.add_router("/optimization", optimization_router)
 api.add_router("/options", options_pricing_router)
 api.add_router("/advanced-portfolio", advanced_portfolio_opt_router)
+api.add_router("/advanced-risk", advanced_risk_management_router)
+api.add_router("/fixed-income", fixed_income_analytics_router)
