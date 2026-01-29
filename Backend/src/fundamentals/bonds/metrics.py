@@ -267,11 +267,19 @@ class BondMetrics(FundamentalData):
         help_text="Name of the bond issuer",
     )
 
+    sector_fk = models.ForeignKey(
+        "assets.Sector",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="bond_metrics",
+        help_text="Issuer sector (foreign key)",
+    )
     sector = models.CharField(
         max_length=50,
         null=True,
         blank=True,
-        help_text="Issuer sector (Technology, Financial, Government, etc.)",
+        help_text="[DEPRECATED] Use sector_fk instead. Issuer sector (Technology, Financial, Government, etc.)",
     )
 
     country = models.CharField(

@@ -42,7 +42,7 @@ export default function TradingPage() {
   const handleOrderSubmit = async (orderData: OrderCreateInput) => {
     try {
       const asset = await assetsApi.get(orderData.asset_id)
-      const cost = orderData.quantity * (asset.last_price || 0)
+      const cost = orderData.quantity * (asset.metrics?.close || 0)
       setEstimatedCost(cost)
       setPendingOrder({ ...orderData, portfolio_id: 'default-portfolio' })
       setShowConfirmation(true)

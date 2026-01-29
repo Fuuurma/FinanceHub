@@ -12,6 +12,7 @@ from typing import List
 import yfinance as yf
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import Q
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src")
@@ -28,6 +29,8 @@ from assets.models.asset_class import AssetClass
 from assets.models.asset_type import AssetType
 from assets.models.historic.prices import AssetPricesHistoric
 from assets.models.asset_metrics import AssetMetrics
+from assets.models.sector import Sector
+from assets.models.industry import Industry
 from investments.models.data_provider import DataProvider
 
 logger = get_logger(__name__)
@@ -113,6 +116,27 @@ def populate_etfs_sync(historical_years: int = 1):
 
             current_price = info.get("currentPrice") or info.get("regularMarketPrice")
 
+            # Look up sector and industry from info
+            sector_name = info.get("sector")
+            industry_name = info.get("industry")
+
+            sector_fk = None
+            if sector_name:
+                sector_fk = Sector.objects.filter(
+                    Q(name__iexact=sector_name) | Q(code__iexact=sector_name)
+                ).first()
+
+            industry_fk = None
+            if industry_name:
+                industry_fk = Industry.objects.filter(
+                    Q(name__iexact=industry_name) | Q(code__iexact=industry_name)
+                ).first()
+                if not industry_fk and sector_fk:
+                    industry_fk = Industry.objects.filter(
+                        sector=sector_fk,
+                        Q(name__iexact=industry_name) | Q(code__iexact=industry_name)
+                    ).first()
+
             asset, created = Asset.objects.update_or_create(
                 ticker=symbol,
                 defaults={
@@ -140,8 +164,10 @@ def populate_etfs_sync(historical_years: int = 1):
                     "aum": Decimal(str(info.get("totalAssets", 0)))
                     if info.get("totalAssets")
                     else None,
-                    "industry": info.get("industry"),
-                    "sector": info.get("sector"),
+                    "sector_fk": sector_fk,
+                    "industry_fk": industry_fk,
+                    "sector": sector_name,  # Keep for backward compatibility
+                    "industry": industry_name,
                     "metadata": {
                         "holdings_count": info.get("holdingsCount"),
                         "yield": info.get("yield"),

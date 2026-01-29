@@ -46,8 +46,8 @@ export default function FundamentalsPage() {
 
     try {
       const response = await fundamentalsApi.getEquityFundamentals(symbol.toUpperCase())
-      if (response.data.valuation) {
-        setValuation(response.data.valuation)
+      if (response.valuation) {
+        setValuation(response.valuation)
       } else {
         setError('No fundamentals data found for this symbol')
       }
@@ -62,7 +62,7 @@ export default function FundamentalsPage() {
     setCryptoLoading(true)
     try {
       const response = await fundamentalsApi.getAllCryptoProtocols()
-      setCryptoProtocols(response.data)
+      setCryptoProtocols(response)
     } catch (err) {
       console.error('Failed to load crypto protocols:', err)
     } finally {
@@ -77,8 +77,8 @@ export default function FundamentalsPage() {
         fundamentalsApi.getBondMetrics(),
         fundamentalsApi.getYieldCurve(),
       ])
-      setBondMetrics(bondsResponse.data)
-      setYieldCurve(yieldResponse.data)
+      setBondMetrics(bondsResponse)
+      setYieldCurve(yieldResponse)
     } catch (err) {
       console.error('Failed to load bond data:', err)
     } finally {
@@ -90,7 +90,7 @@ export default function FundamentalsPage() {
     setScreenerLoading(true)
     try {
       const response = await fundamentalsApi.screenStocks(screenerFilters)
-      setScreenerResults(response.data)
+      setScreenerResults(response)
     } catch (err) {
       console.error('Failed to run screener:', err)
     } finally {
@@ -183,7 +183,7 @@ export default function FundamentalsPage() {
                   title="P/E Ratio"
                   value={valuation.pe_ratio?.toFixed(2) || 'N/A'}
                   subtitle="Price to Earnings"
-                  positive={valuation.pe_ratio && valuation.pe_ratio < 20}
+                  positive={!!(valuation.pe_ratio && valuation.pe_ratio < 20)}
                 />
                 <MetricCard
                   title="Forward P/E"
@@ -214,7 +214,7 @@ export default function FundamentalsPage() {
                   title="ROE"
                   value={valuation.roe ? `${(valuation.roe * 100).toFixed(2)}%` : 'N/A'}
                   subtitle="Return on Equity"
-                  positive={valuation.roe && valuation.roe > 0.15}
+                  positive={!!(valuation.roe && valuation.roe > 0.15)}
                 />
               </div>
             </div>

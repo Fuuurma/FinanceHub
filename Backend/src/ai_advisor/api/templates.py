@@ -50,6 +50,7 @@ class TemplateResponse(BaseModel):
     template_type: str
     symbol: Optional[str]
     sector: Optional[str]
+    sector_code: Optional[str]
     asset_class: Optional[str]
     title: str
     summary: str
@@ -139,11 +140,18 @@ def template_to_response(
     else:
         tier_badge = "Free"
 
+    sector_fk = getattr(template, "sector_fk", None)
+    sector_code = sector_fk.code if sector_fk and hasattr(sector_fk, "code") else None
+    sector_name = (
+        sector_fk.name if sector_fk and hasattr(sector_fk, "name") else template.sector
+    )
+
     return TemplateResponse(
         id=str(template.id),
         template_type=template.template_type,
         symbol=template.symbol,
-        sector=template.sector,
+        sector=sector_name,
+        sector_code=sector_code,
         asset_class=template.asset_class,
         title=template.title,
         summary=template.summary,

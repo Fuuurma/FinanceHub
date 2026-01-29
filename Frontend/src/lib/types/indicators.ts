@@ -16,6 +16,14 @@ export type IndicatorType =
   | 'ichimoku' // Ichimoku Cloud
   | 'parabolic_sar' // Parabolic SAR
 
+export type DrawingType =
+  | 'horizontal_line'
+  | 'vertical_line'
+  | 'trend_line'
+  | 'fibonacci'
+  | 'rectangle'
+  | 'text'
+
 export type TimeFrame = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w'
 
 export interface IndicatorConfig {

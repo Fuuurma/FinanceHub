@@ -386,8 +386,8 @@ export default function ScreenerPage() {
                               )
                             ) : null}
                             <p className={`text-sm font-medium tabular-nums ${
-                              result.change_percent > 0 ? 'text-green-600' :
-                              result.change_percent < 0 ? 'text-red-600' :
+                              (result.change_percent ?? 0) > 0 ? 'text-green-600' :
+                              (result.change_percent ?? 0) < 0 ? 'text-red-600' :
                               'text-muted-foreground'
                             }`}>
                               {result.change_percent !== null ? `${result.change_percent >= 0 ? '+' : ''}${result.change_percent.toFixed(2)}%` : 'N/A'}
