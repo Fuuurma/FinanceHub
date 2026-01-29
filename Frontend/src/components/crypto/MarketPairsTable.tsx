@@ -23,11 +23,11 @@ interface MarketPairsTableProps {
   limit?: number
 }
 
-type SortField = 'volume24h' | 'price' | 'percentChange24h' | 'trustScore'
+type SortField = 'volume_24h' | 'price' | 'percent_change_24h' | 'trust_score'
 type SortOrder = 'asc' | 'desc'
 
 export function MarketPairsTable({ pairs, loading, error, limit = 20 }: MarketPairsTableProps) {
-  const [sortField, setSortField] = useState<SortField>('volume24h')
+  const [sortField, setSortField] = useState<SortField>('volume_24h')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
   if (loading) {
@@ -89,21 +89,21 @@ export function MarketPairsTable({ pairs, loading, error, limit = 20 }: MarketPa
       let bVal: number | undefined
 
       switch (sortField) {
-        case 'volume24h':
-          aVal = a.quote?.USD?.volume24h
-          bVal = b.quote?.USD?.volume24h
+        case 'volume_24h':
+          aVal = a.volume_24h
+          bVal = b.volume_24h
           break
         case 'price':
-          aVal = a.quote?.USD?.price
-          bVal = b.quote?.USD?.price
+          aVal = a.price
+          bVal = b.price
           break
-        case 'percentChange24h':
-          aVal = a.quote?.USD?.percentChange24h
-          bVal = b.quote?.USD?.percentChange24h
+        case 'percent_change_24h':
+          aVal = a.price_quote?.USD
+          bVal = b.price_quote?.USD
           break
-        case 'trustScore':
-          aVal = a.trustScore === 'green' ? 1 : 0
-          bVal = b.trustScore === 'green' ? 1 : 0
+        case 'trust_score':
+          aVal = a.volume_percent && a.volume_percent >= 1 ? 1 : 0
+          bVal = b.volume_percent && b.volume_percent >= 1 ? 1 : 0
           break
       }
 
@@ -153,67 +153,43 @@ export function MarketPairsTable({ pairs, loading, error, limit = 20 }: MarketPa
                 </TableHead>
                 <TableHead className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    24h %
-                    <SortButton field="percentChange24h" />
-                  </div>
-                </TableHead>
-                <TableHead className="text-right">
-                  <div className="flex items-center justify-end gap-1">
                     Volume (24h)
-                    <SortButton field="volume24h" />
+                    <SortButton field="volume_24h" />
                   </div>
                 </TableHead>
                 <TableHead className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     Trust
-                    <SortButton field="trustScore" />
+                    <SortButton field="trust_score" />
                   </div>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sortedPairs.map((pair) => (
-                <TableRow key={pair.marketPairId}>
+                <TableRow key={pair.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {pair.exchange?.logo && (
-                        <img
-                          src={pair.exchange.logo}
-                          alt={pair.exchange.name}
-                          className="w-5 h-5 rounded-full"
-                        />
-                      )}
-                      <span className="font-medium">{pair.exchange?.name}</span>
+                      <span className="font-medium">{pair.exchange.name}</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{pair.marketPair}</Badge>
+                    <Badge variant="outline">{pair.pair}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    ${formatNumber(pair.quote?.USD?.price, 6)}
+                    ${formatNumber(pair.price, 6)}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <span
-                      className={
-                        (pair.quote?.USD?.percentChange24h ?? 0) >= 0
-                          ? 'text-green-500'
-                          : 'text-red-500'
-                      }
-                    >
-                      {formatPercent(pair.quote?.USD?.percentChange24h)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">{formatNumber(pair.quote?.USD?.volume24h)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(pair.volume_24h)}</TableCell>
                   <TableCell className="text-center">
                     <Badge
-                      variant={pair.trustScore === 'green' ? 'default' : 'secondary'}
+                      variant={pair.volume_percent && pair.volume_percent >= 1 ? 'default' : 'secondary'}
                       className={
-                        pair.trustScore === 'green'
+                        pair.volume_percent && pair.volume_percent >= 1
                           ? 'bg-green-500 hover:bg-green-600'
                           : ''
                       }
                     >
-                      {pair.trustScore === 'green' ? 'High' : 'Low'}
+                      {pair.volume_percent && pair.volume_percent >= 1 ? 'High' : 'Low'}
                     </Badge>
                   </TableCell>
                 </TableRow>

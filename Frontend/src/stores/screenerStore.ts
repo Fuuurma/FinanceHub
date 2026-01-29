@@ -1,102 +1,152 @@
-import { create } from 'zustand';
-import type { AssetType } from '@/lib/types/asset';
-import { ScreenerCriteria, ScreenerResult } from '@/lib/types/screener';
-import { apiClient } from '@/lib/api/client';
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import type { ScreenerFilter, ScreenerResult, ScreenerPreset } from '@/lib/types/screener'
+import { screenerApi } from '@/lib/api/screener'
 
 interface ScreenerState {
-  criteria: ScreenerCriteria;
-  results: ScreenerResult[];
-  isLoading: boolean;
-  error: string | null;
+  results: ScreenerResult[]
+  selectedFilters: ScreenerFilter[]
+  presets: ScreenerPreset[]
+  selectedPreset: string | null
+  loading: boolean
+  error: string | null
+  searchTerm: string
+  sortBy: string
+  sortOrder: 'asc' | 'desc'
+  limit: number
+  currentPage: number
 
-  setCriteria: (criteria: Partial<ScreenerCriteria>) => void;
-  resetCriteria: () => void;
-  setResults: (results: ScreenerResult[]) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-
-  runScreener: () => Promise<void>;
-  loadPreset: (preset: string) => void;
-  savePreset: (name: string) => Promise<void>;
+  runScreener: () => Promise<void>
+  loadPresets: () => Promise<void>
+  applyPreset: (presetKey: string) => Promise<void>
+  clearFilters: () => Promise<void>
+  addFilter: (filter: ScreenerFilter) => void
+  removeFilter: (index: number) => void
+  updateFilter: (index: number, updates: Partial<ScreenerFilter>) => void
+  setSearchTerm: (term: string) => void
+  setSortBy: (sortBy: string) => void
+  setSortOrder: (sortOrder: 'asc' | 'desc') => void
+  setLimit: (limit: number) => void
+  setCurrentPage: (page: number) => void
 }
 
-const defaultCriteria: ScreenerCriteria = {
-  assetTypes: ['stock'],
-  exchanges: [],
-  sectors: [],
-  marketCap: { min: 0, max: Infinity },
-  price: { min: 0, max: Infinity },
-  volume: { min: 0, max: Infinity },
-  peRatio: { min: 0, max: Infinity },
-  dividendYield: { min: 0, max: Infinity },
-  beta: { min: 0, max: Infinity },
-  epsGrowth: { min: 0, max: Infinity },
-  revenueGrowth: { min: 0, max: Infinity },
-  profitMargin: { min: 0, max: Infinity },
-  roe: { min: 0, max: Infinity },
-  debtToEquity: { min: 0, max: Infinity },
-  currentRatio: { min: 0, max: Infinity },
-  quickRatio: { min: 0, max: Infinity },
-  freeCashFlow: { min: 0, max: Infinity },
-  operatingMargin: { min: 0, max: Infinity },
-  priceToBook: { min: 0, max: Infinity },
-  priceToSales: { min: 0, max: Infinity },
-  evToEbitda: { min: 0, max: Infinity },
-  pegRatio: { min: 0, max: Infinity },
-};
+export const useScreenerStore = create<ScreenerState>()(
+  persist(
+    (set, get) => ({
+      results: [],
+      selectedFilters: [],
+      presets: [],
+      selectedPreset: null,
+      loading: false,
+      error: null,
+      searchTerm: '',
+      sortBy: 'relevance',
+      sortOrder: 'desc',
+      limit: 20,
+      currentPage: 1,
 
-export const useScreenerStore = create<ScreenerState>((set, get) => ({
-  criteria: defaultCriteria,
-  results: [],
-  isLoading: false,
-  error: null,
+      runScreener: async () => {
+        set({ loading: true, error: null, currentPage: 1 })
+        try {
+          const { selectedFilters, selectedPreset, limit, sortBy, sortOrder } = get()
+          const response = await screenerApi.screenAssets(
+            selectedFilters.length > 0 ? selectedFilters : undefined,
+            selectedPreset,
+            limit,
+            sortBy,
+            sortOrder
+          )
+          set({ results: response.results })
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'Failed to run screener' })
+        } finally {
+          set({ loading: false })
+        }
+      },
 
-  setCriteria: (newCriteria) => {
-    set((state) => ({
-      criteria: { ...state.criteria, ...newCriteria },
-    }));
-  },
+      loadPresets: async () => {
+        try {
+          const presets = await screenerApi.getPresets()
+          set({ presets })
+        } catch (error) {
+          console.error('Failed to load presets:', error)
+        }
+      },
 
-  resetCriteria: () => {
-    set({ criteria: defaultCriteria });
-  },
+      applyPreset: async (presetKey: string) => {
+        set({ loading: true, error: null })
+        try {
+          await screenerApi.applyPreset(presetKey)
+          set({ selectedPreset: presetKey })
+          await get().runScreener()
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'Failed to apply preset' })
+        } finally {
+          set({ loading: false })
+        }
+      },
 
-  setResults: (results) => set({ results }),
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error }),
+      clearFilters: async () => {
+        set({ loading: true, error: null })
+        try {
+          await screenerApi.clearFilters()
+          set({ selectedFilters: [], selectedPreset: null, results: [] })
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'Failed to clear filters' })
+        } finally {
+          set({ loading: false })
+        }
+      },
 
-  runScreener: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const data = await apiClient.post<ScreenerResult[]>('/api/screener/run', get().criteria);
-      set({ results: data });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to run screener' });
-    } finally {
-      set({ isLoading: false });
+      addFilter: (filter: ScreenerFilter) => {
+        set((state) => ({
+          selectedFilters: [...state.selectedFilters, filter],
+          selectedPreset: null
+        }))
+      },
+
+      removeFilter: (index: number) => {
+        set((state) => ({
+          selectedFilters: state.selectedFilters.filter((_, i) => i !== index)
+        }))
+      },
+
+      updateFilter: (index: number, updates: Partial<ScreenerFilter>) => {
+        set((state) => ({
+          selectedFilters: state.selectedFilters.map((f, i) =>
+            i === index ? { ...f, ...updates } : f
+          ),
+          selectedPreset: null
+        }))
+      },
+
+      setSearchTerm: (term: string) => {
+        set({ searchTerm: term, currentPage: 1 })
+      },
+
+      setSortBy: (sortBy: string) => {
+        set({ sortBy })
+      },
+
+      setSortOrder: (sortOrder: 'asc' | 'desc') => {
+        set({ sortOrder })
+      },
+
+      setLimit: (limit: number) => {
+        set({ limit, currentPage: 1 })
+      },
+
+      setCurrentPage: (page: number) => {
+        set({ currentPage: page })
+      }
+    }),
+    {
+      name: 'screener-storage',
+      partialize: (state) => ({
+        sortBy: state.sortBy,
+        sortOrder: state.sortOrder,
+        limit: state.limit
+      })
     }
-  },
-
-  loadPreset: async (preset) => {
-    set({ isLoading: true, error: null });
-    try {
-      const data = await apiClient.get<ScreenerCriteria>(`/api/screener/presets/${preset}`);
-      set({ criteria: data });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to load preset' });
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  savePreset: async (name) => {
-    set({ isLoading: true, error: null });
-    try {
-      await apiClient.post('/api/screener/presets', { name, criteria: get().criteria });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to save preset' });
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-}));
+  )
+)

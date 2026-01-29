@@ -42,6 +42,11 @@ export interface CryptoInfo {
   description: string
   category: string
   tags: string[]
+  urls?: {
+    website?: string[]
+    explorer?: string[]
+    source_code?: string[]
+  }
   platform?: {
     id: number
     name: string
@@ -49,8 +54,6 @@ export interface CryptoInfo {
     slug: string
     token_address: string
   }
-  website?: string
-  explorer?: string
   date_added: string
   date_launched?: string
   supply: {
@@ -66,6 +69,21 @@ export interface CryptoInfo {
   circulating_supply?: number
   total_supply?: number
   max_supply?: number
+}
+
+// Crypto Info with Quote (combined for API response)
+export interface CryptoInfoWithQuote extends CryptoInfo {
+  quote?: {
+    USD?: {
+      price: number
+      volume24h: number
+      marketCap: number
+      percentChange1h?: number
+      percentChange24h?: number
+      percentChange7d?: number
+      lastUpdated: string
+    }
+  }
 }
 
 // Global Metrics
