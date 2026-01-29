@@ -16,6 +16,8 @@ jest.mock('@/stores/screenerStore', () => ({
     sortOrder: 'desc',
     limit: 20,
     currentPage: 1,
+    autoRefresh: false,
+    lastUpdated: null,
     runScreener: jest.fn(),
     loadPresets: jest.fn(),
     applyPreset: jest.fn(),
@@ -28,6 +30,7 @@ jest.mock('@/stores/screenerStore', () => ({
     setSortOrder: jest.fn(),
     setLimit: jest.fn(),
     setCurrentPage: jest.fn(),
+    setAutoRefresh: jest.fn(),
   }))
 }))
 
@@ -60,7 +63,7 @@ describe('Screener Components', () => {
 
     it('calls updateFilter when field changes', () => {
       const updateFilter = jest.fn()
-      ;(useScreenerStore as jest.Mock).mockImplementation(() => ({
+      ;(useScreenerStore as unknown as jest.Mock).mockImplementation(() => ({
         updateFilter,
         removeFilter: jest.fn(),
       }))
@@ -107,7 +110,7 @@ describe('Screener Components', () => {
     })
 
     it('shows loading state when loading', () => {
-      ;(useScreenerStore as jest.Mock).mockImplementation(() => ({
+      ;(useScreenerStore as unknown as jest.Mock).mockImplementation(() => ({
         results: [],
         loading: true,
         error: null,
@@ -116,12 +119,15 @@ describe('Screener Components', () => {
         sortOrder: 'desc',
         limit: 20,
         currentPage: 1,
+        autoRefresh: false,
+        lastUpdated: null,
         runScreener: jest.fn(),
         setSearchTerm: jest.fn(),
         setSortBy: jest.fn(),
         setSortOrder: jest.fn(),
         setLimit: jest.fn(),
         setCurrentPage: jest.fn(),
+        setAutoRefresh: jest.fn(),
       }))
 
       render(<ResultsPanel />)
@@ -130,7 +136,7 @@ describe('Screener Components', () => {
     })
 
     it('shows error state when there is an error', () => {
-      ;(useScreenerStore as jest.Mock).mockImplementation(() => ({
+      ;(useScreenerStore as unknown as jest.Mock).mockImplementation(() => ({
         results: [],
         loading: false,
         error: 'Test error message',
@@ -139,12 +145,15 @@ describe('Screener Components', () => {
         sortOrder: 'desc',
         limit: 20,
         currentPage: 1,
+        autoRefresh: false,
+        lastUpdated: null,
         runScreener: jest.fn(),
         setSearchTerm: jest.fn(),
         setSortBy: jest.fn(),
         setSortOrder: jest.fn(),
         setLimit: jest.fn(),
         setCurrentPage: jest.fn(),
+        setAutoRefresh: jest.fn(),
       }))
 
       render(<ResultsPanel />)
@@ -185,7 +194,7 @@ describe('Screener Components', () => {
         },
       ]
 
-      ;(useScreenerStore as jest.Mock).mockImplementation(() => ({
+      ;(useScreenerStore as unknown as jest.Mock).mockImplementation(() => ({
         results: mockResults,
         loading: false,
         error: null,
@@ -194,12 +203,15 @@ describe('Screener Components', () => {
         sortOrder: 'desc',
         limit: 20,
         currentPage: 1,
+        autoRefresh: false,
+        lastUpdated: null,
         runScreener: jest.fn(),
         setSearchTerm: jest.fn(),
         setSortBy: jest.fn(),
         setSortOrder: jest.fn(),
         setLimit: jest.fn(),
         setCurrentPage: jest.fn(),
+        setAutoRefresh: jest.fn(),
       }))
 
       render(<ResultsPanel />)
@@ -225,7 +237,7 @@ describe('Screener Components', () => {
         },
       ]
 
-      ;(useScreenerStore as jest.Mock).mockImplementation(() => ({
+      ;(useScreenerStore as unknown as jest.Mock).mockImplementation(() => ({
         results: mockResults,
         loading: false,
         error: null,
@@ -234,12 +246,15 @@ describe('Screener Components', () => {
         sortOrder: 'desc',
         limit: 20,
         currentPage: 1,
+        autoRefresh: false,
+        lastUpdated: null,
         runScreener: jest.fn(),
         setSearchTerm: jest.fn(),
         setSortBy: jest.fn(),
         setSortOrder: jest.fn(),
         setLimit: jest.fn(),
         setCurrentPage: jest.fn(),
+        setAutoRefresh: jest.fn(),
       }))
 
       render(<ResultsPanel />)

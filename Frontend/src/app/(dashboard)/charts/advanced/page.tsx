@@ -1,266 +1,288 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { TradingViewChart, ChartControls, type ChartType, type Timeframe } from '@/components/charts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RealTimeChart } from '@/components/realtime/RealTimeChart'
-import { TechnicalIndicators } from '@/components/charts/TechnicalIndicators'
-import { DrawingTools } from '@/components/charts/DrawingTools'
-import { ComparisonChart } from '@/components/charts/ComparisonChart'
-import { ConnectionStatus } from '@/components/realtime/ConnectionStatus'
-import {
-  TrendingUp,
-  Activity,
-  Type,
-  BarChart3,
-  Settings2,
-  Info,
-} from 'lucide-react'
-import type { IndicatorConfig, DrawingType, TimeFrame } from '@/lib/types/indicators'
-import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { LineChart, TrendingUp, TrendingDown, Activity, DollarSign } from 'lucide-react'
+import { assetsApi } from '@/lib/api/assets'
 
-export default function AdvancedChartPage() {
+export default function AdvancedChartsPage() {
   const [symbol, setSymbol] = useState('AAPL')
-  const [timeframe, setTimeframe] = useState<TimeFrame>('1d')
-  const [indicators, setIndicators] = useState<IndicatorConfig[]>([])
-  const [drawings, setDrawings] = useState<any[]>([])
-  const [selectedTool, setSelectedTool] = useState<DrawingType | null>(null)
-  const [comparisonMode, setComparisonMode] = useState(false)
-  const [comparisonSymbols, setComparisonSymbols] = useState<string[]>(['AAPL', 'MSFT', 'GOOGL'])
+  const [timeframe, setTimeframe] = useState<Timeframe>('1d')
+  const [chartType, setChartType] = useState<ChartType>('candlestick')
+  const [showVolume, setShowVolume] = useState(true)
+  const [activeIndicators, setActiveIndicators] = useState<string[]>([])
 
-  const handleAddIndicator = (indicator: IndicatorConfig) => {
-    setIndicators([...indicators, indicator])
+  const [priceData, setPriceData] = useState<{
+    current: number | null
+    change: number | null
+    changePercent: number | null
+    high: number | null
+    low: number | null
+    open: number | null
+    previousClose: number | null
+    volume: number | null
+  }>({
+    current: null,
+    change: null,
+    changePercent: null,
+    high: null,
+    low: null,
+    open: null,
+    previousClose: null,
+    volume: null,
+  })
+
+  const loadPriceData = useCallback(async () => {
+    try {
+      const quote = await assetsApi.getPrice(symbol)
+      if (quote) {
+        setPriceData({
+          current: quote.price || null,
+          change: quote.change || null,
+          changePercent: quote.change_percent || null,
+          high: quote.high || null,
+          low: quote.low || null,
+          open: quote.open || null,
+          previousClose: null,
+          volume: quote.volume || null,
+        })
+      }
+    } catch (error) {
+      console.error('Failed to load price data:', error)
+    }
+  }, [symbol])
+
+  const handleSymbolChange = useCallback((newSymbol: string) => {
+    setSymbol(newSymbol)
+    loadPriceData()
+  }, [loadPriceData])
+
+  const handleTimeframeChange = useCallback((tf: Timeframe) => {
+    setTimeframe(tf)
+  }, [])
+
+  const handleTypeChange = useCallback((type: ChartType) => {
+    setChartType(type)
+  }, [])
+
+  const handleVolumeToggle = useCallback((show: boolean) => {
+    setShowVolume(show)
+  }, [])
+
+  const handleIndicatorToggle = useCallback((indicator: string, show: boolean) => {
+    setActiveIndicators((prev) =>
+      show ? [...prev, indicator] : prev.filter((i) => i !== indicator)
+    )
+  }, [])
+
+  const formatPrice = (value: number | null) => {
+    if (value === null) return '--'
+    return `$${value.toFixed(2)}`
   }
 
-  const handleRemoveIndicator = (indicator: IndicatorConfig) => {
-    setIndicators(indicators.filter((ind) => ind.type !== indicator.type))
-  }
-
-  const handleUpdateIndicators = (newIndicators: IndicatorConfig[]) => {
-    setIndicators(newIndicators)
-  }
-
-  const handleToolSelect = (tool: DrawingType | null) => {
-    setSelectedTool(tool)
-  }
-
-  const handleAddDrawing = (drawing: any) => {
-    setDrawings([...drawings, drawing])
+  const formatChange = (value: number | null) => {
+    if (value === null) return '--'
+    const sign = value >= 0 ? '+' : ''
+    return `${sign}${value.toFixed(2)}%`
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold">Advanced Charts</h1>
-            <ConnectionStatus />
-          </div>
-          <p className="text-muted-foreground mt-2">
-            Technical analysis, drawing tools, and multi-symbol comparison
+          <h1 className="text-3xl font-bold tracking-tight">Advanced Charts</h1>
+          <p className="text-muted-foreground mt-1">
+            Professional charting powered by TradingView Lightweight Charts
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={comparisonMode ? 'default' : 'outline'}
-            onClick={() => setComparisonMode(!comparisonMode)}
-          >
-            <BarChart3 className="h-4 w-4 mr-2" />
-            {comparisonMode ? 'Exit Comparison' : 'Comparison Mode'}
-          </Button>
-        </div>
+        <Badge variant="outline" className="text-sm">
+          {symbol} / USD
+        </Badge>
       </div>
 
-      {!comparisonMode ? (
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Chart */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="border-2 border-foreground">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      {symbol} Chart
-                    </CardTitle>
-                    <CardDescription>
-                      Real-time price and volume with technical indicators
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setIndicators([])
-                        setSelectedTool(null)
-                      }}
-                    >
-                      Reset All
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <RealTimeChart
-                  symbol={symbol}
-                  timeframe={timeframe}
-                  indicators={indicators}
-                  onIndicatorsChange={handleUpdateIndicators}
-                  showIndicatorsPanel={indicators.length > 0}
-                />
-              </CardContent>
-            </Card>
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Current Price
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <span className="text-2xl font-bold">{formatPrice(priceData.current)}</span>
+            </div>
+          </CardContent>
+        </Card>
 
-            {selectedTool && (
-              <Card className="border-2 border-primary">
-                <CardHeader>
-                  <CardTitle className="text-sm">
-                    Drawing Mode Active: {selectedTool}
-                  </CardTitle>
-                  <CardDescription>
-                    Click and drag on the chart to draw
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedTool(null)}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              24h Change
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              {(priceData.changePercent ?? 0) >= 0 ? (
+                <TrendingUp className="h-4 w-4 text-green-500" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-red-500" />
+              )}
+              <span className={`text-2xl font-bold ${
+                (priceData.changePercent ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {formatChange(priceData.changePercent)}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              24h High / Low
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-medium">{formatPrice(priceData.high)}</span>
+              <span className="text-muted-foreground">/</span>
+              <span className="font-medium">{formatPrice(priceData.low)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              24h Volume
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-muted-foreground" />
+              <span className="text-2xl font-bold">
+                {priceData.volume ? (priceData.volume / 1000000).toFixed(2) + 'M' : '--'}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="chart" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="chart">Chart</TabsTrigger>
+          <TabsTrigger value="analysis">Analysis</TabsTrigger>
+          <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="chart" className="space-y-4">
+          <ChartControls
+            symbol={symbol}
+            currentTimeframe={timeframe}
+            currentType={chartType}
+            showVolume={showVolume}
+            activeIndicators={activeIndicators}
+            onSymbolChange={handleSymbolChange}
+            onTimeframeChange={handleTimeframeChange}
+            onTypeChange={handleTypeChange}
+            onVolumeToggle={handleVolumeToggle}
+            onIndicatorToggle={handleIndicatorToggle}
+          />
+
+          <TradingViewChart
+            symbol={symbol}
+            chartType={chartType}
+            timeframe={timeframe}
+            height={600}
+            showVolume={showVolume}
+            showIndicators={activeIndicators}
+            onSymbolChange={handleSymbolChange}
+          />
+
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>Chart by TradingView Lightweight Charts</span>
+            <Separator orientation="vertical" className="h-4" />
+            <span>Data provided by Polygon.io</span>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analysis">
+          <Card>
+            <CardHeader>
+              <CardTitle>Technical Analysis</CardTitle>
+              <CardDescription>
+                Select indicators to overlay on the chart
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                {[
+                  { id: 'sma20', name: 'SMA 20', desc: 'Simple Moving Average (20 periods)' },
+                  { id: 'sma50', name: 'SMA 50', desc: 'Simple Moving Average (50 periods)' },
+                  { id: 'sma200', name: 'SMA 200', desc: 'Simple Moving Average (200 periods)' },
+                  { id: 'ema12', name: 'EMA 12', desc: 'Exponential Moving Average (12 periods)' },
+                  { id: 'ema26', name: 'EMA 26', desc: 'Exponential Moving Average (26 periods)' },
+                  { id: 'rsi14', name: 'RSI 14', desc: 'Relative Strength Index (14 periods)' },
+                  { id: 'macd', name: 'MACD', desc: 'Moving Average Convergence Divergence' },
+                  { id: 'bollinger', name: 'Bollinger Bands', desc: 'Bollinger Bands (20, 2)' },
+                ].map((indicator) => (
+                  <div
+                    key={indicator.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      activeIndicators.includes(indicator.id)
+                        ? 'border-primary bg-primary/5'
+                        : 'hover:border-primary/50'
+                    }`}
+                    onClick={() => handleIndicatorToggle(
+                      indicator.id,
+                      !activeIndicators.includes(indicator.id)
+                    )}
                   >
-                    Exit Drawing Mode
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{indicator.name}</span>
+                      {activeIndicators.includes(indicator.id) && (
+                        <Badge variant="default">Active</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">{indicator.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="watchlist">
+          <Card>
+            <CardHeader>
+              <CardTitle>Watchlist</CardTitle>
+              <CardDescription>
+                Quick access to your favorite symbols
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2 md:grid-cols-4">
+                {['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM'].map((sym) => (
+                  <Button
+                    key={sym}
+                    variant={symbol === sym ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleSymbolChange(sym)}
+                  >
+                    {sym}
                   </Button>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Side Panel */}
-          <div className="space-y-6">
-            {/* Drawing Tools */}
-            <DrawingTools
-              symbol={symbol}
-              timeframe={timeframe}
-              drawings={drawings}
-              onDrawingsChange={handleAddDrawing}
-              onToolSelect={handleToolSelect}
-              selectedTool={selectedTool}
-            />
-
-            {/* Technical Indicators */}
-            <TechnicalIndicators
-              symbol={symbol}
-              selectedIndicators={indicators}
-              onIndicatorsChange={setIndicators}
-            />
-          </div>
-        </div>
-      ) : (
-        /* Comparison Mode */
-        <ComparisonChart
-          symbols={comparisonSymbols}
-          timeframe={timeframe}
-          normalize={true}
-        />
-      )}
-
-      {/* Info Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Info className="h-5 w-5" />
-            Chart Features Guide
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="indicators" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="indicators">Technical Indicators</TabsTrigger>
-              <TabsTrigger value="drawing">Drawing Tools</TabsTrigger>
-              <TabsTrigger value="comparison">Comparison Mode</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="indicators" className="space-y-3 mt-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Trend Indicators</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• <strong>SMA/EMA:</strong> Moving averages for trend identification</li>
-                    <li>• <strong>Bollinger Bands:</strong> Volatility and price channels</li>
-                    <li>• <strong>Ichimoku Cloud:</strong> Support/resistance zones</li>
-                    <li>• <strong>Parabolic SAR:</strong> Trend reversal signals</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Momentum Indicators</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• <strong>RSI:</strong> Overbought/oversold conditions (70/30)</li>
-                    <li>• <strong>MACD:</strong> Momentum and trend strength</li>
-                    <li>• <strong>Stochastic:</strong> Momentum oscillator</li>
-                    <li>• <strong>Williams %R:</strong> Momentum reversal signals</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Volume Indicators</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• <strong>OBV:</strong> Buying/selling pressure</li>
-                    <li>• <strong>MFI:</strong> Money flow intensity</li>
-                    <li>• <strong>A/D Line:</strong> Accumulation/distribution</li>
-                  </ul>
-                </div>
+                ))}
               </div>
-            </TabsContent>
-
-            <TabsContent value="drawing" className="space-y-3 mt-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Drawing Tools</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• <strong>Horizontal Line:</strong> Support/resistance levels</li>
-                    <li>• <strong>Vertical Line:</strong> Time markers</li>
-                    <li>• <strong>Trend Line:</strong> Draw trend channels</li>
-                    <li>• <strong>Fibonacci:</strong> Retracement levels (23.6%, 38.2%, 61.8%)</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Tips</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Drawings are saved per symbol and timeframe</li>
-                    <li>• Toggle visibility to show/hide without deleting</li>
-                    <li>• Use contrasting colors for multiple drawings</li>
-                    <li>• Combine multiple indicators for confirmation</li>
-                  </ul>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="comparison" className="space-y-3 mt-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Comparison Features</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Compare up to 4 symbols simultaneously</li>
-                    <li>• Normalized view for relative performance</li>
-                    <li>• Absolute price view for actual values</li>
-                    <li>• Correlation matrix for relationships</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Presets Available</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Tech Giants (AAPL, MSFT, GOOGL, AMZN, META)</li>
-                    <li>• Major Indices (SPY, QQQ, IWM, DIA)</li>
-                    <li>• Auto Makers (TSLA, F, GM, RIVN, LCID)</li>
-                    <li>• Banks (JPM, BAC, WFC, C, GS)</li>
-                  </ul>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

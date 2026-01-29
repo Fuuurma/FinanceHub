@@ -88,11 +88,15 @@ Overall:  ████████████████░░░░░  75% C
   - Add export buttons to components
   - Implement backend export endpoints
 
-**3. Enhanced Charts** - High Demand ⭐⭐⭐⭐⭐
-- Upgrade from line charts to candlestick
-- Add technical indicators overlay
-- Users expect professional charting
-- **See:** `FEATURE_IMPLEMENTATION_GUIDES.md` Section 2 for complete code
+**3. TradingView Lightweight Charts** - High Demand ⭐⭐⭐⭐⭐
+- Replace Chart.js/Recharts with TradingView Lightweight Charts
+- Native candlestick support
+- Professional financial charting
+- **Approach:**
+  - Install: `npm install lightweight-charts`
+  - Create components: TradingViewChart, ChartControls, IndicatorPanel
+  - Replace all existing chart components
+  - See: `/docs/TRADINGVIEW_CHARTS_IMPLEMENTATION.md`
 
 ### Option 2: Core Features (3-5 weeks each)
 
@@ -215,13 +219,48 @@ print(response.json())
 - QA testing
 - Deploy to production
 
-### After Screener: Advanced Charting
+### After Screener: TradingView Lightweight Charts
 
-Once screener is done, move to **Advanced Charting** (Section 2 in FEATURE_IMPLEMENTATION_GUIDES.md):
-- Upgrade from line charts to candlestick
-- Add technical indicators overlay
-- Implement timeframe selector
-- Add drawing tools
+Once screener is done, move to **TradingView Lightweight Charts** - your new default chart provider for all charts in FinanceHub.
+
+**Why TradingView Lightweight?**
+- ✅ FREE (MIT license)
+- ✅ Native candlestick charts
+- ✅ Built for financial data
+- ✅ Excellent performance
+- ✅ Used by thousands of trading platforms
+
+**Implementation Phases:**
+
+**Phase 1: Core Charts (3-4 weeks)**
+- Install lightweight-charts
+- Create TradingViewChart component
+- Add OHLCV data fetching
+- Timeframe selector (1m, 5m, 15m, 1h, 4h, 1d, 1w, 1M)
+- Chart type toggle (Candlestick, Line, Area, Bar)
+- Replace existing charts on asset pages
+- Create /charts/advanced page
+
+**Phase 2: Technical Indicators (4-6 weeks)**
+- SMA overlay (20, 50, 200 periods)
+- EMA overlay (12, 26 periods)
+- RSI indicator panel
+- MACD indicator panel
+- Bollinger Bands
+- Volume histogram
+
+**Phase 3: Drawing Tools (6-8 weeks)**
+- Trend lines
+- Horizontal/vertical lines
+- Fibonacci retracements
+- Support/resistance levels
+
+**All charts in FinanceHub will use Lightweight Charts:**
+1. Asset Detail Charts
+2. Portfolio Performance Charts
+3. Analytics Charts
+4. Economic Dashboard Charts
+5. Real-Time Charts
 
 ---
 
@@ -375,17 +414,19 @@ python manage.py createsuperuser # Create admin user
 Track your implementation progress:
 
 - [ ] 1. Universal Screener (2-3 weeks)
-- [ ] 2. Advanced Charting (3-4 weeks)
-- [ ] 3. Analytics Dashboard (4-5 weeks)
-- [ ] 4. Portfolio Analytics (5-6 weeks)
-- [ ] 5. Risk Management (6-8 weeks)
-- [ ] 6. Research Tools (3-4 weeks)
-- [ ] 7. Export & Reporting (4-5 weeks)
-- [ ] 8. Asset Classes (6-8 weeks)
-- [ ] 9. UX Improvements (3-4 weeks)
-- [ ] 10. Algorithmic Trading (8-10 weeks)
-- [ ] 11. Social Features (6-8 weeks)
-- [ ] 12. AI/ML Features (10-12 weeks)
+- [x] 2. TradingView Lightweight Charts (3-4 weeks) - DEFAULT CHART PROVIDER
+- [ ] 3. Technical Indicators Overlay (Phase 2) (4-6 weeks)
+- [ ] 4. Drawing Tools (Phase 3) (6-8 weeks)
+- [ ] 5. Analytics Dashboard (4-5 weeks)
+- [ ] 6. Portfolio Analytics (5-6 weeks)
+- [ ] 7. Risk Management (6-8 weeks)
+- [ ] 8. Research Tools (3-4 weeks)
+- [ ] 9. Export & Reporting (4-5 weeks)
+- [ ] 10. Asset Classes (6-8 weeks)
+- [ ] 11. UX Improvements (3-4 weeks)
+- [ ] 12. Algorithmic Trading (8-10 weeks)
+- [ ] 13. Social Features (6-8 weeks)
+- [ ] 14. AI/ML Features (10-12 weeks)
 
 **Total Estimated Time:** 40-50 weeks for full feature parity
 

@@ -24,6 +24,7 @@ import {
   ExternalLink,
   FileSpreadsheet,
   FileJson,
+  Clock,
 } from 'lucide-react'
 import { useScreenerStore } from '@/stores/screenerStore'
 import { formatNumber, formatPercent } from '@/lib/utils/formatters'
@@ -45,6 +46,7 @@ export function ResultsPanel() {
     setLimit,
     setCurrentPage,
     runScreener,
+    lastUpdated,
   } = useScreenerStore()
 
   useEffect(() => {
@@ -198,7 +200,13 @@ export function ResultsPanel() {
           </div>
           <CardDescription aria-live="polite">
             Showing {paginatedResults.length > 0 ? ((currentPage - 1) * limit) + 1 : 0}-{Math.min(currentPage * limit, sortedResults.length)} of {sortedResults.length} results
-            {results.length > 0 && ` • Screened ${results.length} assets`}
+            {results.length > 0 && ` • ${results.length} assets`}
+            {lastUpdated && (
+              <span className="ml-2 text-muted-foreground flex items-center gap-1 inline-flex">
+                <Clock className="h-3 w-3" />
+                Updated {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>

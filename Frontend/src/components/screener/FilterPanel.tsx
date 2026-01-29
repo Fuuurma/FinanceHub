@@ -1,13 +1,23 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { Filter, Loader2, Plus, RotateCcw, Play } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Filter, Loader2, Plus, RotateCcw, Play, RefreshCw, Star } from 'lucide-react'
 import { FilterRow } from './FilterRow'
 import { useScreenerStore } from '@/stores/screenerStore'
+import { SCREENER_CATEGORIES } from '@/lib/constants/screener'
+
+const SECTOR_QUICK_FILTERS = [
+  'Technology', 'Healthcare', 'Financials', 'Consumer Discretionary',
+  'Communication Services', 'Industrials', 'Consumer Staples',
+  'Energy', 'Utilities', 'Real Estate', 'Materials'
+]
 
 export function FilterPanel() {
   const {
@@ -18,7 +28,11 @@ export function FilterPanel() {
     loading,
     loadPresets,
     applyPreset,
+    autoRefresh,
+    setAutoRefresh,
   } = useScreenerStore()
+
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   useEffect(() => {
     loadPresets()
@@ -113,6 +127,70 @@ export function FilterPanel() {
               )}
               Run
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Quick Sector Filter</CardTitle>
+          <CardDescription>Click to add sector filter</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2" role="list" aria-label="Sector filters">
+            {SECTOR_QUICK_FILTERS.map(sector => {
+              const isActive = selectedFilters.some(f => f.key === 'sector' && f.value === sector)
+              return (
+                <Badge
+                  key={sector}
+                  variant={isActive ? 'default' : 'outline'}
+                  className="cursor-pointer hover:bg-primary/10 transition-colors"
+                  role="listitem"
+                  onClick={() => {
+                    if (isActive) {
+                      const idx = selectedFilters.findIndex(f => f.key === 'sector' && f.value === sector)
+                      if (idx >= 0) {
+                        const { removeFilter } = useScreenerStore.getState()
+                        removeFilter(idx)
+                      }
+                    } else {
+                      addFilter({ key: 'sector', value: sector, operator: '=' })
+                    }
+                  }}
+                >
+                  {sector}
+                </Badge>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Auto-Refresh</CardTitle>
+          <CardDescription>Automatically update results</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="auto-refresh"
+                checked={autoRefresh}
+                onCheckedChange={setAutoRefresh}
+              />
+              <Label htmlFor="auto-refresh">Auto-refresh every 30s</Label>
+            </div>
+            {autoRefresh && (
+              <Badge variant="secondary" className="animate-pulse">
+                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                Live
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>

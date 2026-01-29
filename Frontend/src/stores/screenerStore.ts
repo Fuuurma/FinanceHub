@@ -15,6 +15,8 @@ interface ScreenerState {
   sortOrder: 'asc' | 'desc'
   limit: number
   currentPage: number
+  autoRefresh: boolean
+  lastUpdated: string | null
 
   runScreener: () => Promise<void>
   loadPresets: () => Promise<void>
@@ -28,6 +30,7 @@ interface ScreenerState {
   setSortOrder: (sortOrder: 'asc' | 'desc') => void
   setLimit: (limit: number) => void
   setCurrentPage: (page: number) => void
+  setAutoRefresh: (enabled: boolean) => void
 }
 
 export const useScreenerStore = create<ScreenerState>()(
@@ -44,6 +47,8 @@ export const useScreenerStore = create<ScreenerState>()(
       sortOrder: 'desc',
       limit: 20,
       currentPage: 1,
+      autoRefresh: false,
+      lastUpdated: null,
 
       runScreener: async () => {
         set({ loading: true, error: null, currentPage: 1 })
@@ -56,7 +61,7 @@ export const useScreenerStore = create<ScreenerState>()(
             sortBy,
             sortOrder
           )
-          set({ results: response.results })
+          set({ results: response.results, lastUpdated: new Date().toISOString() })
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to run screener' })
         } finally {
@@ -138,6 +143,14 @@ export const useScreenerStore = create<ScreenerState>()(
 
       setCurrentPage: (page: number) => {
         set({ currentPage: page })
+      },
+
+      setAutoRefresh: (enabled: boolean) => {
+        set({ autoRefresh: enabled })
+        if (enabled) {
+          const { runScreener } = get()
+          runScreener()
+        }
       }
     }),
     {
@@ -145,7 +158,8 @@ export const useScreenerStore = create<ScreenerState>()(
       partialize: (state) => ({
         sortBy: state.sortBy,
         sortOrder: state.sortOrder,
-        limit: state.limit
+        limit: state.limit,
+        autoRefresh: state.autoRefresh
       })
     }
   )
