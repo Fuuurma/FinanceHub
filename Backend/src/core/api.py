@@ -35,6 +35,7 @@ from api.analytics import router as analytics_router
 from api.optimization import router as optimization_router
 from api.options_pricing import router as options_pricing_router
 from api.advanced_portfolio_optimization import router as advanced_portfolio_opt_router
+from api.advanced_risk_management import router as advanced_risk_management_router
 
 
 # Register API exception handlers
