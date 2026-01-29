@@ -19,8 +19,10 @@ import SectorBreakdownChart from '@/components/analytics/SectorBreakdownChart'
 import { ReturnCard, ValueCard, RiskCard, DrawdownCard, CAGRCard } from '@/components/analytics/KPICards'
 import { PortfolioSelector } from '@/components/analytics/PortfolioSelector'
 import { PortfolioComparison } from '@/components/analytics/PortfolioComparison'
+import { PerformanceBreakdown } from '@/components/analytics/PerformanceBreakdown'
 import { useAnalyticsStore } from '@/stores/analyticsStore'
-import { portfoliosApi, type Portfolio } from '@/lib/api/portfolio'
+import { portfoliosApi } from '@/lib/api/portfolio'
+import type { Portfolio } from '@/lib/types/portfolio'
 import { exportAnalytics } from '@/lib/utils/analytics-export'
 import { cn } from '@/lib/utils'
 import {
@@ -158,6 +160,19 @@ export default function AnalyticsPage() {
     { name: 'Energy', value: 12000, percentage: 10.9, return: -2.3 },
   ]
 
+  const mockHoldingsData = [
+    { symbol: 'AAPL', name: 'Apple Inc.', weight: 15.2, return: 18.5, contribution: 2.81, value: 15200, sector: 'Technology' },
+    { symbol: 'MSFT', name: 'Microsoft Corp.', weight: 14.8, return: 22.3, contribution: 3.30, value: 14800, sector: 'Technology' },
+    { symbol: 'GOOGL', name: 'Alphabet Inc.', weight: 12.5, return: 15.2, contribution: 1.90, value: 12500, sector: 'Technology' },
+    { symbol: 'AMZN', name: 'Amazon.com Inc.', weight: 10.3, return: 28.7, contribution: 2.96, value: 10300, sector: 'Consumer' },
+    { symbol: 'NVDA', name: 'NVIDIA Corp.', weight: 8.7, return: 45.2, contribution: 3.93, value: 8700, sector: 'Technology' },
+    { symbol: 'JPM', name: 'JPMorgan Chase', weight: 6.5, return: 12.3, contribution: 0.80, value: 6500, sector: 'Finance' },
+    { symbol: 'V', name: 'Visa Inc.', weight: 5.8, return: 8.5, contribution: 0.49, value: 5800, sector: 'Finance' },
+    { symbol: 'JNJ', name: 'Johnson & Johnson', weight: 5.2, return: -2.3, contribution: -0.12, value: 5200, sector: 'Healthcare' },
+    { symbol: 'WMT', name: 'Walmart Inc.', weight: 4.8, return: 15.8, contribution: 0.76, value: 4800, sector: 'Consumer' },
+    { symbol: 'XOM', name: 'Exxon Mobil', weight: 4.2, return: -8.5, contribution: -0.36, value: 4200, sector: 'Energy' },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -282,6 +297,7 @@ export default function AnalyticsPage() {
                 <PerformanceAttributionChart data={mockAttributionData} />
               </ChartCard>
             </div>
+            <PerformanceBreakdown holdings={mockHoldingsData} />
             <ChartCard title="Benchmark Comparison" description="Portfolio vs benchmark performance">
               <BenchmarkComparisonChart data={mockBenchmarkData} />
             </ChartCard>
