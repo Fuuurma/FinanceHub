@@ -80,6 +80,7 @@ const navItems = [
 ]
 
 const toolItems = [
+  { title: 'Trading', href: '/trading', icon: Activity, shortcut: 'G+T', badge: 'NEW' },
   { title: 'Screener', href: '/screener', icon: Target, shortcut: 'G+S', badge: 'NEW' },
   { title: 'Watchlist', href: '/watchlist', icon: History, shortcut: 'G+W' },
   { title: 'Alerts', href: '/alerts', icon: Bell, shortcut: 'G+A', badge: '3' },
