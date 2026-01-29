@@ -92,4 +92,46 @@ export const indicatorsApi = {
     apiClient.get<any[]>(`/api/v1/indicators/${symbol}/obv`, {
       params: { days }
     }),
+
+  // WMA
+  getWMA: (symbol: string, period = 20, days = 90) =>
+    apiClient.get<any[]>(`/api/v1/indicators/${symbol}/wma`, {
+      params: { period, days }
+    }),
+
+  // MFI
+  getMFI: (symbol: string, period = 14, days = 90) =>
+    apiClient.get<any[]>(`/api/v1/indicators/${symbol}/mfi`, {
+      params: { period, days }
+    }),
+
+  // VWAP
+  getVWAP: (symbol: string, days = 90) =>
+    apiClient.get<any[]>(`/api/v1/indicators/${symbol}/vwap`, {
+      params: { days }
+    }),
+
+  // Ichimoku
+  getIchimoku: (
+    symbol: string,
+    tenkan_period = 9,
+    kijun_period = 26,
+    senkou_span_b_period = 52,
+    days = 180
+  ) =>
+    apiClient.get<any>(`/api/v1/indicators/${symbol}/ichimoku`, {
+      params: { tenkan_period, kijun_period, senkou_span_b_period, days }
+    }),
+
+  // Parabolic SAR
+  getParabolicSAR: (symbol: string, acceleration = 0.02, maximum = 0.2, days = 90) =>
+    apiClient.get<any[]>(`/api/v1/indicators/${symbol}/parabolic-sar`, {
+      params: { acceleration, maximum, days }
+    }),
+
+  // Chart data
+  getChart: (symbol: string, range = '1y') =>
+    apiClient.get<any[]>(`/api/v1/iex/chart/${symbol}`, {
+      params: { period: range }
+    }),
 }
