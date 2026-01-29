@@ -2,19 +2,18 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from ninja import Router, Query, Schema
 from django.shortcuts import get_object_or_404
-from django_ratelimit.decorators import ratelimit
-from django.core.cache import cache
+from django.http import Http404
 
 from utils.helpers.logger.logger import get_logger
-from utils.services.data_orchestrator import get_data_orchestrator, Priority
-from utils.services.cache_manager import get_cache_manager
+from utils.services.data_orchestrator import get_data_orchestrator, Priority, DataFreshness
+from utils.api.decorators import api_endpoint
+from utils.constants.api import RATE_LIMITS, CACHE_TTLS
+from core.exceptions import NotFoundException, ValidationException, DatabaseException, ExternalAPIException, ServiceException
 from assets.models.asset import Asset
-from utils.constants.api import RATE_LIMIT_READ, RATE_LIMIT_DATA_INTENSIVE, CACHE_TTL_SHORT
 
 logger = get_logger(__name__)
 router = Router(tags=["Unified Market Data"])
 orchestrator = get_data_orchestrator()
-cache_manager = get_cache_manager()
 
 
 class MarketDataRequest(Schema):
@@ -57,11 +56,12 @@ class MarketStatisticsResponse(Schema):
 class ProviderHealthResponse(Schema):
     provider: str
     healthy: bool
-    last_checked: Optional[str]
+    last_checked: Optional[str] = None
     error: Optional[str] = None
 
 
 @router.post("/market-data", response=MarketDataResponse)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['data_intensive'], key_prefix="market")
 async def get_unified_market_data(request, payload: MarketDataRequest):
     """
     Unified endpoint to fetch any type of market data
@@ -90,6 +90,12 @@ async def get_unified_market_data(request, payload: MarketDataRequest):
             priority=priority
         )
         
+        if not response or not response.data:
+            raise ExternalAPIException(
+                f"Unable to fetch market data for {payload.symbol}",
+                "market_data_provider"
+            )
+        
         return MarketDataResponse(
             data=response.data,
             source=response.source.value,
@@ -99,16 +105,15 @@ async def get_unified_market_data(request, payload: MarketDataRequest):
             metadata=response.metadata
         )
         
+    except ExternalAPIException:
+        raise
     except Exception as e:
         logger.error(f"Failed to fetch market data for {payload.symbol}: {e}")
-        return {
-            "error": str(e),
-            "symbol": payload.symbol,
-            "data_type": payload.data_type
-        }
+        raise ServiceException(f"Failed to fetch market data for {payload.symbol}")
 
 
 @router.post("/market-data/batch", response=BatchMarketDataResponse)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['data_intensive'], key_prefix="market_batch")
 async def get_batch_market_data(request, payload: BatchMarketDataRequest):
     """
     Fetch multiple data points in a single batch request
@@ -130,7 +135,7 @@ async def get_batch_market_data(request, payload: BatchMarketDataRequest):
             data_type=req.data_type,
             symbol=req.symbol,
             params=req.params,
-            freshness_required=orchestrator.freshness_requirements.get(req.data_type, None),
+            freshness_required=orchestrator.freshness_requirements.get(req.data_type, DataFreshness.CACHED),
             priority=priority
         ))
     
@@ -169,22 +174,17 @@ async def get_batch_market_data(request, payload: BatchMarketDataRequest):
         
     except Exception as e:
         logger.error(f"Batch market data fetch failed: {e}")
-        return {
-            "error": str(e),
-            "total": len(requests),
-            "successful": 0,
-            "failed": len(requests),
-            "results": []
-        }
+        raise ServiceException("Batch market data fetch failed")
 
 
 @router.get("/price/{symbol}")
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['realtime'], key_prefix="price")
 async def get_price(request, symbol: str, force_refresh: bool = False):
     """
     Get current price for a symbol (auto-detects crypto or stock)
     """
     try:
-        asset = await get_object_or_404(Asset, symbol__iexact=symbol)
+        asset = get_object_or_404(Asset, symbol__iexact=symbol)
         
         is_crypto = asset.asset_type.name.lower() in ['crypto', 'cryptocurrency']
         data_type = 'crypto_price' if is_crypto else 'stock_price'
@@ -195,9 +195,16 @@ async def get_price(request, symbol: str, force_refresh: bool = False):
             force_refresh=force_refresh
         )
         
+        if not response or not response.data:
+            raise NotFoundException("Price data", symbol)
+        
+        price = response.data.get('price') or response.data.get('c', response.data.get('current_price'))
+        if price is None:
+            raise NotFoundException("Price data", symbol)
+        
         return {
             "symbol": symbol,
-            "price": response.data.get('price') or response.data.get('c', response.data.get('current_price')),
+            "price": price,
             "change": response.data.get('change', 0),
             "change_percent": response.data.get('change_percent', response.data.get('p', 0)),
             "timestamp": response.data.get('timestamp') or response.data.get('t'),
@@ -205,19 +212,24 @@ async def get_price(request, symbol: str, force_refresh: bool = False):
             "cached": response.cached
         }
         
+    except Http404:
+        raise NotFoundException("Asset", symbol)
+    except NotFoundException:
+        raise
     except Exception as e:
         logger.error(f"Failed to fetch price for {symbol}: {e}")
-        return {"error": str(e), "symbol": symbol}
+        raise ServiceException(f"Failed to fetch price for {symbol}")
 
 
 @router.get("/historical/{symbol}")
+@api_endpoint(ttl=CACHE_TTLS['medium'], rate=RATE_LIMITS['read'], key_prefix="historical")
 async def get_historical(request, symbol: str, days: int = 30, timespan: str = 'day'):
     """
     Get historical price data for a symbol
     Timespan: minute, hour, day, week, month, quarter, year
     """
     try:
-        asset = await get_object_or_404(Asset, symbol__iexact=symbol)
+        asset = get_object_or_404(Asset, symbol__iexact=symbol)
         
         is_crypto = asset.asset_type.name.lower() in ['crypto', 'cryptocurrency']
         data_type = 'crypto_historical' if is_crypto else 'stock_historical'
@@ -228,6 +240,9 @@ async def get_historical(request, symbol: str, days: int = 30, timespan: str = '
             params={'days': days, 'timespan': timespan}
         )
         
+        if not response or not response.data:
+            raise NotFoundException("Historical data", symbol)
+        
         return {
             "symbol": symbol,
             "data": response.data,
@@ -236,12 +251,17 @@ async def get_historical(request, symbol: str, days: int = 30, timespan: str = '
             "metadata": response.metadata
         }
         
+    except Http404:
+        raise NotFoundException("Asset", symbol)
+    except NotFoundException:
+        raise
     except Exception as e:
         logger.error(f"Failed to fetch historical data for {symbol}: {e}")
-        return {"error": str(e), "symbol": symbol}
+        raise ServiceException(f"Failed to fetch historical data for {symbol}")
 
 
 @router.get("/news")
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="news")
 async def get_news(
     request,
     query: Optional[str] = None,
@@ -255,7 +275,7 @@ async def get_news(
     """
     try:
         if symbol:
-            asset = await get_object_or_404(Asset, symbol__iexact=symbol)
+            asset = get_object_or_404(Asset, symbol__iexact=symbol)
             query = query or asset.name
         
         response = await orchestrator.get_market_data(
@@ -268,6 +288,9 @@ async def get_news(
             }
         )
         
+        if not response:
+            raise ExternalAPIException("News API", "Unable to fetch news")
+        
         return {
             "articles": response.data.get('articles', []),
             "total": response.data.get('totalResults', 0),
@@ -275,12 +298,17 @@ async def get_news(
             "cached": response.cached
         }
         
+    except Http404:
+        raise NotFoundException("Asset", symbol)
+    except ExternalAPIException:
+        raise
     except Exception as e:
         logger.error(f"Failed to fetch news: {e}")
-        return {"error": str(e), "articles": []}
+        raise ServiceException("Failed to fetch news")
 
 
 @router.get("/technical/{symbol}")
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="technical")
 async def get_technical_indicators(
     request,
     symbol: str,
@@ -292,13 +320,16 @@ async def get_technical_indicators(
     Indicators: sma, ema, rsi, macd, bollinger
     """
     try:
-        asset = await get_object_or_404(Asset, symbol__iexact=symbol)
+        asset = get_object_or_404(Asset, symbol__iexact=symbol)
         
         response = await orchestrator.get_market_data(
             data_type='technical_indicators',
             symbol=symbol,
             params={'indicator': indicator, **kwargs}
         )
+        
+        if not response or not response.data:
+            raise NotFoundException("Technical indicators", symbol)
         
         return {
             "symbol": symbol,
@@ -308,23 +339,31 @@ async def get_technical_indicators(
             "cached": response.cached
         }
         
+    except Http404:
+        raise NotFoundException("Asset", symbol)
+    except NotFoundException:
+        raise
     except Exception as e:
         logger.error(f"Failed to fetch technical indicators for {symbol}: {e}")
-        return {"error": str(e), "symbol": symbol}
+        raise ServiceException(f"Failed to fetch technical indicators for {symbol}")
 
 
 @router.get("/fundamentals/{symbol}")
+@api_endpoint(ttl=CACHE_TTLS['medium'], rate=RATE_LIMITS['read'], key_prefix="fundamentals")
 async def get_fundamentals(request, symbol: str):
     """
     Get fundamental data for a stock
     """
     try:
-        asset = await get_object_or_404(Asset, symbol__iexact=symbol)
+        asset = get_object_or_404(Asset, symbol__iexact=symbol)
         
         response = await orchestrator.get_market_data(
             data_type='stock_fundamentals',
             symbol=symbol
         )
+        
+        if not response or not response.data:
+            raise NotFoundException("Fundamental data", symbol)
         
         return {
             "symbol": symbol,
@@ -333,37 +372,44 @@ async def get_fundamentals(request, symbol: str):
             "cached": response.cached
         }
         
+    except Http404:
+        raise NotFoundException("Asset", symbol)
+    except NotFoundException:
+        raise
     except Exception as e:
         logger.error(f"Failed to fetch fundamentals for {symbol}: {e}")
-        return {"error": str(e), "symbol": symbol}
+        raise ServiceException(f"Failed to fetch fundamentals for {symbol}")
 
 
 @router.get("/cache/stats", response=Dict[str, Any])
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="cache_stats")
 async def get_cache_statistics(request):
     """Get cache statistics"""
     try:
-        return await cache_manager.get_statistics()
+        return await orchestrator.cache_manager.get_statistics()
     except Exception as e:
         logger.error(f"Failed to get cache statistics: {e}")
-        return {"error": str(e)}
+        raise DatabaseException("Failed to retrieve cache statistics")
 
 
 @router.post("/cache/clear")
+@api_endpoint(rate=RATE_LIMITS['write'])
 async def clear_cache(request, pattern: Optional[str] = None):
     """Clear cache, optionally by pattern"""
     try:
         if pattern:
-            count = await cache_manager.invalidate_pattern(pattern)
+            count = await orchestrator.cache_manager.invalidate_pattern(pattern)
             return {"message": f"Invalidated {count} cache entries matching '{pattern}'"}
         else:
-            await cache_manager.clear_all()
+            await orchestrator.cache_manager.clear_all()
             return {"message": "All cache cleared"}
     except Exception as e:
         logger.error(f"Failed to clear cache: {e}")
-        return {"error": str(e)}
+        raise DatabaseException("Failed to clear cache")
 
 
 @router.get("/stats", response=MarketStatisticsResponse)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="market_stats")
 async def get_market_statistics(request):
     """Get overall system statistics"""
     try:
@@ -380,10 +426,11 @@ async def get_market_statistics(request):
         
     except Exception as e:
         logger.error(f"Failed to get market statistics: {e}")
-        return {"error": str(e)}
+        raise ServiceException("Failed to get market statistics")
 
 
 @router.get("/health", response=List[ProviderHealthResponse])
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="provider_health")
 async def get_provider_health(request):
     """Get health status of all data providers"""
     try:
@@ -402,10 +449,11 @@ async def get_provider_health(request):
         
     except Exception as e:
         logger.error(f"Failed to get provider health: {e}")
-        return [{"provider": "unknown", "healthy": False, "error": str(e)}]
+        raise ServiceException("Failed to get provider health")
 
 
 @router.post("/prefetch")
+@api_endpoint(rate=RATE_LIMITS['write'])
 async def prefetch_data(request, symbols: List[str], data_types: List[str]):
     """
     Prefetch data for multiple symbols and data types
@@ -422,4 +470,4 @@ async def prefetch_data(request, symbols: List[str], data_types: List[str]):
         
     except Exception as e:
         logger.error(f"Failed to prefetch data: {e}")
-        return {"error": str(e)}
+        raise ServiceException("Failed to prefetch data")

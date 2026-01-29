@@ -6,13 +6,12 @@ from decimal import Decimal
 from ninja import Router
 from pydantic import BaseModel
 from django.utils import timezone
-from django_ratelimit.decorators import ratelimit
-from django.core.cache import cache
 
 from utils.services.fundamental_service import get_fundamental_service
 from utils.services.data_orchestrator import get_data_orchestrator
 from utils.helpers.logger.logger import get_logger
-from utils.constants.api import RATE_LIMIT_READ, CACHE_TTL_SHORT
+from utils.constants.api import RATE_LIMITS, CACHE_TTLS
+from core.exceptions import ExternalAPIException
 
 logger = get_logger(__name__)
 
@@ -83,19 +82,16 @@ async def get_market_overview():
     to provide a holistic view of the market.
     """
     fundamental_service = get_fundamental_service()
-    market_service = get_market_data_service()
+    orchestrator = get_data_orchestrator()
     
     try:
-        # Get sector performance from fundamentals
         sector_data = await fundamental_service.get_sector_performance()
         sectors = sector_data.get('sectors', [])
         
-        # Get top gainers/losers from market data
         top_movers = await orchestrator.get_top_movers(limit=10)
         top_gainers = top_movers.get('gainers', [])
         top_losers = top_movers.get('losers', [])
         
-        # Get major market indices
         indices_data = [
             {
                 'symbol': '^GSPC',
@@ -120,7 +116,6 @@ async def get_market_overview():
             },
         ]
         
-        # Calculate market sentiment
         avg_gainer_change = sum(g.get('change_percent', 0) for g in top_gainers[:10]) / len(top_gainers[:10]) if top_gainers else 0
         avg_loser_change = sum(g.get('change_percent', 0) for g in top_losers[:10]) / len(top_losers[:10]) if top_losers else 0
         
@@ -130,7 +125,6 @@ async def get_market_overview():
             'trending_sectors': sorted(sectors, key=lambda x: x.get('avg_change_24h', 0), reverse=True)[:3],
         }
         
-        # Asset distribution (mock data for now)
         asset_distribution = {
             'equities': {'value': 0, 'percentage': 0},
             'crypto': {'value': 0, 'percentage': 0},
@@ -154,16 +148,7 @@ async def get_market_overview():
         
     except Exception as e:
         logger.error(f"Error fetching market overview: {e}")
-        return {
-            'indices': [],
-            'sectors': [],
-            'top_gainers': [],
-            'top_losers': [],
-            'asset_distribution': {},
-            'market_sentiment': {},
-            'fetched_at': timezone.now().isoformat(),
-            'sources': ['market_data']
-        }
+        raise ExternalAPIException("market_overview", str(e))
 
 
 @router.get("/indices", response=MarketIndicesResponse)
@@ -171,7 +156,7 @@ async def get_market_indices():
     """
     Get major market indices with current prices and changes
     """
-    market_service = get_market_data_service()
+    orchestrator = get_data_orchestrator()
     
     try:
         indices = [
@@ -225,11 +210,7 @@ async def get_market_indices():
         
     except Exception as e:
         logger.error(f"Error fetching market indices: {e}")
-        return {
-            'indices': [],
-            'fetched_at': timezone.now().isoformat(),
-            'source': 'market_data'
-        }
+        raise ExternalAPIException("market_indices", str(e))
 
 
 @router.get("/movers")
@@ -244,24 +225,21 @@ async def get_market_movers(
         asset_type: 'equities', 'crypto', 'commodities', or 'all'
         limit: Number of movers to return
     """
-    market_service = get_market_data_service()
+    orchestrator = get_data_orchestrator()
     
     try:
-        # Get top gainers
         gainers = await orchestrator.get_top_movers(
             direction='gainers',
             asset_type=asset_type,
             limit=limit
         )
         
-        # Get top losers
         losers = await orchestrator.get_top_movers(
             direction='losers',
             asset_type=asset_type,
             limit=limit
         )
         
-        # Get crypto movers if requested
         crypto_gainers = []
         crypto_losers = []
         if asset_type in ['crypto', 'all']:
@@ -286,11 +264,7 @@ async def get_market_movers(
         
     except Exception as e:
         logger.error(f"Error fetching market movers: {e}")
-        return MarketMoversResponse(
-            gainers=[],
-            losers=[],
-            fetched_at=timezone.now().isoformat()
-        )
+        raise ExternalAPIException("market_movers", str(e))
 
 
 @router.get("/trending")
@@ -307,7 +281,7 @@ async def get_trending_assets(
         limit: Number of assets to return
         time_period: '1h', '24h', '7d', '30d'
     """
-    market_service = get_market_data_service()
+    orchestrator = get_data_orchestrator()
     
     try:
         trending = await orchestrator.get_trending_assets(
@@ -326,10 +300,4 @@ async def get_trending_assets(
         
     except Exception as e:
         logger.error(f"Error fetching trending assets: {e}")
-        return {
-            'assets': [],
-            'asset_type': asset_type,
-            'time_period': time_period,
-            'fetched_at': timezone.now().isoformat(),
-            'source': 'market_data'
-        }
+        raise ExternalAPIException("trending_assets", str(e))

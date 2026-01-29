@@ -9,13 +9,12 @@ from pydantic import BaseModel, Field
 from django.utils import timezone
 from datetime import timedelta
 import asyncio
-from django_ratelimit.decorators import ratelimit
-from django.core.cache import cache
 
 from utils.services.data_orchestrator import get_data_orchestrator
-from utils.services.cache_manager import get_cache_manager
+from utils.api.decorators import api_endpoint
+from utils.constants.api import RATE_LIMITS, CACHE_TTLS
+from core.exceptions import NotFoundException, ValidationException, DatabaseException, ExternalAPIException, ServiceException
 from utils.helpers.logger.logger import get_logger
-from utils.constants.api import RATE_LIMIT_REALTIME, CACHE_TTL_SHORT
 
 logger = get_logger(__name__)
 
@@ -113,6 +112,7 @@ class WebSocketConnectionInfo(BaseModel):
 
 
 @router.get("/price/{symbol}", response=RealTimePriceUpdate)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['realtime'], key_prefix="realtime_price")
 async def get_realtime_price(request, symbol: str, source: str = 'market'):
     """
     Get real-time price for a specific symbol
@@ -120,37 +120,27 @@ async def get_realtime_price(request, symbol: str, source: str = 'market'):
     Fetches the most recent price data from cache or provider
     """
     orchestrator = get_data_orchestrator()
-    cache_manager = get_cache_manager()
 
     try:
-        # Try cache first
-        cache_key = f"realtime_price:{symbol.upper()}:{source}"
-        cached = await cache_manager.get('realtime_data', cache_key)
-        
-        if cached:
-            logger.info(f"Returning cached price for {symbol} from {source}")
-            return cached
-
-        # Determine data type based on symbol
         data_type = 'crypto_price' if symbol.upper().endswith('USDT') or symbol.upper().endswith('BTC') else 'stock_price'
 
-        # Fetch from data orchestrator
         response = await orchestrator.get_market_data(
             data_type=data_type,
             symbol=symbol.upper()
         )
 
         if not response or not response.data:
-            return {
-                'symbol': symbol.upper(),
-                'error': 'Price not available'
-            }
+            raise NotFoundException("Price data", symbol)
 
         price_data = response.data
         
+        price = price_data.get('price', price_data.get('c', price_data.get('current_price')))
+        if price is None:
+            raise ExternalAPIException("Price provider", f"No price data available for {symbol}")
+        
         return RealTimePriceUpdate(
             symbol=symbol.upper(),
-            price=Decimal(str(price_data.get('price', 0))),
+            price=Decimal(str(price)),
             change=Decimal(str(price_data.get('change', 0))),
             change_percent=Decimal(str(price_data.get('change_percent', 0))),
             volume=price_data.get('volume', 0),
@@ -166,15 +156,17 @@ async def get_realtime_price(request, symbol: str, source: str = 'market'):
             last_update=timezone.now().isoformat()
         )
         
+    except NotFoundException:
+        raise
+    except ExternalAPIException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching realtime price for {symbol}: {e}")
-        return {
-            'symbol': symbol.upper(),
-            'error': str(e)
-        }
+        raise ServiceException(f"Error fetching realtime price for {symbol}")
 
 
 @router.post("/prices/batch", response=BatchPriceUpdatesResponse)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['realtime'], key_prefix="batch_prices")
 async def get_batch_prices(request, data: BatchPriceUpdateRequest):
     """
     Get real-time prices for multiple symbols
@@ -182,7 +174,6 @@ async def get_batch_prices(request, data: BatchPriceUpdateRequest):
     Efficient batch endpoint for dashboard and watchlist
     """
     orchestrator = get_data_orchestrator()
-    cache_manager = get_cache_manager()
     
     try:
         results = []
@@ -190,13 +181,6 @@ async def get_batch_prices(request, data: BatchPriceUpdateRequest):
 
         for symbol in data.symbols:
             async def fetch_price():
-                cache_key = f"realtime_price:{symbol}:market"
-                cached = await cache_manager.get('realtime_data', cache_key)
-
-                if cached:
-                    results.append(cached)
-                    return
-
                 data_type = 'crypto_price' if symbol.upper().endswith('USDT') or symbol.upper().endswith('BTC') else 'stock_price'
                 response = await orchestrator.get_market_data(
                     data_type=data_type,
@@ -212,7 +196,8 @@ async def get_batch_prices(request, data: BatchPriceUpdateRequest):
 
                 price_data = response.data
                 
-                if not price_data:
+                price = price_data.get('price', price_data.get('c', price_data.get('current_price')))
+                if price is None:
                     results.append({
                         'symbol': symbol,
                         'error': 'Price not available'
@@ -221,7 +206,7 @@ async def get_batch_prices(request, data: BatchPriceUpdateRequest):
                 
                 update = RealTimePriceUpdate(
                     symbol=symbol,
-                    price=Decimal(str(price_data.get('price', 0))),
+                    price=Decimal(str(price)),
                     change=Decimal(str(price_data.get('change', 0))),
                     change_percent=Decimal(str(price_data.get('change_percent', 0))),
                     volume=price_data.get('volume', 0),
@@ -229,20 +214,14 @@ async def get_batch_prices(request, data: BatchPriceUpdateRequest):
                     source='market',
                     last_update=timezone.now().isoformat()
                 )
-                
-                # Cache the result with 5 second TTL
-                await cache_manager.set(
-                    'realtime_data',
-                    cache_key,
-                    value=update,
-                    ttl=5
-                )
                 results.append(update)
             
+            tasks.append(fetch_price())
+        
         await asyncio.gather(*tasks)
         
         return BatchPriceUpdatesResponse(
-            updates=[u for u in results if 'symbol' in u],
+            updates=[u for u in results if 'error' not in u],
             total_symbols=len(data.symbols),
             fetched_at=timezone.now().isoformat(),
             source='market'
@@ -250,15 +229,11 @@ async def get_batch_prices(request, data: BatchPriceUpdateRequest):
         
     except Exception as e:
         logger.error(f"Error fetching batch prices: {e}")
-        return BatchPriceUpdatesResponse(
-            updates=[],
-            total_symbols=len(data.symbols),
-            fetched_at= timezone.now().isoformat(),
-            source='market',
-        )
+        raise ServiceException("Error fetching batch prices")
 
 
 @router.get("/trades/{symbol}", response=RecentTradesResponse)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['realtime'], key_prefix="trades")
 async def get_recent_trades(request, symbol: str, limit: int = 20):
     """
     Get recent trades for a symbol
@@ -294,7 +269,6 @@ async def get_recent_trades(request, symbol: str, limit: int = 20):
             for t in trades_data.get('trades', [])[:limit]
         ]
         
-        # Calculate volume metrics
         volume_24h = trades_data.get('volume_24h', None)
         avg_trade_size = None
         if trades:
@@ -313,18 +287,11 @@ async def get_recent_trades(request, symbol: str, limit: int = 20):
         
     except Exception as e:
         logger.error(f"Error fetching recent trades for {symbol}: {e}")
-        return RecentTradesResponse(
-            symbol=symbol.upper(),
-            trades=[],
-            count=0,
-            volume_24h=None,
-            avg_trade_size=None,
-            fetched_at=timezone.now().isoformat(),
-            source='market_data'
-        )
+        raise ServiceException(f"Error fetching recent trades for {symbol}")
 
 
 @router.get("/orderbook/{symbol}", response=OrderBookResponse)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['realtime'], key_prefix="orderbook")
 async def get_orderbook(
     request,
     symbol: str,
@@ -376,28 +343,19 @@ async def get_orderbook(
         
     except Exception as e:
         logger.error(f"Error fetching orderbook for {symbol}: {e}")
-        return OrderBookResponse(
-            symbol=symbol.upper(),
-            levels=[],
-            mid_price=None,
-            spread=Decimal('0'),
-            depth=0,
-            timestamp=timezone.now().isoformat(),
-            source='market_data'
-        )
+        raise ServiceException(f"Error fetching orderbook for {symbol}")
 
 
 @router.get("/connection-info", response=WebSocketConnectionInfo)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="ws_connection")
 async def get_websocket_connection_info(request, user_id: Optional[str] = None):
     """
     Get WebSocket connection info for the current user
     """
     try:
-        # Check active connections
-        cache_manager = get_cache_manager()
-        
+        orchestrator = get_data_orchestrator()
         connections_key = f"ws_connections:{user_id or 'anonymous'}"
-        connections = await cache_manager.get('ws_connections', connections_key)
+        connections = await orchestrator.cache_manager.get('ws_connections', connections_key)
         
         return WebSocketConnectionInfo(
             connected=connections is not None and len(connections) > 0,
@@ -409,10 +367,4 @@ async def get_websocket_connection_info(request, user_id: Optional[str] = None):
         
     except Exception as e:
         logger.error(f"Error getting WebSocket connection info: {e}")
-        return WebSocketConnectionInfo(
-            connected=False,
-            last_heartbeat=timezone.now().isoformat(),
-            subscriptions=[],
-            connection_time=timezone.now().isoformat(),
-            ping_ms=50
-        )
+        raise ServiceException("Error getting WebSocket connection info")

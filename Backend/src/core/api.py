@@ -32,6 +32,22 @@ from api.realtimedata import router as realtimedata_router
 from api.health import router as health_router
 from api.watchlist import router as watchlist_router
 from api.analytics import router as analytics_router
+from api.optimization import router as optimization_router
+
+
+# Register API exception handlers
+from core.exceptions import APIException, ErrorResponse
+
+
+@api.exception_handler(APIException)
+def handle_api_exception(request, exc: APIException):
+    """Handle APIException and return standardized error response."""
+    return api.create_response(
+        request,
+        exc.to_response().model_dump(),
+        status_code=exc.status,
+    )
+
 
 api.add_router("/users", users_router)
 api.add_router("/assets", assets_router)
@@ -49,3 +65,4 @@ api.add_router("/analytics", portfolio_analytics_router)
 api.add_router("/realtime", realtimedata_router)
 api.add_router("/health", health_router)
 api.add_router("/analytics/v2", analytics_router)
+api.add_router("/optimization", optimization_router)

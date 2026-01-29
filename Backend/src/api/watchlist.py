@@ -3,29 +3,27 @@ from ninja import Router, Query
 from pydantic import BaseModel
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from django_ratelimit.decorators import ratelimit
-from investments.models.watchlist import Watchlist
-from assets.models.asset import Asset
 from ninja_jwt.authentication import JWTAuth
+
+from assets.models.asset import Asset
+from investments.models.watchlist import Watchlist
 from utils.constants.api import (
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
     DEFAULT_OFFSET,
-    RATE_LIMIT_READ,
-    RATE_LIMIT_WRITE,
-    CACHE_TTL_SHORT,
+    RATE_LIMITS,
+    CACHE_TTLS,
 )
-from django.core.cache import cache
+from utils.api.decorators import api_endpoint
+from core.exceptions import NotFoundException, ValidationException
+
+
+jwt_auth = JWTAuth()
+router = Router(tags=["Watchlist"])
 
 
 class Message(BaseModel):
     message: str
-
-
-# JWT Authentication instance
-jwt_auth = JWTAuth()
-
-router = Router(tags=["Watchlist"])
 
 
 class WatchlistOut(BaseModel):
@@ -63,6 +61,7 @@ def _get_assets_by_symbol(symbols: List[str]) -> Dict[str, Asset]:
 
 
 @router.get("/watchlist", response=List[WatchlistOut], auth=jwt_auth)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="watchlist")
 def list_watchlists(
     request,
     limit: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
@@ -85,7 +84,9 @@ def list_watchlists(
 
 
 @router.get("/watchlist/{watchlist_id}", response=WatchlistOut, auth=jwt_auth)
+@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="watchlist")
 def get_watchlist(request, watchlist_id: str):
+    """Get a specific watchlist."""
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     return WatchlistOut(
         id=str(watchlist.id),
@@ -97,6 +98,7 @@ def get_watchlist(request, watchlist_id: str):
 
 
 @router.post("/watchlist", response=WatchlistOut, auth=jwt_auth)
+@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="watchlist")
 @transaction.atomic
 def create_watchlist(request, data: WatchlistCreateIn):
     """Create a new watchlist with bulk asset lookup (N+1 fix).
@@ -128,6 +130,7 @@ def create_watchlist(request, data: WatchlistCreateIn):
 
 
 @router.put("/watchlist/{watchlist_id}", response=WatchlistOut, auth=jwt_auth)
+@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="watchlist")
 @transaction.atomic
 def update_watchlist(request, watchlist_id: str, data: WatchlistUpdateIn):
     """Update watchlist with bulk asset lookup (N+1 fix).
@@ -161,7 +164,9 @@ def update_watchlist(request, watchlist_id: str, data: WatchlistUpdateIn):
 
 
 @router.delete("/watchlist/{watchlist_id}", response=Message, auth=jwt_auth)
+@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="watchlist")
 def delete_watchlist(request, watchlist_id: str):
+    """Delete a watchlist."""
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     watchlist.delete()
     return Message(message="Watchlist deleted successfully")
@@ -170,7 +175,9 @@ def delete_watchlist(request, watchlist_id: str):
 @router.post(
     "/watchlist/{watchlist_id}/assets", response=WatchlistOut, auth=jwt_auth
 )
+@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="watchlist")
 def add_asset_to_watchlist(request, watchlist_id: str, symbol: str = Query(...)):
+    """Add an asset to a watchlist."""
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     asset = get_object_or_404(Asset, symbol__iexact=symbol)
     watchlist.assets.add(asset)
@@ -188,7 +195,9 @@ def add_asset_to_watchlist(request, watchlist_id: str, symbol: str = Query(...))
     response=WatchlistOut,
     auth=jwt_auth,
 )
+@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="watchlist")
 def remove_asset_from_watchlist(request, watchlist_id: str, symbol: str):
+    """Remove an asset from a watchlist."""
     watchlist = get_object_or_404(Watchlist, id=watchlist_id, user=request.user)
     asset = Asset.objects.filter(symbol__iexact=symbol).first()
     if asset:

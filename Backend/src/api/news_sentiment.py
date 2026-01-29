@@ -9,13 +9,12 @@ from pydantic import BaseModel, Field
 from django.utils import timezone
 from datetime import timedelta
 import asyncio
-from django_ratelimit.decorators import ratelimit
-from django.core.cache import cache
 
 from data.data_providers.newsapi.scraper import NewsAPIScraper
 from utils.services.fundamental_service import get_fundamental_service
 from utils.helpers.logger.logger import get_logger
-from utils.constants.api import RATE_LIMIT_READ, RATE_LIMIT_DATA_INTENSIVE, CACHE_TTL_MEDIUM
+from utils.constants.api import RATE_LIMITS, CACHE_TTLS
+from core.exceptions import ExternalAPIException, ValidationException
 
 logger = get_logger(__name__)
 
@@ -83,7 +82,6 @@ async def get_sentiment_analysis(
     try:
         fundamental_service = get_fundamental_service()
         
-        # Fetch recent news for the symbol
         end_date = timezone.now()
         start_date = end_date - timedelta(days=days)
         
@@ -108,15 +106,12 @@ async def get_sentiment_analysis(
                 analyzed_at=timezone.now().isoformat()
             )
         
-        # Analyze sentiment for each article
         sentiment_scores = []
         positive_count = 0
         negative_count = 0
         neutral_count = 0
         
         for article in articles:
-            # Simple sentiment analysis based on title and description
-            # In production, this would use NLP sentiment analysis
             sentiment_score = await _analyze_sentiment(article)
             sentiment_scores.append(sentiment_score)
             
@@ -127,7 +122,6 @@ async def get_sentiment_analysis(
             else:
                 neutral_count += 1
         
-        # Calculate overall sentiment
         article_count = len(articles)
         if article_count > 0:
             avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
@@ -138,7 +132,6 @@ async def get_sentiment_analysis(
             overall_sentiment = 'neutral'
             sentiment_score = Decimal('0')
         
-        # Get historical sentiment for comparison
         historical_data = await fundamental_service.get_historical_fundamentals(
             symbol=symbol.upper(),
             period_type='annual',
@@ -147,13 +140,10 @@ async def get_sentiment_analysis(
         
         avg_sentiment_7d = None
         if historical_data and len(historical_data) > 1:
-            # Compare current sentiment with 7 days ago (mock data)
-            avg_sentiment_7d = Decimal('0.2')  # Mock - would come from actual historical sentiment
+            avg_sentiment_7d = Decimal('0.2')
         
-        # Analyze key topics
         key_topics = await _extract_key_topics(articles)
         
-        # Calculate sentiment trend
         sentiment_trend = await _calculate_sentiment_trend(
             symbol.upper(),
             articles,
@@ -177,17 +167,7 @@ async def get_sentiment_analysis(
         
     except Exception as e:
         logger.error(f"Error analyzing sentiment for {symbol}: {e}")
-        return SentimentAnalysisResponse(
-            symbol=symbol.upper(),
-            overall_sentiment='neutral',
-            sentiment_score=Decimal('0'),
-            article_count=0,
-            positive_count=0,
-            negative_count=0,
-            neutral_count=0,
-            articles=[],
-            analyzed_at=timezone.now().isoformat()
-        )
+        raise ExternalAPIException("sentiment_analysis", str(e))
 
 
 @router.get("/trends", response=MarketTrendsResponse)
@@ -203,7 +183,6 @@ async def get_market_trends(
         fundamental_service = get_fundamental_service()
         news_service = NewsAPIScraper()
         
-        # Fetch recent market-wide news
         end_date = timezone.now()
         if time_period == '24h':
             start_date = end_date - timedelta(hours=24)
@@ -219,7 +198,6 @@ async def get_market_trends(
             category='business'
         )
         
-        # Extract trending symbols
         symbol_mentions = {}
         for article in articles[:100]:
             for symbol in article.get('symbols', []):
@@ -229,7 +207,6 @@ async def get_market_trends(
                     symbol_mentions[symbol]['count'] += 1
                     symbol_mentions[symbol]['articles'].append(article)
         
-        # Calculate sentiment for each symbol
         for symbol, data in symbol_mentions.items():
             avg_sentiment = await _analyze_article_list_sentiment(data['articles'])
             data['total_sentiment'] = avg_sentiment
@@ -240,11 +217,9 @@ async def get_market_trends(
             reverse=True
         )[:20]
         
-        # Extract hot topics
         all_titles = [article.get('title', '') for article in articles[:200]]
         hot_topics = await _extract_key_topics_from_titles(all_titles)
         
-        # Calculate sentiment distribution
         sentiment_distribution = {
             'positive': 0,
             'negative': 0,
@@ -262,7 +237,7 @@ async def get_market_trends(
         
         total = sum(sentiment_distribution.values())
         sentiment_distribution = {
-            k: {'count': v, 'percentage': v/total} 
+            k: {'count': v, 'percentage': v/total if total > 0 else 0} 
             for k, v in sentiment_distribution.items()
         }
         
@@ -284,14 +259,7 @@ async def get_market_trends(
         
     except Exception as e:
         logger.error(f"Error fetching market trends: {e}")
-        return MarketTrendsResponse(
-            time_period=time_period,
-            hot_topics=[],
-            trending_symbols=[],
-            sentiment_distribution={},
-            most_mentioned=[],
-            fetched_at=timezone.now().isoformat()
-        )
+        raise ExternalAPIException("market_trends", str(e))
 
 
 async def _analyze_sentiment(article: dict) -> float:
@@ -305,14 +273,12 @@ async def _analyze_sentiment(article: dict) -> float:
     description = article.get('description', '').lower()
     text = f"{title} {description}"
     
-    # Positive keywords
     positive_keywords = [
         'growth', 'profit', 'increase', 'rise', 'bull', 'up',
         'strong', 'positive', 'beat', 'outperform', 'surpass',
         'record', 'high', 'exceed', 'rally', 'gain'
     ]
     
-    # Negative keywords
     negative_keywords = [
         'decline', 'loss', 'decrease', 'fall', 'bear', 'down',
         'weak', 'negative', 'miss', 'underperform', 'drop',
@@ -322,7 +288,6 @@ async def _analyze_sentiment(article: dict) -> float:
     positive_score = sum(1 for kw in positive_keywords if kw in text)
     negative_score = sum(1 for kw in negative_keywords if kw in text)
     
-    # Calculate sentiment score (-1 to 1)
     total_keywords = positive_score + negative_score
     if total_keywords > 0:
         sentiment = (positive_score - negative_score) / total_keywords
@@ -348,7 +313,6 @@ async def _extract_key_topics(articles: list) -> List[str]:
         for article in articles
     ])
     
-    # Common finance and market keywords
     topic_keywords = [
         'earnings', 'revenue', 'profit', 'growth', 'merger', 'acquisition',
         'inflation', 'fed', 'interest rates', 'market', 'stock',
@@ -357,14 +321,12 @@ async def _extract_key_topics(articles: list) -> List[str]:
         'inflation', 'interest', 'rates', 'growth', 'market'
     ]
     
-    # Count keyword frequency
     keyword_counts = {}
     for keyword in topic_keywords:
         count = all_text.lower().count(keyword)
         if count > 0:
             keyword_counts[keyword] = count
     
-    # Return top topics
     sorted_topics = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)
     return [topic[0] for topic in sorted_topics[:20]]
 
@@ -414,7 +376,6 @@ async def _calculate_sentiment_trend(
             'end_score': 0
         }
     
-    # Split articles into early and recent
     mid_point = len(articles) // 2
     early_articles = articles[:mid_point]
     recent_articles = articles[mid_point:]

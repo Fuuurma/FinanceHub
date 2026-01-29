@@ -3,12 +3,11 @@ from decimal import Decimal
 from ninja import Router
 from pydantic import BaseModel, Field
 from django.utils import timezone
-from django_ratelimit.decorators import ratelimit
-from django.core.cache import cache
 
 from utils.services.fundamental_service import get_fundamental_service
 from utils.helpers.logger.logger import get_logger
-from utils.constants.api import RATE_LIMIT_READ, RATE_LIMIT_DATA_INTENSIVE, CACHE_TTL_MEDIUM
+from utils.constants.api import RATE_LIMITS, CACHE_TTLS
+from core.exceptions import NotFoundException, ValidationException, ExternalAPIException
 
 logger = get_logger(__name__)
 
@@ -181,7 +180,7 @@ async def get_historical_fundamentals(
         force_refresh=False
     )
     
-    if 'error' in data:
+    if isinstance(data, dict) and 'error' in data:
         return {
             'symbol': symbol.upper(),
             'period_type': filters.period_type,
@@ -193,7 +192,7 @@ async def get_historical_fundamentals(
     return {
         'symbol': symbol.upper(),
         'period_type': filters.period_type,
-        'data': data,
+        'data': data if isinstance(data, list) else [],
         'fetched_at': timezone.now().isoformat(),
         'source': 'fundamentals_service'
     }
