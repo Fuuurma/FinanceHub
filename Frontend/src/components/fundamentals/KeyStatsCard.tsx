@@ -7,7 +7,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { KeyStats } from '@/lib/types/iex-cloud'
 
 interface KeyStatsCardProps {
-  stats?: KeyStats
+  stats?: KeyStats | null
   loading?: boolean
   error?: string
 }

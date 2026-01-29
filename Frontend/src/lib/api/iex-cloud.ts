@@ -9,10 +9,13 @@ import type {
   KeyStats,
   AdvancedStats,
   EarningsReport,
+  Earnings,
   AnalystEstimates,
   InstitutionalHolder,
   InsiderTransaction,
   PeerCompany,
+  Peer,
+  Ownership,
   MarketMover,
   SectorPerformance,
   ChartDataPoint,
@@ -52,7 +55,7 @@ export const iexCloudApi = {
     }),
 
   getEstimates: (symbol: string, period: 'annual' | 'quarterly' = 'annual', last: number = 4) =>
-    apiClient.get<AnalystEstimate[]>(`/api/v1/iex/estimates/${symbol}`, {
+    apiClient.get<AnalystEstimates[]>(`/api/v1/iex/estimates/${symbol}`, {
       params: { period, last }
     }),
 
@@ -63,12 +66,20 @@ export const iexCloudApi = {
   getInstitutionalOwnership: (symbol: string) =>
     apiClient.get<InstitutionalHolder[]>(`/api/v1/iex/institutions/${symbol}`),
 
+  getOwnership: (symbol: string) =>
+    apiClient.get<Ownership>(`/api/v1/iex/ownership/${symbol}`),
+
   // Peers
   getPeers: (symbol: string) =>
-    apiClient.get<PeerCompany[]>(`/api/v1/iex/peers/${symbol}`),
+    apiClient.get<Peer[]>(`/api/v1/iex/peers/${symbol}`),
 
   // Market Data
   getMarketList: (listType: 'mostactive' | 'gainers' | 'losers' = 'mostactive') =>
+    apiClient.get<MarketMover[]>(`/api/v1/iex/marketlist`, {
+      params: { list_type: listType }
+    }),
+
+  getMarketMovers: (listType: 'mostactive' | 'gainers' | 'losers' = 'mostactive') =>
     apiClient.get<MarketMover[]>(`/api/v1/iex/marketlist`, {
       params: { list_type: listType }
     }),

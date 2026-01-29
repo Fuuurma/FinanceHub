@@ -17,7 +17,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { Peer } from '@/lib/types/iex-cloud'
 
 interface PeerComparisonTableProps {
-  peers?: Peer[]
+  peers?: Peer[] | null
   symbol?: string
   loading?: boolean
   error?: string

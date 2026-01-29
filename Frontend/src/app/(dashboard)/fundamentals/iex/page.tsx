@@ -43,7 +43,15 @@ export default function IEXFundamentalsPage() {
 
       setCompanyInfo(info)
       setKeyStats(stats)
-      setEarnings(earningsData)
+
+      // Transform earnings data to match component expectations
+      const transformedEarnings: Earnings[] = earningsData.map((e) => ({
+        ...e,
+        fiscalPeriod: e.fiscalPeriod?.toString() || 'N/A',
+        surprisePercent: e.EPSSurprisePercent,
+      }))
+      setEarnings(transformedEarnings)
+
       setOwnership(ownershipData)
       setPeers(peersData)
     } catch (err) {

@@ -15,6 +15,7 @@ export interface CompanyInfo {
   website: string
   country: string
   logo: string
+  exchange?: string
   issueType?: string
   sectorKey?: string
 }
@@ -23,8 +24,9 @@ export interface CompanyInfo {
 export interface KeyStats {
   marketCap: number
   peRatio: number
+  forwardPE?: number
   eps?: number
-  divYield?: number
+  dividendYield?: number
   beta: number
   week52High: number
   week52Low: number
@@ -33,10 +35,12 @@ export interface KeyStats {
   priceToBook: number
   priceToSales: number
   sharesOutstanding?: number
+  avgTotalVolume?: number
   avgVolume?: number
   ttmEPS?: number
   ttmDividendRate?: number
   dividendYieldPercentage?: number
+  evToEbitda?: number
 }
 
 // Advanced Statistics
@@ -74,6 +78,12 @@ export interface EarningsReport {
   currency?: string
 }
 
+// Earnings with additional fields for UI
+export interface Earnings extends EarningsReport {
+  fiscalPeriod: string
+  surprisePercent?: number
+}
+
 // Analyst Estimates
 export interface AnalystEstimates {
   estimatedEPS: number
@@ -94,6 +104,25 @@ export interface InstitutionalHolder {
   pctHeld?: number
 }
 
+export interface InstitutionalOwner {
+  ownerName: string
+  shares: number
+  positionPct?: number
+  value?: number
+}
+
+export interface FundOwner {
+  fundName: string
+  shares: number
+  positionPct?: number
+  value?: number
+}
+
+export interface Ownership {
+  institutionalOwnership: InstitutionalOwner[]
+  fundOwnership: FundOwner[]
+}
+
 export interface InsiderTransaction {
   name: string
   action: 'buy' | 'sell' | 'sell_exercise'
@@ -112,12 +141,23 @@ export interface PeerCompany {
   industry?: string
 }
 
+export interface Peer extends PeerCompany {
+  marketCap?: number
+  peRatio?: number
+  dividendYield?: number
+  beta?: number
+}
+
 // Market Movers
 export interface MarketMover {
   symbol: string
   latestPrice: number
+  price?: number
+  change?: number
   changePercent: number
   volume: number
+  marketCap?: number
+  companyName?: string
   name?: string
 }
 

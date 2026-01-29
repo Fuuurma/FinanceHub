@@ -16,7 +16,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { Earnings } from '@/lib/types/iex-cloud'
 
 interface EarningsTableProps {
-  earnings?: Earnings[]
+  earnings?: Earnings[] | null
   loading?: boolean
   error?: string
 }

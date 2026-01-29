@@ -7,7 +7,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { Ownership } from '@/lib/types/iex-cloud'
 
 interface OwnershipChartProps {
-  ownership?: Ownership
+  ownership?: Ownership | null
   loading?: boolean
   error?: string
 }
