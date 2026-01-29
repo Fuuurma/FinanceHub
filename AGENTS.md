@@ -1633,3 +1633,274 @@ fetch_filings_summary_sec.delay("AAPL")
 | ATLAS RSS | News aggregation | Unlimited | ✅ |
 | SEC Edgar | SEC filings | 10/sec | ✅ |
 | FRED | Economic data | 120/day | Pending |
+
+---
+
+## Phase 9: FRED Integration ✅ COMPLETED
+
+### Summary
+Integrated Federal Reserve Economic Data (FRED) API with comprehensive economic indicators coverage. Created data models, extended scraper with 30+ methods, implemented Celery tasks for background fetching, and added test command for validation.
+
+### Extended FRED Scraper (`data/data_providers/fred/scraper.py`)
+
+**Core API Methods:**
+- `get_series_data()` - Get observations with filters (frequency, units, date range)
+- `get_series_info()` - Get series metadata (title, units, frequency)
+- `get_categories()` - Get all FRED categories
+- `get_category_children()` - Get child categories for a parent
+- `get_releases()` - Get all releases of economic data
+- `get_release()` - Get specific release details
+- `get_release_series()` - Get series in a release
+- `get_sources()` - Get all data sources
+- `get_tags()` - Get all tags
+- `get_series_search()` - Search series by keywords
+- `get_series_updates()` - Get recently updated series
+
+**Economic Indicator Methods:**
+- `get_gdp()` - GDP data (real/nominal)
+- `get_cpi()` - Consumer Price Index (core/headline)
+- `get_unemployment_rate()` - Unemployment rate
+- `get_federal_funds_rate()` - Fed funds rate
+- `get_treasury_yield()` - Treasury yield by maturity (1y, 2y, 5y, 10y, 30y, 3m)
+- `get_all_treasury_yields()` - Complete yield curve (1m to 30y)
+- `get_mortgage_rates()` - 30y and 15y mortgage rates
+- `get_housing_data()` - Housing starts and building permits
+- `get_consumer_sentiment()` - University of Michigan sentiment
+- `get_retail_sales()` - Advance retail sales
+- `get_industrial_production()` - Industrial production index
+- `get_capacity_utilization()` - Capacity utilization rate
+- `get_personal_saving_rate()` - Personal saving rate
+- `get_latest_macro_data()` - Dashboard endpoint with all key indicators
+- `get_yield_curve_spread()` - Yield curve spreads (10y-2y, 10y-3m, 30y-5y)
+- `get_credit_spreads()` - Credit spreads (BAA-AA, AAA-AA)
+- `get_inflation_data()` - Inflation indicators bundle (CPI, PCE, expectations)
+- `get_bond_yield_history()` - Historical bond yield data
+- `get_macro_indicators()` - Quick macro indicators bundle
+
+**Popular Series Mappings:**
+```python
+SERIES = {
+    # GDP and Growth
+    "gdp": "GDP",
+    "real_gdp": "GDPC1",
+    "nominal_gdp": "GDP",
+    # Inflation
+    "cpi": "CPIAUCSL",
+    "core_cpi": "CPILFESL",
+    "pce": "PCEPI",
+    "core_pce": "PCEPILFE",
+    # Employment
+    "unemployment_rate": "UNRATE",
+    "labor_force_participation": "CIVPART",
+    "nonfarm_payrolls": "PAYEMS",
+    # Interest Rates
+    "fed_funds_rate": "FEDFUNDS",
+    "treasury_10y": "DGS10",
+    "treasury_2y": "DGS2",
+    # Mortgage Rates
+    "mortgage_30y": "MORTGAGE30US",
+    # Housing
+    "housing_starts": "HOUST",
+    "building_permits": "PERMIT",
+}
+```
+
+### Data Models (`investments/models/economic_indicator.py`)
+
+**Models Created:**
+1. **EconomicIndicator** - Series metadata from FRED
+   - series_id (unique, indexed) - FRED series ID
+   - title - Series title
+   - description - Series description
+   - units - Units of measurement
+   - frequency - Data frequency (d, w, m, q, a)
+   - seasonal_adjustment - Seasonal adjustment info
+   - last_updated - When series was last updated
+   - observation_start/end - Date range
+   - popularity_score - Usage-based score
+   - tags - JSON tags for categorization
+
+2. **EconomicDataPoint** - Time series data points
+   - indicator (FK) - Link to EconomicIndicator
+   - date (indexed) - Observation date
+   - value - Data value (Decimal)
+   - realtime_start/end - Real-time period dates
+   - unique_together - (indicator, date, realtime_start)
+
+3. **EconomicDataCache** - Cache for frequently accessed data
+   - cache_key (unique) - Cache key (e.g., 'latest_macro_data')
+   - data (JSON) - Cached data
+   - expires_at (indexed) - Cache expiration
+   - last_fetched - Last fetch timestamp
+
+### Celery Tasks (`investments/tasks/fred_tasks.py`)
+
+**Tasks Created:**
+- `fetch_series_fred()` - Fetch single series data
+- `fetch_gdp_fred()` - Fetch GDP data (real/nominal)
+- `fetch_inflation_fred()` - Fetch CPI/PPI data
+- `fetch_employment_fred()` - Fetch unemployment/payrolls
+- `fetch_interest_rates_fred()` - Fetch treasury yields
+- `fetch_housing_fred()` - Fetch housing indicators
+- `fetch_all_indicators_fred()` - Batch fetch 25+ key indicators
+- `update_macro_dashboard_fred()` - Update dashboard cache
+- `sync_fred_provider_status()` - Health check
+
+### Test Command (`investments/management/commands/test_fred.py`)
+
+**Flags:**
+- `--series <SERIES_ID>` - Test specific series (e.g., GDP, CPIAUCSL)
+- `--count <N>` - Number of observations to fetch (default: 5)
+- `--start-date <YYYY-MM-DD>` - Observation start date
+- `--end-date <YYYY-MM-DD>` - Observation end date
+- `--gdp` - Test GDP endpoints
+- `--inflation` - Test CPI inflation endpoints
+- `--employment` - Test employment indicators
+- `--interest-rates` - Test interest rates
+- `--housing` - Test housing indicators
+- `--all` - Test all endpoints
+
+### Usage Examples
+```bash
+# Test all endpoints
+python manage.py test_fred --all
+
+# Test specific series
+python manage.py test_fred --series GDP
+python manage.py test_fred --series CPIAUCSL --count 10
+python manage.py test_fred --series UNRATE --start-date 2023-01-01
+
+# Test categories
+python manage.py test_fred --gdp
+python manage.py test_fred --inflation
+python manage.py test_fred --interest-rates
+python manage.py test_fred --housing
+
+# Queue background tasks
+celery -A investments worker -l info
+
+# Fetch single series
+from investments.tasks.fred_tasks import fetch_series_fred
+fetch_series_fred.delay("GDP")
+
+# Fetch all indicators
+from investments.tasks.fred_tasks import fetch_all_indicators_fred
+fetch_all_indicators_fred.delay()
+
+# Update macro dashboard
+from investments.tasks.fred_tasks import update_macro_dashboard_fred
+update_macro_dashboard_fred.delay()
+
+# Fetch category bundles
+from investments.tasks.fred_tasks import (
+    fetch_inflation_fred,
+    fetch_employment_fred,
+    fetch_interest_rates_fred,
+)
+fetch_inflation_fred.delay()
+fetch_employment_fred.delay()
+fetch_interest_rates_fred.delay()
+```
+
+### Files Created/Modified
+1. **Modified**: `data/data_providers/fred/base.py`
+   - Added rate limiting (0.5s delay between requests)
+   - Proper session management with params
+
+2. **Modified**: `data/data_providers/fred/scraper.py`
+   - Complete rewrite with 30+ methods
+   - Popular series mappings
+   - Economic indicator helper methods
+   - Yield curve and credit spreads
+
+3. **Created**: `investments/models/economic_indicator.py`
+   - 3 models: EconomicIndicator, EconomicDataPoint, EconomicDataCache
+   - Proper indexes and constraints
+
+4. **Created**: `investments/models/economic_indicator.py`
+   - Migration 0017 applied
+
+5. **Created**: `investments/tasks/fred_tasks.py`
+   - 9 Celery tasks for background processing
+
+6. **Created**: `investments/management/commands/test_fred.py`
+   - Comprehensive test command with 8 test modes
+
+### API Limits (FRED)
+- **Rate limit**: 120 requests per day (free tier)
+- **Recommended**: 2 requests per second max
+- **No API key required for testing**: Public data from FRED
+- **API URL**: https://api.stlouisfed.org/fred
+- **Rate limiting implemented**: 0.5s delay between requests in FREDBase
+
+### Environment Variables
+```bash
+# .env
+FRED_API_KEY=your_fred_api_key_here
+```
+
+To get FRED API key: https://fred.stlouisfed.org/docs/api/api_key.html (free registration required)
+
+### Data Coverage
+- **GDP**: Real GDP, nominal GDP, GDP per capita
+- **Inflation**: CPI, core CPI, PCE, core PCE, inflation expectations, breakeven rates
+- **Employment**: Unemployment rate, labor force participation, nonfarm payrolls, initial claims
+- **Interest Rates**: Fed funds rate, Treasury yields (3m, 1y, 2y, 5y, 10y, 30y)
+- **Mortgage Rates**: 30-year fixed, 15-year fixed
+- **Housing**: Housing starts, building permits, existing home sales, Case-Shiller index
+- **Consumer**: Retail sales, consumer sentiment (University of Michigan), personal saving rate
+- **Industrial**: Industrial production index, capacity utilization
+- **Yield Curve**: Complete curve (1m to 30y) with spreads
+- **Credit Spreads**: BAA-AA, AAA-AA, high yield
+
+### API Response Format
+```python
+{
+    "observations": [
+        {
+            "date": "2023-12-01",
+            "value": "27594.5",
+            "realtime_start": "2023-12-01",
+            "realtime_end": "2024-01-18"
+        },
+        # ... more observations
+    ]
+}
+```
+
+---
+
+## Project Status Summary
+
+### Completed Phases
+1. ✅ Phase 1: Finnhub (news, technical indicators, WebSocket)
+2. ✅ Phase 2: CoinGecko (trending cryptos, DEX data, WebSocket)
+3. ✅ Phase 3: Alpha Vantage (fundamental data)
+4. ✅ Phase 4: Polygon.io (stocks, options, technical indicators)
+5. ✅ Phase 5: IEX Cloud (extended fundamentals, peers, ownership)
+6. ✅ Phase 6: CoinMarketCap (crypto details, global metrics)
+7. ✅ Phase 7: NewsAPI + ATLAS Integration (news ingestion, sentiment, caching)
+8. ✅ Phase 8: SEC Edgar Integration (SEC filings, company disclosures)
+9. ✅ Phase 9: FRED Integration (economic indicators, macro data)
+
+**Total: 9 data provider integrations**
+
+### Next Steps
+- **Phase 10**: Frontend economic dashboard pages
+- **Phase 11**: Portfolio analytics with FRED data integration
+
+### Data Provider Summary
+| Provider | Data Type | Rate Limit | Status |
+|----------|-----------|------------|--------|
+| Finnhub | News, indicators, WebSocket | 60/min | ✅ |
+| CoinGecko | Crypto, DEX | 30/min | ✅ |
+| Alpha Vantage | Fundamentals | 5/min | ✅ |
+| Polygon.io | Stocks, options | 5/min | ✅ |
+| IEX Cloud | Fundamentals, peers | 100/day | ✅ |
+| CoinMarketCap | Crypto details | 10/day | ✅ |
+| NewsAPI | News articles | 100/day | ✅ |
+| ATLAS RSS | News aggregation | Unlimited | ✅ |
+| SEC Edgar | SEC filings | 10/sec | ✅ |
+| FRED | Economic data | 120/day | ✅ |
+
+---

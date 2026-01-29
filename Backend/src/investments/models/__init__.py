@@ -6,6 +6,7 @@ from .technical_indicators import TechnicalIndicator
 from .trending import TrendingAsset
 from .dex_data import DEXTradingPair
 from .options import OptionContract, OptionsContractSnapshot, OptionsGreeksHistory
+from .economic_indicator import EconomicIndicator, EconomicDataPoint, EconomicDataCache
 
 __all__ = [
     "DataProvider",
@@ -19,4 +20,7 @@ __all__ = [
     "OptionContract",
     "OptionsContractSnapshot",
     "OptionsGreeksHistory",
+    "EconomicIndicator",
+    "EconomicDataPoint",
+    "EconomicDataCache",
 ]
