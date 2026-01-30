@@ -5,7 +5,9 @@ from utils.helpers.uuid_model import UUIDModel
 
 
 class Currency(UUIDModel, TimestampedModel):
-    code = models.CharField(max_length=3, unique=True)  # ISO 4217 code e.g., "USD"
+    code = models.CharField(
+        max_length=10, unique=True
+    )  # ISO 4217 code or crypto symbol e.g., "USD", "BTC", "USDT"
     name = models.CharField(max_length=50)
     symbol = models.CharField(max_length=10, blank=True)  # e.g., "$", "€", "£"
     numeric_code = models.CharField(

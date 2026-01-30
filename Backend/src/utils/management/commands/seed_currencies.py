@@ -601,31 +601,13 @@ class Command(BaseCommand):
                 "country_code": "IS",
             },
             {
-                "code": "NIS",
+                "code": "ILS",
                 "name": "Israeli New Shekel",
                 "symbol": "₪",
                 "numeric_code": "376",
                 "is_crypto": False,
                 "decimals": 2,
                 "country_code": "IL",
-            },
-            {
-                "code": "CYP",
-                "name": "Cypriot Pound",
-                "symbol": "£",
-                "numeric_code": "196",
-                "is_crypto": False,
-                "decimals": 2,
-                "country_code": "CY",
-            },
-            {
-                "code": "MTL",
-                "name": "Maltese Lira",
-                "symbol": "₤",
-                "numeric_code": "470",
-                "is_crypto": False,
-                "decimals": 2,
-                "country_code": "MT",
             },
             # Middle East
             {
@@ -1011,6 +993,15 @@ class Command(BaseCommand):
                 # Get country object
                 country = country_map.get(country_code, None) if country_code else None
                 currency_data["country"] = country
+
+                # Debug: Check code length (max 10 for cryptos like "MATIC")
+                if len(code) > 10:
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Invalid code length: {code} ({len(code)} chars) - {currency_data['name']}"
+                        )
+                    )
+                    continue
 
                 # Check if currency already exists
                 currency = Currency.objects.filter(code=code).first()
