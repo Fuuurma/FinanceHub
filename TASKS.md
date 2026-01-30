@@ -861,9 +861,96 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 
 ---
 
-# 🛠️ HELPER FUNCTIONS FOR AGENTS
+# 🚀 BACKEND API TO FRONTEND INTEGRATION
 
-### File Search
+## Integration Gap Analysis (Jan 30, 2026)
+
+**Backend Endpoints:** 200+ endpoints across 25+ API modules
+**Frontend Integrated:** ~80 endpoints in 25 API modules
+**Gap:** ~120 endpoints need frontend integration
+
+### Priority Integration Tasks
+
+#### P1 - Critical Integrations (Week 1)
+
+| Int# | Backend Module | Frontend Module | Status | Missing Endpoints |
+|------|---------------|-----------------|--------|-------------------|
+| I1 | `fixed_income_analytics.py` | **NEW: fixed-income.ts** | `PENDING` | bond pricing, duration-convexity, yield curve, OAS |
+| I2 | `options_pricing.py` | **NEW: options-pricing.ts** | `PENDING` | batch pricing, implied volatility, options chain |
+| I3 | `quantitative_models.py` | `analytics.ts` (enhance) | `PENDING` | kalman filter, half-life, hurst exponent |
+| I4 | `ai_enhanced.py` | `ai-advisor.ts` (enhance) | `PENDING` | sector analysis, volatility outlook, bond market |
+
+#### P2 - High Priority Integrations (Week 2)
+
+| Int# | Backend Module | Frontend Module | Status | Missing Endpoints |
+|------|---------------|-----------------|--------|-------------------|
+| I5 | `realtimedata.py` | `markets.ts` (enhance) | `PENDING` | tick data, market depth, time & sales |
+| I6 | `websocket_auth.py` | `websocket.ts` (enhance) | `PENDING` | auth token refresh, connection health |
+| I7 | `reference.py` | `market-overview.ts` | `PENDING` | exchange rates, country codes, sectors |
+| I8 | `currency.py` | `NEW: currency.ts` | `PENDING` | crypto rates, currency conversion |
+
+#### P3 - Medium Priority (Week 3)
+
+| Int# | Backend Module | Frontend Module | Status | Missing Endpoints |
+|------|---------------|-----------------|--------|-------------------|
+| I9 | `fixed_income_analytics.py` | NEW: bond-analytics.ts | `PENDING` | Z-spread, credit spreads |
+| I10 | `quantitative_models.py` | NEW: time-series.ts | `PENDING` | Cointegration, mean reversion |
+
+---
+
+## Current Integration Status by Module
+
+### ✅ Already Integrated (No Action Needed)
+- `analytics.py` → `analytics.ts` (partial)
+- `economic.py` → `economic.ts`
+- `fundamentals.py` → `fundamentals.ts`
+- `alerts.py` → `alerts.ts`
+- `trading.py` → `trading.ts`
+- `portfolio.py` → `portfolio.ts`
+- `holdings.py` → `holdings.ts`
+- `watchlist.py` → `watchlist.ts`
+- `market_overview.py` → `market-overview.ts`
+- `advanced_portfolio_optimization.py` → `analytics.ts`
+- `advanced_risk_management.py` → `analytics.ts`
+- `ai_advisor.py` → `ai-advisor.ts`
+
+### ⚠️ Partially Integrated (Needs Enhancement)
+- `ai_enhanced.py` → Missing: `/ai/market/{symbol}/full`, `/ai/sector/{sector_name}`, `/ai/risk-commentary`, `/ai/volatility-outlook`, `/ai/bond-market`
+- `quantitative_models.py` → Missing: Kalman Filter, Half-Life, Hurst Exponent endpoints
+- `websocket.ts` → Missing: Auth token refresh, connection health checks
+
+### ❌ Not Integrated (Create New Module)
+- `fixed_income_analytics.py` → Create `fixed-income.ts`
+- `options_pricing.py` → Create `options-pricing.ts`
+- `currency.py` → Create `currency.ts`
+- `reference.py` → Integrate into existing modules
+- `realtimedata.py` → Enhance `markets.ts`
+
+---
+
+## Next Steps
+
+1. **Start with I1: Fixed Income Analytics API Module**
+   - Create `/Frontend/src/lib/api/fixed-income.ts`
+   - Integrate endpoints: `/fixed-income/price`, `/fixed-income/zero-coupon`, `/fixed-income/yield-curve`, `/fixed-income/duration-convexity`, `/fixed-income/oas`, `/fixed-income/z-spread`
+   - Create types in `/Frontend/src/lib/types/fixed-income.ts`
+
+2. **Continue with I2: Options Pricing API Module**
+   - Create `/Frontend/src/lib/api/options-pricing.ts`
+   - Integrate endpoints: `/options-pricing/batch`, implied volatility calculations
+   - Enhance existing Options components to use real API data
+
+3. **Enhance I3: Quantitative Models Integration**
+   - Add missing endpoints to `analytics.ts`
+   - Add types for Kalman Filter, Half-Life, Hurst Exponent
+
+4. **Enhance I4: AI Enhanced Analysis**
+   - Add missing endpoints to `ai-advisor.ts`
+   - Create new hooks for AI analysis features
+
+---
+
+
 ```bash
 # Find component by name
 find Frontend/src/components -name "*Name*"
