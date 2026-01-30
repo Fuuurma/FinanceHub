@@ -350,11 +350,11 @@ useEffect(() => {
 | N35 | KagiChart | `components/charts/KagiChart.tsx` | 180 |
 
 ### AI Components
-| Task | Component | Path | Lines |
-|------|-----------|------|-------|
-| N36 | PricePrediction | `components/ai/PricePrediction.tsx` | 200 |
-| N37 | BacktestResults | `components/ai/BacktestResults.tsx` | 250 |
-| N38 | SentimentAnalysis | `components/ai/SentimentAnalysis.tsx` | 150 |
+| Task | Component | Path | Lines | Status |
+|------|-----------|------|-------|--------|
+| N36 | PricePrediction | `components/ai/forecast-chart.tsx` | 186 | `COMPLETED` ✅ |
+| N37 | BacktestResults | `components/backtest/BacktestResults.tsx` | 491 | `COMPLETED` ✅ |
+| N38 | SentimentAnalysis | `components/ai/SentimentAnalysis.tsx` | 150 | `PENDING` |
 
 ### Trading Components
 | Task | Component | Path | Lines |
