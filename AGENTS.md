@@ -10,6 +10,18 @@
 
 **BEFORE YOU START ANY TASK ON FinanceHub, YOU MUST:**
 
+### 0. SECURITY CHECK (NEW - CRITICAL)
+```bash
+# READ THIS FIRST - Security is our top priority
+cat ~/Desktop/Projects/FinanceHub/SECURITY_TODO.md
+
+# Verify you understand:
+# - 22 active vulnerabilities (2 Critical, 10 High)
+# - DO NOT introduce new vulnerable dependencies
+# - All PRs subject to security review by CHARO
+# - Report security concerns immediately
+```
+
 ### 1. Read This File First
 ```bash
 cat ~/Desktop/Projects/FinanceHub/AGENTS.md
