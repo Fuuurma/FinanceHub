@@ -12,6 +12,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  ReferenceLine,
 } from 'recharts'
 import type { SectorAttribution } from '@/lib/types/attribution'
 import { SECTOR_COLORS } from '@/lib/types/attribution'
@@ -22,12 +23,16 @@ interface SectorAttributionChartProps {
   data: SectorAttribution[]
   type?: 'bar' | 'pie'
   loading?: boolean
+  showBenchmark?: boolean
+  benchmarkReturn?: number
 }
 
 export function SectorAttributionChart({
   data,
   type = 'bar',
   loading = false,
+  showBenchmark = false,
+  benchmarkReturn,
 }: SectorAttributionChartProps) {
   if (loading) {
     return (
@@ -46,17 +51,13 @@ export function SectorAttributionChart({
   const formatPercent = (value: number) =>
     `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const item = payload[0].payload
+      const outperformance = benchmarkReturn !== undefined
+        ? item.return - benchmarkReturn
+        : undefined
+
       return (
         <div className="bg-background border rounded-lg shadow-lg p-3">
           <p className="font-medium capitalize mb-2">
@@ -85,6 +86,17 @@ export function SectorAttributionChart({
                 {formatPercent(item.contribution)}
               </span>
             </div>
+            {outperformance !== undefined && (
+              <div className="flex justify-between gap-8">
+                <span className="text-muted-foreground">vs Benchmark:</span>
+                <span className={cn(
+                  'font-medium',
+                  outperformance >= 0 ? 'text-green-600' : 'text-red-600'
+                )}>
+                  {formatPercent(outperformance)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between gap-8">
               <span className="text-muted-foreground">Holdings:</span>
               <span className="font-medium">{item.holdings_count}</span>
@@ -171,6 +183,19 @@ export function SectorAttributionChart({
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
+          {showBenchmark && benchmarkReturn !== undefined && (
+            <ReferenceLine
+              x={benchmarkReturn}
+              stroke="#F59E0B"
+              strokeDasharray="5 5"
+              label={{
+                value: `Benchmark: ${formatPercent(benchmarkReturn)}`,
+                position: 'top',
+                fill: '#F59E0B',
+                fontSize: 11,
+              }}
+            />
+          )}
           <Bar
             dataKey="allocation_effect"
             name="Allocation Effect"
