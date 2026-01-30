@@ -9,7 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, TrendingDown, Plus, Trash2, Edit2, DollarSign } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TrendingUp, TrendingDown, Plus, Trash2, Edit2, DollarSign, BarChart3 } from 'lucide-react'
+// import { AttributionDashboard } from '@/components/attribution/AttributionDashboard'
 
 export default function HoldingsPage() {
   const [portfolioId] = useState('default')
@@ -104,6 +106,16 @@ export default function HoldingsPage() {
   const totalPnl = holdings.reduce((sum, h) => sum + (h.unrealized_pnl || 0), 0)
 
   return (
+    <Tabs defaultValue="holdings" className="w-full">
+       <TabsList className="grid w-full grid-cols-2 mb-6">
+         <TabsTrigger value="holdings">Holdings</TabsTrigger>
+         <TabsTrigger value="attribution">
+           <BarChart3 className="w-4 h-4 mr-2" />
+           Attribution
+         </TabsTrigger>
+       </TabsList>
+
+       <TabsContent value="holdings" className="space-y-6">
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -352,6 +364,11 @@ export default function HoldingsPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="attribution" className="space-y-6">
+        <AttributionDashboard period="1m" />
+      </TabsContent>
+    </Tabs>
   )
 }

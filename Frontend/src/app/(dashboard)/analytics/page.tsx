@@ -317,8 +317,31 @@ export default function AnalyticsPage() {
            </TabsContent>
 
            <TabsContent value="attribution" className="space-y-6">
-             <AttributionDashboard period={selectedPeriod} />
-           </TabsContent>
+              <AttributionDashboard
+                holdings={mockHoldingsData.map(h => ({
+                  id: h.symbol,
+                  portfolio_id: selectedPortfolioId || '',
+                  symbol: h.symbol,
+                  name: h.name,
+                  asset_class: 'stocks' as const,
+                  quantity: 100,
+                  average_cost: h.value / (1 + h.return / 100),
+                  current_price: h.value / 100,
+                  current_value: h.value,
+                  unrealized_pnl: h.value * h.return / 100,
+                  unrealized_pnl_percent: h.return,
+                  day_change: 0,
+                  day_change_percent: 0,
+                  weight: h.weight,
+                  sector: h.sector,
+                  exchange: '',
+                  currency: 'USD',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }))}
+                loading={loading}
+              />
+            </TabsContent>
 
            <TabsContent value="comparison" className="space-y-6">
             <PortfolioComparison

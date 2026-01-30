@@ -168,32 +168,38 @@ export function HoldingAttributionTable({
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        cell: ({ row }) => (
-          <div className="flex flex-col items-end">
-            <span className={cn(
-              'font-semibold',
-              row.getValue('contribution') >= 0 ? 'text-green-600' : 'text-red-600'
-            )}>
-              {formatPercent(row.getValue('contribution'))}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {formatCurrency(row.original.contribution * 1000)}
-            </span>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const contribution = row.getValue('contribution') as number
+          return (
+            <div className="flex flex-col items-end">
+              <span className={cn(
+                'font-semibold',
+                contribution >= 0 ? 'text-green-600' : 'text-red-600'
+              )}>
+                {formatPercent(contribution)}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {formatCurrency(row.original.contribution * 1000)}
+              </span>
+            </div>
+          )
+        },
         size: 140,
       },
       {
         accessorKey: 'value_change',
         header: 'Value Change',
-        cell: ({ row }) => (
-          <span className={cn(
-            'font-medium',
-            row.getValue('value_change') >= 0 ? 'text-green-600' : 'text-red-600'
-          )}>
-            {formatCurrency(row.getValue('value_change'))}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const valueChange = row.getValue('value_change') as number
+          return (
+            <span className={cn(
+              'font-medium',
+              valueChange >= 0 ? 'text-green-600' : 'text-red-600'
+            )}>
+              {formatCurrency(valueChange)}
+            </span>
+          )
+        },
         size: 120,
       },
     ],
