@@ -3,7 +3,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn, formatCurrency, formatPercent } from '@/lib/utils'
 import type { Portfolio, PortfolioHolding, PortfolioHistory, PortfolioMetrics } from '@/lib/types'
-import { TrendingUp, TrendingDown, PieChart, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import type { AssetAllocationItem } from '@/lib/types/holdings'
+import { HoldingsAllocationChart } from '@/components/charts/HoldingsAllocationChart'
+import { TopHoldingsChart } from '@/components/charts/TopHoldingsChart'
+import { TrendingUp, TrendingDown, PieChart, BarChart3, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { useMemo } from 'react'
 
 interface PortfolioOverviewProps {
   portfolio: Portfolio
@@ -16,29 +20,33 @@ export default function PortfolioOverview({ portfolio, holdings, history, metric
   const topGainers = holdings.filter((h) => h.unrealized_pnl_percent > 0).slice(0, 5)
   const topLosers = holdings.filter((h) => h.unrealized_pnl_percent < 0).slice(0, 5)
 
-  const assetAllocation = holdings.reduce(
-    (acc, h) => {
-      const type = h.asset_type || 'other'
-      acc[type] = (acc[type] || 0) + h.current_value
-      return acc
-    },
-    {} as Record<string, number>
-  )
+  const assetAllocation: AssetAllocationItem[] = useMemo(() => {
+    const allocationMap = holdings.reduce(
+      (acc, h) => {
+        const type = h.asset_type || 'other'
+        if (!acc[type]) {
+          acc[type] = { asset_class: type as any, value: 0, percentage: 0, holdings_count: 0 }
+        }
+        acc[type].value += h.current_value
+        acc[type].holdings_count += 1
+        return acc
+      },
+      {} as Record<string, AssetAllocationItem>
+    )
 
-  const totalValue = Object.values(assetAllocation).reduce((sum, v) => sum + v, 0)
+    const totalValue = Object.values(allocationMap).reduce((sum, v) => sum + v.value, 0)
 
-  const sectorAllocation = holdings.reduce(
-    (acc, h) => {
-      const sector = h.sector || 'Other'
-      acc[sector] = (acc[sector] || 0) + h.current_value
-      return acc
-    },
-    {} as Record<string, number>
-  )
+    return Object.values(allocationMap).map((item) => ({
+      ...item,
+      percentage: totalValue > 0 ? (item.value / totalValue) * 100 : 0,
+    }))
+  }, [holdings])
+
+  const totalValue = assetAllocation.reduce((sum, item) => sum + item.value, 0)
 
   return (
     <div className="space-y-6">
-      {/* Asset Allocation */}
+      {/* Asset Allocation and Top Holdings */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -49,53 +57,20 @@ export default function PortfolioOverview({ portfolio, holdings, history, metric
             <CardDescription>Distribution by asset type</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {Object.entries(assetAllocation).map(([type, value]) => (
-                <div key={type} className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="capitalize">{type}</span>
-                    <span className="text-muted-foreground">{formatCurrency(value)}</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary rounded-full"
-                      style={{ width: `${(value / totalValue) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <HoldingsAllocationChart data={assetAllocation} type="donut" />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="w-5 h-5" />
-              Sector Allocation
+              <BarChart3 className="w-5 h-5" />
+              Top Holdings
             </CardTitle>
-            <CardDescription>Distribution by sector</CardDescription>
+            <CardDescription>Top 10 holdings by value</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {Object.entries(sectorAllocation)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5)
-                .map(([sector, value]) => (
-                  <div key={sector} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{sector}</span>
-                      <span className="text-muted-foreground">{formatCurrency(value)}</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-secondary rounded-full"
-                        style={{ width: `${(value / totalValue) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-            </div>
+            <TopHoldingsChart holdings={holdings} topN={10} />
           </CardContent>
         </Card>
       </div>
