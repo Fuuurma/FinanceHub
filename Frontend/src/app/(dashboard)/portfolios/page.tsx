@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePortfolioStore } from '@/stores/portfolioStore'
 import { portfoliosApi } from '@/lib/api/portfolio'
 import type { Portfolio, PortfolioHolding, PortfolioTransaction } from '@/lib/types'
+import ShareDialog from '@/components/portfolio/ShareDialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Switch } from '@/components/ui/switch'
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -26,6 +28,7 @@ import {
   BarChart3,
   History,
   DollarSign,
+  Settings,
 } from 'lucide-react'
 import { cn, formatCurrency, formatPercent } from '@/lib/utils'
 import PortfolioOverview from '@/components/portfolio/PortfolioOverview'
@@ -54,6 +57,7 @@ export default function PortfoliosPage() {
   const [period, setPeriod] = useState<'1m' | '3m' | '6m' | '1y' | 'all'>('1m')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [newPortfolioName, setNewPortfolioName] = useState('')
+  const [portfolioVisibility, setPortfolioVisibility] = useState<Record<string, boolean>>({})
 
   const selectedPortfolio = portfolios.find((p) => p.id === selectedPortfolioId)
 
@@ -63,11 +67,15 @@ export default function PortfoliosPage() {
 
   useEffect(() => {
     if (selectedPortfolioId) {
-      fetchHoldings()
-      fetchTransactions()
-      fetchHistory(period)
+      const portfolio = portfolios.find(p => p.id === selectedPortfolioId)
+      if (portfolio) {
+        setPortfolioVisibility(prev => ({
+          ...prev,
+          [selectedPortfolioId]: portfolio.is_public
+        }))
+      }
     }
-  }, [selectedPortfolioId, period, fetchHoldings, fetchTransactions, fetchHistory])
+  }, [selectedPortfolioId, portfolios])
 
   const handleCreatePortfolio = async () => {
     if (!newPortfolioName.trim()) return
@@ -112,6 +120,18 @@ export default function PortfoliosPage() {
             <RefreshCw className={cn('w-4 h-4 mr-2', loading && 'animate-spin')} />
             Refresh
           </Button>
+          {selectedPortfolioId && selectedPortfolio && (
+            <ShareDialog
+              portfolioId={selectedPortfolioId}
+              portfolioName={selectedPortfolio.name}
+              isPublic={portfolioVisibility[selectedPortfolioId] || false}
+              onVisibilityChange={async (isPublic) => {
+                setPortfolioVisibility(prev => ({ ...prev, [selectedPortfolioId]: isPublic }))
+                await portfoliosApi.updatePortfolio(selectedPortfolioId, { is_public: isPublic })
+                fetchPortfolios()
+              }}
+            />
+          )}
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button>

@@ -16,6 +16,15 @@ import { assetsApi } from '@/lib/api/assets'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react'
+import { TechnicalIndicatorsPanel } from './TechnicalIndicatorsPanel'
+import { IndicatorConfig, calculateAllIndicators, INDICATOR_DESCRIPTIONS } from '@/lib/utils/technical-indicators'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { HelpCircle } from 'lucide-react'
 
 export type ChartType = 'candlestick' | 'line' | 'area' | 'bar' | 'histogram'
 export type Timeframe = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w' | '1M'
@@ -27,11 +36,13 @@ interface TradingViewChartProps {
   height?: number
   showVolume?: boolean
   showIndicators?: string[]
+  indicatorConfig?: IndicatorConfig
   onTimeframeChange?: (tf: Timeframe) => void
   onSymbolChange?: (symbol: string) => void
+  onIndicatorChange?: (indicator: string, enabled: boolean) => void
 }
 
-interface OHLCVData {
+export interface OHLCVData {
   date: string
   open: number
   high: number
@@ -47,6 +58,17 @@ interface CrosshairData {
   low: number | null
   close: number | null
   volume: number | null
+  sma20?: number | null
+  sma50?: number | null
+  sma200?: number | null
+  ema12?: number | null
+  ema26?: number | null
+  rsi?: number | null
+  macd?: number | null
+  macdSignal?: number | null
+  bollingerUpper?: number | null
+  bollingerMiddle?: number | null
+  bollingerLower?: number | null
 }
 
 export function TradingViewChart({
@@ -56,8 +78,10 @@ export function TradingViewChart({
   height = 500,
   showVolume = true,
   showIndicators = [],
+  indicatorConfig = {},
   onTimeframeChange,
   onSymbolChange,
+  onIndicatorChange,
 }: TradingViewChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -88,7 +112,47 @@ export function TradingViewChart({
     volumeUp: isDark ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.2)',
     volumeDown: isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)',
     crosshairLine: isDark ? 'rgba(148, 163, 184, 0.3)' : 'rgba(100, 116, 139, 0.3)',
+    sma20Color: '#3b82f6',
+    sma50Color: '#22c55e',
+    sma200Color: '#f59e0b',
+    ema12Color: '#8b5cf6',
+    ema26Color: '#ec4899',
+    bollingerUpperColor: '#94a3b8',
+    bollingerMiddleColor: '#64748b',
+    bollingerLowerColor: '#94a3b8',
   }), [isDark])
+
+  const showRSI = showIndicators.includes('rsi')
+  const showMACD = showIndicators.includes('macd')
+  const showSMA20 = showIndicators.includes('sma20')
+  const showSMA50 = showIndicators.includes('sma50')
+  const showSMA200 = showIndicators.includes('sma200')
+  const showEMA12 = showIndicators.includes('ema12')
+  const showEMA26 = showIndicators.includes('ema26')
+  const showBollinger = showIndicators.includes('bollinger')
+
+  const indicatorResults = useMemo(() => {
+    if (currentData.length === 0) return null
+    const config: IndicatorConfig = {
+      sma20: showSMA20,
+      sma50: showSMA50,
+      sma200: showSMA200,
+      ema12: showEMA12,
+      ema26: showEMA26,
+      rsi: showRSI,
+      macd: showMACD,
+      bollinger: showBollinger,
+      rsiPeriod: indicatorConfig.rsiPeriod,
+      rsiOverbought: indicatorConfig.rsiOverbought,
+      rsiOversold: indicatorConfig.rsiOversold,
+      macdFast: indicatorConfig.macdFast,
+      macdSlow: indicatorConfig.macdSlow,
+      macdSignal: indicatorConfig.macdSignal,
+      bollingerPeriod: indicatorConfig.bollingerPeriod,
+      bollingerStdDev: indicatorConfig.bollingerStdDev,
+    }
+    return calculateAllIndicators(currentData, config)
+  }, [currentData, showSMA20, showSMA50, showSMA200, showEMA12, showEMA26, showRSI, showMACD, showBollinger, indicatorConfig])
 
   const loadData = useCallback(async () => {
     if (!chartContainerRef.current) return
@@ -124,7 +188,7 @@ export function TradingViewChart({
 
       const chart = createChart(chartContainerRef.current, {
         width: chartContainerRef.current.clientWidth,
-        height,
+        height: height - (showRSI || showMACD ? 250 : 0) - 60,
         layout: {
           background: { type: ColorType.Solid, color: chartColors.background },
           textColor: chartColors.text,
@@ -287,6 +351,103 @@ export function TradingViewChart({
         )
       }
 
+      if (indicatorResults) {
+        const times = ohlcvData.map(d => d.date as Time)
+
+        if (indicatorResults.sma20) {
+          const sma20Series = chartAny.addLineSeries({
+            color: chartColors.sma20Color,
+            lineWidth: 1,
+          })
+          sma20Series.setData(
+            indicatorResults.sma20.map((value, i) =>
+              isNaN(value) ? null : { time: times[i], value }
+            ).filter((v): v is { time: Time; value: number } => v !== null)
+          )
+        }
+
+        if (indicatorResults.sma50) {
+          const sma50Series = chartAny.addLineSeries({
+            color: chartColors.sma50Color,
+            lineWidth: 1,
+          })
+          sma50Series.setData(
+            indicatorResults.sma50.map((value, i) =>
+              isNaN(value) ? null : { time: times[i], value }
+            ).filter((v): v is { time: Time; value: number } => v !== null)
+          )
+        }
+
+        if (indicatorResults.sma200) {
+          const sma200Series = chartAny.addLineSeries({
+            color: chartColors.sma200Color,
+            lineWidth: 1,
+          })
+          sma200Series.setData(
+            indicatorResults.sma200.map((value, i) =>
+              isNaN(value) ? null : { time: times[i], value }
+            ).filter((v): v is { time: Time; value: number } => v !== null)
+          )
+        }
+
+        if (indicatorResults.ema12) {
+          const ema12Series = chartAny.addLineSeries({
+            color: chartColors.ema12Color,
+            lineWidth: 1,
+          })
+          ema12Series.setData(
+            indicatorResults.ema12.map((value, i) =>
+              isNaN(value) ? null : { time: times[i], value }
+            ).filter((v): v is { time: Time; value: number } => v !== null)
+          )
+        }
+
+        if (indicatorResults.ema26) {
+          const ema26Series = chartAny.addLineSeries({
+            color: chartColors.ema26Color,
+            lineWidth: 1,
+          })
+          ema26Series.setData(
+            indicatorResults.ema26.map((value, i) =>
+              isNaN(value) ? null : { time: times[i], value }
+            ).filter((v): v is { time: Time; value: number } => v !== null)
+          )
+        }
+
+        if (indicatorResults.bollinger) {
+          const bb = indicatorResults.bollinger
+          const upperSeries = chartAny.addLineSeries({
+            color: chartColors.bollingerUpperColor,
+            lineWidth: 1,
+          })
+          upperSeries.setData(
+            bb.upper.map((value, i) =>
+              isNaN(value) ? null : { time: times[i], value }
+            ).filter((v): v is { time: Time; value: number } => v !== null)
+          )
+
+          const middleSeries = chartAny.addLineSeries({
+            color: chartColors.bollingerMiddleColor,
+            lineWidth: 1,
+          })
+          middleSeries.setData(
+            bb.middle.map((value, i) =>
+              isNaN(value) ? null : { time: times[i], value }
+            ).filter((v): v is { time: Time; value: number } => v !== null)
+          )
+
+          const lowerSeries = chartAny.addLineSeries({
+            color: chartColors.bollingerLowerColor,
+            lineWidth: 1,
+          })
+          lowerSeries.setData(
+            bb.lower.map((value, i) =>
+              isNaN(value) ? null : { time: times[i], value }
+            ).filter((v): v is { time: Time; value: number } => v !== null)
+          )
+        }
+      }
+
       chart.timeScale().fitContent()
 
       chart.subscribeCrosshairMove((param: MouseEventParams) => {
@@ -294,6 +455,7 @@ export function TradingViewChart({
           const time = param.time as string
           const ohlcv = ohlcvData.find((d) => d.date === time)
           if (ohlcv) {
+            const idx = ohlcvData.findIndex(d => d.date === time)
             setCrosshairData({
               time,
               open: ohlcv.open,
@@ -301,18 +463,40 @@ export function TradingViewChart({
               low: ohlcv.low,
               close: ohlcv.close,
               volume: ohlcv.volume || null,
+              sma20: indicatorResults?.sma20?.[idx] ?? null,
+              sma50: indicatorResults?.sma50?.[idx] ?? null,
+              sma200: indicatorResults?.sma200?.[idx] ?? null,
+              ema12: indicatorResults?.ema12?.[idx] ?? null,
+              ema26: indicatorResults?.ema26?.[idx] ?? null,
+              rsi: indicatorResults?.rsi?.[idx] ?? null,
+              macd: indicatorResults?.macd?.macd?.[idx] ?? null,
+              macdSignal: indicatorResults?.macd?.signal?.[idx] ?? null,
+              bollingerUpper: indicatorResults?.bollinger?.upper?.[idx] ?? null,
+              bollingerMiddle: indicatorResults?.bollinger?.middle?.[idx] ?? null,
+              bollingerLower: indicatorResults?.bollinger?.lower?.[idx] ?? null,
             })
           }
         } else {
-          const lastData = ohlcvData[ohlcvData.length - 1]
-          if (lastData) {
+          const lastIdx = ohlcvData.length - 1
+          if (lastIdx >= 0) {
             setCrosshairData({
-              time: lastData.date,
-              open: lastData.open,
-              high: lastData.high,
-              low: lastData.low,
-              close: lastData.close,
-              volume: lastData.volume || null,
+              time: ohlcvData[lastIdx].date,
+              open: ohlcvData[lastIdx].open,
+              high: ohlcvData[lastIdx].high,
+              low: ohlcvData[lastIdx].low,
+              close: ohlcvData[lastIdx].close,
+              volume: ohlcvData[lastIdx].volume || null,
+              sma20: indicatorResults?.sma20?.[lastIdx] ?? null,
+              sma50: indicatorResults?.sma50?.[lastIdx] ?? null,
+              sma200: indicatorResults?.sma200?.[lastIdx] ?? null,
+              ema12: indicatorResults?.ema12?.[lastIdx] ?? null,
+              ema26: indicatorResults?.ema26?.[lastIdx] ?? null,
+              rsi: indicatorResults?.rsi?.[lastIdx] ?? null,
+              macd: indicatorResults?.macd?.macd?.[lastIdx] ?? null,
+              macdSignal: indicatorResults?.macd?.signal?.[lastIdx] ?? null,
+              bollingerUpper: indicatorResults?.bollinger?.upper?.[lastIdx] ?? null,
+              bollingerMiddle: indicatorResults?.bollinger?.middle?.[lastIdx] ?? null,
+              bollingerLower: indicatorResults?.bollinger?.lower?.[lastIdx] ?? null,
             })
           }
         }
@@ -334,7 +518,7 @@ export function TradingViewChart({
       setError(err instanceof Error ? err.message : 'Failed to load chart data')
       setLoading(false)
     }
-  }, [symbol, chartType, timeframe, height, showVolume, chartColors])
+  }, [symbol, chartType, timeframe, height, showVolume, showIndicators, indicatorConfig, chartColors, indicatorResults])
 
   useEffect(() => {
     loadData()
@@ -349,6 +533,15 @@ export function TradingViewChart({
   const previousClose = currentData[currentData.length - 2]?.close
   const priceChange = latestData && previousClose ? latestData.close - previousClose : null
   const priceChangePercent = priceChange && previousClose ? (priceChange / previousClose) * 100 : null
+
+  const formatValue = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) return '--'
+    return value.toFixed(2)
+  }
+
+  const activeIndicatorsCount = showIndicators.filter(ind =>
+    ['sma20', 'sma50', 'sma200', 'ema12', 'ema26', 'rsi', 'macd', 'bollinger'].includes(ind)
+  ).length
 
   if (loading) {
     return (
@@ -395,23 +588,28 @@ export function TradingViewChart({
                 </>
               ) : '--'}
             </Badge>
+            {activeIndicatorsCount > 0 && (
+              <Badge variant="outline" className="text-xs">
+                {activeIndicatorsCount} indicator{activeIndicatorsCount > 1 ? 's' : ''}
+              </Badge>
+            )}
           </div>
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-3 text-sm flex-wrap">
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">O:</span>
-              <span className="font-mono">{crosshairData.open?.toFixed(2) || '--'}</span>
+              <span className="font-mono">{formatValue(crosshairData.open)}</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">H:</span>
-              <span className="font-mono text-green-500">{crosshairData.high?.toFixed(2) || '--'}</span>
+              <span className="font-mono text-green-500">{formatValue(crosshairData.high)}</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">L:</span>
-              <span className="font-mono text-red-500">{crosshairData.low?.toFixed(2) || '--'}</span>
+              <span className="font-mono text-red-500">{formatValue(crosshairData.low)}</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">C:</span>
-              <span className="font-mono">{crosshairData.close?.toFixed(2) || '--'}</span>
+              <span className="font-mono">{formatValue(crosshairData.close)}</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">Vol:</span>
@@ -419,12 +617,63 @@ export function TradingViewChart({
                 {crosshairData.volume ? (crosshairData.volume / 1000000).toFixed(2) + 'M' : '--'}
               </span>
             </div>
+
+            {showSMA20 && crosshairData.sma20 !== null && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 cursor-help">
+                      <span className="w-2 h-0.5 bg-blue-500" />
+                      <span className="font-mono text-blue-500">{formatValue(crosshairData.sma20)}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="font-medium">{INDICATOR_DESCRIPTIONS.sma20.name}</p>
+                    <p className="text-xs text-muted-foreground">{INDICATOR_DESCRIPTIONS.sma20.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
+            {showSMA50 && crosshairData.sma50 !== null && (
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-0.5 bg-green-500" />
+                <span className="font-mono text-green-500">{formatValue(crosshairData.sma50)}</span>
+              </div>
+            )}
+
+            {showBollinger && crosshairData.bollingerUpper !== null && (
+              <div className="flex items-center gap-1">
+                <span className="font-mono text-gray-400">{formatValue(crosshairData.bollingerLower)}</span>
+                <span className="text-muted-foreground">-</span>
+                <span className="font-mono text-gray-400">{formatValue(crosshairData.bollingerUpper)}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div ref={chartContainerRef} className="w-full" style={{ height: height - 60 }} />
+      <div ref={chartContainerRef} className="w-full" style={{ height: height - (showRSI || showMACD ? 250 : 0) - 60 }} />
+      {(showRSI || showMACD) && indicatorResults && (
+        <TechnicalIndicatorsPanel
+          data={currentData}
+          showRSI={showRSI}
+          showMACD={showMACD}
+          rsiPeriod={indicatorConfig.rsiPeriod}
+          rsiOverbought={indicatorConfig.rsiOverbought}
+          rsiOversold={indicatorConfig.rsiOversold}
+          macdFast={indicatorConfig.macdFast}
+          macdSlow={indicatorConfig.macdSlow}
+          macdSignal={indicatorConfig.macdSignal}
+          height={220}
+        />
+      )}
       <div className="p-2 border-t bg-muted/20 text-xs text-center text-muted-foreground">
         {currentData.length} data points • {timeframe} timeframe • Data by Polygon.io
+        {activeIndicatorsCount > 0 && (
+          <span className="ml-2">
+            • Active: {showIndicators.filter(i => ['sma20', 'sma50', 'sma200', 'ema12', 'ema26', 'rsi', 'macd', 'bollinger'].includes(i)).join(', ')}
+          </span>
+        )}
       </div>
     </div>
   )

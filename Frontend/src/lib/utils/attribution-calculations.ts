@@ -9,6 +9,16 @@ import type {
   Holding,
 } from '@/lib/types/attribution'
 
+export const DEFAULT_ATTRIBUTION_PERIODS = [
+  { value: '1d', label: '1 Day' },
+  { value: '1w', label: '1 Week' },
+  { value: '1m', label: '1 Month' },
+  { value: '3m', label: '3 Months' },
+  { value: '6m', label: '6 Months' },
+  { value: '1y', label: '1 Year' },
+  { value: 'all', label: 'All Time' },
+] as const
+
 export function calculateHoldingAttribution(
   holdings: Holding[],
   periodReturn: number = 0

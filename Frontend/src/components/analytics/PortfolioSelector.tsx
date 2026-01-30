@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronDown, Building2, Briefcase, TrendingUp } from 'lucide-react'
-import { portfoliosApi, type Portfolio } from '@/lib/api/portfolio'
+import { portfoliosApi } from '@/lib/api/portfolio'
+import type { Portfolio } from '@/lib/types/portfolio'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -32,9 +33,9 @@ export function PortfolioSelector({
       try {
         setLoading(true)
         const data = await portfoliosApi.list()
-        setPortfolios(data)
-        if (data.length > 0 && !selectedPortfolioId) {
-          const defaultPortfolio = data.find(p => p.is_default) || data[0]
+        setPortfolios(data.portfolios)
+        if (data.portfolios.length > 0 && !selectedPortfolioId) {
+          const defaultPortfolio = data.portfolios.find(p => p.is_default) || data.portfolios[0]
           onSelectPortfolio(defaultPortfolio.id)
         }
       } catch (err) {

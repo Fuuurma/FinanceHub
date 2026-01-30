@@ -18,8 +18,11 @@ export default function HoldingsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const [newAssetId, setNewAssetId] = useState('')
+  const [newSymbol, setNewSymbol] = useState('')
+  const [newName, setNewName] = useState('')
+  const [newAssetClass, setNewAssetClass] = useState<'stocks' | 'crypto' | 'bonds' | 'etf' | 'options' | 'cash' | 'commodities' | 'real_estate' | 'other'>('stocks')
   const [newQuantity, setNewQuantity] = useState('')
+  const [newAvgPrice, setNewAvgPrice] = useState('')
   const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editQuantity, setEditQuantity] = useState('')
@@ -34,7 +37,7 @@ export default function HoldingsPage() {
     setError('')
     try {
       const data = await holdingsApi.list(portfolioId)
-      setHoldings(data)
+      setHoldings(data.holdings)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch holdings')
     } finally {
@@ -46,12 +49,18 @@ export default function HoldingsPage() {
     e.preventDefault()
     try {
       await holdingsApi.create(portfolioId, {
-        asset_id: newAssetId,
-        quantity: newQuantity,
+        symbol: newSymbol.toUpperCase(),
+        name: newName,
+        asset_class: newAssetClass,
+        quantity: Number(newQuantity),
+        average_cost: Number(newAvgPrice),
       })
       setShowAddDialog(false)
-      setNewAssetId('')
+      setNewSymbol('')
+      setNewName('')
+      setNewAssetClass('stocks')
       setNewQuantity('')
+      setNewAvgPrice('')
       fetchHoldings()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add holding')
@@ -63,8 +72,8 @@ export default function HoldingsPage() {
     if (!selectedHolding) return
     try {
       await holdingsApi.update(portfolioId, selectedHolding.id, {
-        quantity: editQuantity,
-        average_buy_price: editAvgPrice || undefined,
+        quantity: Number(editQuantity),
+        average_cost: editAvgPrice ? Number(editAvgPrice) : undefined,
       })
       setEditDialogOpen(false)
       setSelectedHolding(null)
@@ -86,13 +95,13 @@ export default function HoldingsPage() {
 
   const openEditDialog = (holding: Holding) => {
     setSelectedHolding(holding)
-    setEditQuantity(holding.quantity)
-    setEditAvgPrice(holding.average_buy_price || '')
+    setEditQuantity(String(holding.quantity))
+    setEditAvgPrice(String(holding.average_cost || ''))
     setEditDialogOpen(true)
   }
 
-  const totalValue = holdings.reduce((sum, h) => sum + (parseFloat(h.current_value || '0')), 0)
-  const totalPnl = holdings.reduce((sum, h) => sum + (parseFloat(h.unrealized_pnl || '0')), 0)
+  const totalValue = holdings.reduce((sum, h) => sum + (h.current_value || 0), 0)
+  const totalPnl = holdings.reduce((sum, h) => sum + (h.unrealized_pnl || 0), 0)
 
   return (
     <div className="space-y-6">
@@ -115,14 +124,43 @@ export default function HoldingsPage() {
             </DialogHeader>
             <form onSubmit={handleAddHolding} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="assetId">Asset ID</Label>
+                <Label htmlFor="symbol">Symbol</Label>
                 <Input
-                  id="assetId"
-                  value={newAssetId}
-                  onChange={(e) => setNewAssetId(e.target.value)}
-                  placeholder="Enter asset UUID"
+                  id="symbol"
+                  value={newSymbol}
+                  onChange={(e) => setNewSymbol(e.target.value)}
+                  placeholder="AAPL"
                   required
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Apple Inc."
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="assetClass">Asset Class</Label>
+                <select
+                  id="assetClass"
+                  value={newAssetClass}
+                  onChange={(e) => setNewAssetClass(e.target.value as any)}
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                >
+                  <option value="stocks">Stocks</option>
+                  <option value="crypto">Cryptocurrency</option>
+                  <option value="bonds">Bonds</option>
+                  <option value="etf">ETFs</option>
+                  <option value="options">Options</option>
+                  <option value="cash">Cash</option>
+                  <option value="commodities">Commodities</option>
+                  <option value="real_estate">Real Estate</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="quantity">Quantity</Label>
@@ -132,6 +170,18 @@ export default function HoldingsPage() {
                   step="any"
                   value={newQuantity}
                   onChange={(e) => setNewQuantity(e.target.value)}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="avgPrice">Average Cost</Label>
+                <Input
+                  id="avgPrice"
+                  type="number"
+                  step="any"
+                  value={newAvgPrice}
+                  onChange={(e) => setNewAvgPrice(e.target.value)}
                   placeholder="0.00"
                   required
                 />
@@ -211,36 +261,36 @@ export default function HoldingsPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-xl font-bold">{holding.asset.ticker}</h3>
-                      <Badge variant="outline">{holding.asset.asset_class}</Badge>
+                      <h3 className="text-xl font-bold">{holding.symbol}</h3>
+                      <Badge variant="outline">{holding.asset_class}</Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">{holding.asset.name}</p>
+                    <p className="text-sm text-muted-foreground mb-4">{holding.name}</p>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div>
                         <p className="text-sm text-muted-foreground">Quantity</p>
-                        <p className="font-semibold">{parseFloat(holding.quantity).toLocaleString()}</p>
+                        <p className="font-semibold">{holding.quantity.toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Avg. Buy Price</p>
-                        <p className="font-semibold">${parseFloat(holding.average_buy_price || '0').toFixed(2)}</p>
+                        <p className="font-semibold">${holding.average_cost.toFixed(2)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Current Price</p>
-                        <p className="font-semibold">${parseFloat(holding.current_price || '0').toFixed(2)}</p>
+                        <p className="font-semibold">${holding.current_price.toFixed(2)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Current Value</p>
-                        <p className="font-semibold">${parseFloat(holding.current_value || '0').toFixed(2)}</p>
+                        <p className="font-semibold">${holding.current_value.toFixed(2)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">P&L</p>
-                        <p className={`font-semibold flex items-center ${parseFloat(holding.unrealized_pnl || '0') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {parseFloat(holding.unrealized_pnl || '0') >= 0 ? (
+                        <p className={`font-semibold flex items-center ${holding.unrealized_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {holding.unrealized_pnl >= 0 ? (
                             <TrendingUp className="w-4 h-4 mr-1" />
                           ) : (
                             <TrendingDown className="w-4 h-4 mr-1" />
                           )}
-                          ${Math.abs(parseFloat(holding.unrealized_pnl || '0')).toFixed(2)}
+                          ${Math.abs(holding.unrealized_pnl).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -269,7 +319,7 @@ export default function HoldingsPage() {
           <form onSubmit={handleUpdateHolding} className="space-y-4">
             <div className="space-y-2">
               <Label>Asset</Label>
-              <Input value={selectedHolding?.asset.ticker || ''} disabled />
+              <Input value={selectedHolding?.symbol || ''} disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="editQuantity">Quantity</Label>

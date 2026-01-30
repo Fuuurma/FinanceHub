@@ -31,14 +31,18 @@ import {
   X,
   Star,
   Clock,
+  Settings,
 } from 'lucide-react'
 import type { ChartType, Timeframe } from './TradingViewChart'
+import { IndicatorConfig } from '@/lib/utils/technical-indicators'
 
 interface ChartControlsProps {
   symbol: string
   currentTimeframe: Timeframe
   currentType: ChartType
   showVolume?: boolean
+  showIndicators?: string[]
+  indicatorConfig?: IndicatorConfig
   availableIndicators?: string[]
   activeIndicators?: string[]
   onSymbolChange?: (symbol: string) => void
@@ -46,6 +50,8 @@ interface ChartControlsProps {
   onTypeChange?: (type: ChartType) => void
   onVolumeToggle?: (show: boolean) => void
   onIndicatorToggle?: (indicator: string, show: boolean) => void
+  onIndicatorConfigChange?: (config: IndicatorConfig) => void
+  onOpenIndicatorSettings?: () => void
 }
 
 const TIMEFRAMES: { value: Timeframe; label: string; hotkey: string }[] = [
@@ -72,8 +78,8 @@ const AVAILABLE_INDICATORS = [
   { id: 'sma200', label: 'SMA 200', category: 'Moving Averages' },
   { id: 'ema12', label: 'EMA 12', category: 'Moving Averages' },
   { id: 'ema26', label: 'EMA 26', category: 'Moving Averages' },
-  { id: 'rsi14', label: 'RSI 14', category: 'Momentum' },
-  { id: 'macd', label: 'MACD', category: 'Momentum' },
+  { id: 'rsi', label: 'RSI 14', category: 'Oscillators' },
+  { id: 'macd', label: 'MACD', category: 'Oscillators' },
   { id: 'bollinger', label: 'Bollinger Bands', category: 'Volatility' },
 ]
 
@@ -86,6 +92,8 @@ export function ChartControls({
   currentTimeframe,
   currentType,
   showVolume = true,
+  showIndicators = [],
+  indicatorConfig = {},
   availableIndicators = [],
   activeIndicators = [],
   onSymbolChange,
@@ -93,6 +101,8 @@ export function ChartControls({
   onTypeChange,
   onVolumeToggle,
   onIndicatorToggle,
+  onIndicatorConfigChange,
+  onOpenIndicatorSettings,
 }: ChartControlsProps) {
   const [symbolInput, setSymbolInput] = useState(symbol)
   const [recentSymbols, setRecentSymbols] = useState<string[]>([])
@@ -168,6 +178,8 @@ export function ChartControls({
     acc[indicator.category].push(indicator)
     return acc
   }, {} as Record<string, typeof AVAILABLE_INDICATORS>)
+
+  const hasActiveIndicators = activeIndicators.length > 0
 
   return (
     <div className="flex flex-wrap items-center gap-2 p-3 border rounded-lg bg-card shadow-sm">
@@ -307,10 +319,27 @@ export function ChartControls({
         <span className="text-xs">Vol</span>
       </Button>
 
+      <div className="h-6 w-px bg-border" />
+
+      {hasActiveIndicators && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8"
+          onClick={onOpenIndicatorSettings}
+        >
+          <Settings className="h-4 w-4 mr-1" />
+          <span className="text-xs">Indicators</span>
+          <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+            {activeIndicators.length}
+          </span>
+        </Button>
+      )}
+
       {AVAILABLE_INDICATORS.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
+            <Button variant={hasActiveIndicators ? 'default' : 'outline'} size="sm" className="h-8">
               <Settings2 className="h-4 w-4 mr-1" />
               <span className="text-xs">Indicators</span>
               {activeIndicators.length > 0 && (

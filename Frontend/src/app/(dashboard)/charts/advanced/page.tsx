@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { TradingViewChart, ChartControls, type ChartType, type Timeframe } from '@/components/charts'
+import { TradingViewChart, ChartControls, IndicatorConfigModal, type ChartType, type Timeframe } from '@/components/charts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -22,8 +22,10 @@ import {
   Clock,
   Calendar,
   Zap,
+  Settings,
 } from 'lucide-react'
 import { assetsApi } from '@/lib/api/assets'
+import { IndicatorConfig } from '@/lib/utils/technical-indicators'
 
 export default function AdvancedChartsPage() {
   const [symbol, setSymbol] = useState('AAPL')
@@ -31,6 +33,7 @@ export default function AdvancedChartsPage() {
   const [chartType, setChartType] = useState<ChartType>('candlestick')
   const [showVolume, setShowVolume] = useState(true)
   const [activeIndicators, setActiveIndicators] = useState<string[]>([])
+  const [indicatorConfig, setIndicatorConfig] = useState<IndicatorConfig>({})
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -174,10 +177,26 @@ export default function AdvancedChartsPage() {
             )}
           </div>
           <p className="text-muted-foreground mt-1">
-            Professional charting powered by TradingView Lightweight Charts
+            Professional charting powered by TradingView Lightweight Charts with technical indicators
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <IndicatorConfigModal
+            showIndicators={activeIndicators}
+            indicatorConfig={indicatorConfig}
+            onShowIndicatorsChange={setActiveIndicators}
+            onIndicatorConfigChange={setIndicatorConfig}
+          >
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-1" />
+              Indicators
+              {activeIndicators.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+                  {activeIndicators.length}
+                </span>
+              )}
+            </Button>
+          </IndicatorConfigModal>
           <Button variant="outline" size="sm" onClick={() => setIsFullscreen(!isFullscreen)}>
             {isFullscreen ? <Minimize2 className="h-4 w-4 mr-1" /> : <Maximize2 className="h-4 w-4 mr-1" />}
             {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
@@ -233,6 +252,15 @@ export default function AdvancedChartsPage() {
         </TabsList>
 
         <TabsContent value="chart" className="space-y-4">
+          <IndicatorConfigModal
+            showIndicators={activeIndicators}
+            indicatorConfig={indicatorConfig}
+            onShowIndicatorsChange={setActiveIndicators}
+            onIndicatorConfigChange={setIndicatorConfig}
+          >
+            <div />
+          </IndicatorConfigModal>
+
           <ChartControls
             symbol={symbol}
             currentTimeframe={timeframe}
@@ -250,9 +278,10 @@ export default function AdvancedChartsPage() {
             symbol={symbol}
             chartType={chartType}
             timeframe={timeframe}
-            height={isFullscreen ? window.innerHeight - 300 : 600}
+            height={isFullscreen ? window.innerHeight - 300 : 700}
             showVolume={showVolume}
             showIndicators={activeIndicators}
+            indicatorConfig={indicatorConfig}
             onSymbolChange={handleSymbolChange}
           />
 
@@ -311,7 +340,7 @@ export default function AdvancedChartsPage() {
                         { id: 'sma200', name: 'SMA 200' },
                         { id: 'ema12', name: 'EMA 12' },
                         { id: 'ema26', name: 'EMA 26' },
-                        { id: 'rsi14', name: 'RSI 14' },
+                        { id: 'rsi', name: 'RSI 14' },
                         { id: 'macd', name: 'MACD' },
                         { id: 'bollinger', name: 'Bollinger Bands' },
                       ].find((i) => i.id === id)
@@ -338,8 +367,8 @@ export default function AdvancedChartsPage() {
                   { id: 'sma200', name: 'SMA 200', desc: 'Simple Moving Average (200 periods)', category: 'Moving Averages', color: '#f59e0b' },
                   { id: 'ema12', name: 'EMA 12', desc: 'Exponential Moving Average (12 periods)', category: 'Moving Averages', color: '#8b5cf6' },
                   { id: 'ema26', name: 'EMA 26', desc: 'Exponential Moving Average (26 periods)', category: 'Moving Averages', color: '#ec4899' },
-                  { id: 'rsi14', name: 'RSI 14', desc: 'Relative Strength Index (14 periods)', category: 'Momentum', color: '#06b6d4' },
-                  { id: 'macd', name: 'MACD', desc: 'Moving Average Convergence Divergence', category: 'Momentum', color: '#f97316' },
+                  { id: 'rsi', name: 'RSI 14', desc: 'Relative Strength Index (14 periods)', category: 'Oscillators', color: '#06b6d4' },
+                  { id: 'macd', name: 'MACD', desc: 'Moving Average Convergence Divergence', category: 'Oscillators', color: '#f97316' },
                   { id: 'bollinger', name: 'Bollinger Bands', desc: 'Bollinger Bands (20, 2)', category: 'Volatility', color: '#84cc16' },
                 ].map((indicator) => (
                   <div

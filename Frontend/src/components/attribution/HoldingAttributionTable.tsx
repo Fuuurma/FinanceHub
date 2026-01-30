@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   ColumnDef,
   flexRender,
@@ -115,17 +115,20 @@ export function HoldingAttributionTable({
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full"
-                style={{ width: `${Math.min(row.getValue('weight') * 4, 100)}%` }}
-              />
+        cell: ({ row }) => {
+          const weight = row.getValue('weight') as number
+          return (
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full"
+                  style={{ width: `${Math.min(weight * 4, 100)}%` }}
+                />
+              </div>
+              <span className="text-sm">{weight.toFixed(1)}%</span>
             </div>
-            <span className="text-sm">{row.getValue('weight').toFixed(1)}%</span>
-          </div>
-        ),
+          )
+        },
         size: 140,
       },
       {
@@ -140,14 +143,17 @@ export function HoldingAttributionTable({
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        cell: ({ row }) => (
-          <span className={cn(
-            'font-medium',
-            row.getValue('return') >= 0 ? 'text-green-600' : 'text-red-600'
-          )}>
-            {formatPercent(row.getValue('return'))}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const returnValue = row.getValue('return') as number
+          return (
+            <span className={cn(
+              'font-medium',
+              returnValue >= 0 ? 'text-green-600' : 'text-red-600'
+            )}>
+              {formatPercent(returnValue)}
+            </span>
+          )
+        },
         size: 100,
       },
       {

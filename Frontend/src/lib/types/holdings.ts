@@ -2,6 +2,8 @@ export type AssetClass = 'stocks' | 'crypto' | 'bonds' | 'etf' | 'options' | 'ca
 
 export type TransactionType = 'buy' | 'sell' | 'dividend' | 'transfer' | 'split' | 'fee' | 'deposit' | 'withdrawal'
 
+export type AttributionPeriod = '1d' | '1w' | '1m' | '3m' | '6m' | '1y' | 'all'
+
 export interface Holding {
   id: string
   portfolio_id: string

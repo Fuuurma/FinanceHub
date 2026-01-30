@@ -20,6 +20,7 @@ import { ReturnCard, ValueCard, RiskCard, DrawdownCard, CAGRCard } from '@/compo
 import { PortfolioSelector } from '@/components/analytics/PortfolioSelector'
 import { PortfolioComparison } from '@/components/analytics/PortfolioComparison'
 import { PerformanceBreakdown } from '@/components/analytics/PerformanceBreakdown'
+import { AttributionDashboard } from '@/components/attribution/AttributionDashboard'
 import { useAnalyticsStore } from '@/stores/analyticsStore'
 import { portfoliosApi } from '@/lib/api/portfolio'
 import type { Portfolio } from '@/lib/types/portfolio'
@@ -32,7 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-type TabValue = 'overview' | 'performance' | 'risk' | 'comparison'
+type TabValue = 'overview' | 'performance' | 'risk' | 'attribution' | 'comparison'
 
 const PERIODS: { value: AnalyticsPeriod; label: string }[] = [
   { value: '1d', label: '1D' },
@@ -76,7 +77,7 @@ export default function AnalyticsPage() {
     const fetchPortfolios = async () => {
       try {
         const data = await portfoliosApi.list()
-        setPortfolios(data)
+        setPortfolios(data.portfolios)
       } catch (err) {
         console.error('Failed to fetch portfolios:', err)
       }
@@ -253,10 +254,11 @@ export default function AnalyticsPage() {
         </div>
       ) : analytics ? (
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="risk">Risk</TabsTrigger>
+            <TabsTrigger value="attribution">Attribution</TabsTrigger>
             <TabsTrigger value="comparison">Comparison</TabsTrigger>
           </TabsList>
 
@@ -312,9 +314,13 @@ export default function AnalyticsPage() {
             <ChartCard title="Risk Metrics History" description="Volatility and Sharpe ratio over time">
               <RiskMetricsHistoryChart data={mockRiskHistoryData} />
             </ChartCard>
-          </TabsContent>
+           </TabsContent>
 
-          <TabsContent value="comparison" className="space-y-6">
+           <TabsContent value="attribution" className="space-y-6">
+             <AttributionDashboard period={selectedPeriod} />
+           </TabsContent>
+
+           <TabsContent value="comparison" className="space-y-6">
             <PortfolioComparison
               portfolios={portfolios.map(p => ({
                 id: p.id,

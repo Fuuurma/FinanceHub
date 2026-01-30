@@ -238,11 +238,11 @@ export default function WatchlistPage() {
               <CardContent>
                 {watchlist.assets.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {watchlist.assets.map((symbol) => (
-                      <Badge key={symbol} variant="secondary" className="flex items-center gap-1">
-                        {symbol}
+                    {watchlist.assets.map((asset) => (
+                      <Badge key={asset.id} variant="secondary" className="flex items-center gap-1">
+                        {asset.symbol}
                         <button
-                          onClick={() => handleRemoveAsset(watchlist.id, symbol)}
+                          onClick={() => handleRemoveAsset(watchlist.id, asset.symbol)}
                           className="ml-1 hover:text-destructive"
                         >
                           ×
