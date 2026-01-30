@@ -887,7 +887,7 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 | I5 | `realtimedata.py` | `markets.ts` (enhance) | `COMPLETED` ✅ | tick data, market depth, time & sales |
 | I6 | `websocket_auth.py` | `websocket.ts` (enhance) | `COMPLETED` ✅ | auth token refresh, connection health |
 | I7 | `reference.py` | `market-overview.ts` | `COMPLETED` ✅ | sectors, industries, timezones |
-| I8 | `currency.py` | `NEW: currency.ts` | `PENDING` | crypto rates, currency conversion |
+| I8 | `currency.py` | `NEW: currency.ts` | `COMPLETED` ✅ | crypto rates, currency conversion |
 
 #### P3 - Medium Priority (Week 3)
 
