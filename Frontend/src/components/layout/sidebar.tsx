@@ -136,52 +136,56 @@ function SidebarNavGroup({ items, title, shortcutHint }: { items: NavItem[]; tit
         {items.map((item) => (
           <React.Fragment key={item.title}>
             {item.submenu && item.submenu.length > 0 ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={cn(
-                      "w-full rounded-none border-2 border-transparent data-[active=true]:border-foreground data-[active=true]:bg-primary/10 hover:bg-muted h-10 px-3 transition-all cursor-pointer flex items-center gap-3",
-                      "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
-                      pathname === item.href || pathname.startsWith(item.href + '/') ? "border-foreground bg-primary/10" : ""
-                    )}
+              <SidebarMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton
+                      isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
+                      className={cn(
+                        "w-full rounded-none border-2 border-transparent data-[active=true]:border-foreground data-[active=true]:bg-primary/10 hover:bg-muted h-10 px-3 transition-all cursor-pointer",
+                        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
+                        pathname === item.href || pathname.startsWith(item.href + '/') ? "border-foreground bg-primary/10" : ""
+                      )}
+                      tooltip={item.description}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className="font-black uppercase text-[11px] tracking-tight group-data-[collapsible=icon]:hidden">{item.title}</span>
+                      <ChevronUp className="ml-auto h-3 w-3 rotate-180 transition-transform group-data-[collapsible=icon]:hidden" />
+                      {item.badge && (
+                        <Badge className="absolute top-1 right-1 h-4 min-w-4 p-0 flex items-center justify-center rounded-none bg-primary text-[8px] group-data-[collapsible=icon]:hidden">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="right"
+                    align="start"
+                    sideOffset={8}
+                    className="w-72 rounded-none border-4 border-foreground shadow-[8px_8px_0px_0px_var(--foreground)] p-0 bg-background"
                   >
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    <span className="font-black uppercase text-[11px] tracking-tight group-data-[collapsible=icon]:hidden">{item.title}</span>
-                    <ChevronUp className="ml-auto h-3 w-3 rotate-180 transition-transform group-data-[collapsible=icon]:hidden" />
-                    {item.badge && (
-                      <Badge className="absolute top-1 right-1 h-4 min-w-4 p-0 flex items-center justify-center rounded-none bg-primary text-[8px] group-data-[collapsible=icon]:hidden">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  side="right"
-                  align="start"
-                  sideOffset={8}
-                  className="w-72 rounded-none border-4 border-foreground shadow-[8px_8px_0px_0px_var(--foreground)] p-0 bg-background"
-                >
-                  <div className="p-3 bg-foreground text-background font-black uppercase text-[10px] italic flex items-center gap-2">
-                    <item.icon className="h-4 w-4" /> {item.title}
-                  </div>
-                  {item.submenu.map((sub) => (
-                    <DropdownMenuItem key={sub.href} asChild>
-                      <Link
-                        href={sub.href}
-                        className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex flex-col items-start gap-0.5 w-full"
-                      >
-                        <span className="flex items-center gap-2">
-                          <ArrowRight className="h-3 w-3 opacity-50" />
-                          {sub.title}
-                        </span>
-                        {sub.description && (
-                          <span className="text-[9px] font-mono opacity-50 ml-5">{sub.description}</span>
-                        )}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <div className="p-3 bg-foreground text-background font-black uppercase text-[10px] italic flex items-center gap-2">
+                      <item.icon className="h-4 w-4" /> {item.title}
+                    </div>
+                    {item.submenu.map((sub) => (
+                      <DropdownMenuItem key={sub.href} asChild>
+                        <Link
+                          href={sub.href}
+                          className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex flex-col items-start gap-0.5 w-full"
+                        >
+                          <span className="flex items-center gap-2">
+                            <ArrowRight className="h-3 w-3 opacity-50" />
+                            {sub.title}
+                          </span>
+                          {sub.description && (
+                            <span className="text-[9px] font-mono opacity-50 ml-5">{sub.description}</span>
+                          )}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
             ) : (
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -214,7 +218,6 @@ function SidebarNavGroup({ items, title, shortcutHint }: { items: NavItem[]; tit
     </SidebarGroup>
   )
 }
-
 export function AppSidebar() {
   const pathname = usePathname()
 
@@ -259,102 +262,106 @@ export function AppSidebar() {
         </SidebarContent>
 
         <SidebarFooter className="p-2 border-t-2 border-foreground bg-muted/10">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                className={cn(
-                  "rounded-none border-2 border-foreground bg-background hover:bg-primary/5 transition-all cursor-pointer",
-                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
-                )}
-              >
-                <div className="h-8 w-8 bg-primary/20 flex items-center justify-center border border-foreground/20 relative">
-                  <Activity className="h-4 w-4" />
-                  <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 border border-foreground animate-pulse" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden text-left">
-                  <span className="font-black uppercase text-[10px]">Auth_Admin_01</span>
-                  <span className="text-[9px] font-mono text-primary font-bold flex items-center gap-1">
-                    <Zap className="h-3 w-3 fill-primary" />VIP_ACCESS
-                  </span>
-                </div>
-                <ChevronUp className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden opacity-40" />
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              side="top"
-              align="start"
-              sideOffset={8}
-              className="w-80 rounded-none border-4 border-foreground shadow-[8px_8px_0px_0px_var(--foreground)] p-0 bg-background"
-            >
-              <DropdownMenuLabel className="font-black uppercase italic bg-foreground text-background p-3 border-b-2 border-foreground flex items-center justify-between">
-                <span className="flex items-center gap-2"><Cpu className="h-4 w-4" /> User_Control_Panel</span>
-                <Badge className="bg-green-500 text-white text-[8px]">ONLINE</Badge>
-              </DropdownMenuLabel>
-              
-              <div className="p-2">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="text-[9px] font-black uppercase text-foreground/60 px-2 py-1">Account</DropdownMenuLabel>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <User className="h-4 w-4" /> Profile_Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <Settings className="h-4 w-4" /> App_Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <Key className="h-4 w-4" /> API_Keys_Management
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                
-                <DropdownMenuSeparator className="bg-foreground h-0.5 my-2" />
-                
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="text-[9px] font-black uppercase text-foreground/60 px-2 py-1">Preferences</DropdownMenuLabel>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" /> Notifications_Prefs
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <Clock className="h-4 w-4" /> Display_&_Appearance
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <Globe className="h-4 w-4" /> Language_&_Region
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <Radio className="h-4 w-4" /> Data_Provider_Status
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                
-                <DropdownMenuSeparator className="bg-foreground h-0.5 my-2" />
-                
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="text-[9px] font-black uppercase text-foreground/60 px-2 py-1">System</DropdownMenuLabel>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <PieChart className="h-4 w-4" /> Performance_Metrics
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <Zap className="h-4 w-4" /> API_Usage_Stats
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <ShieldAlert className="h-4 w-4" /> Security_Vault
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                
-                <DropdownMenuSeparator className="bg-foreground h-0.5 my-2" />
-                
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
-                    <Settings className="h-4 w-4" /> Open_Settings_Page
-                  </Link>
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator className="bg-foreground h-0.5" />
-                
-                <DropdownMenuItem className="p-3 font-black uppercase text-xs rounded-none cursor-pointer text-red-500 focus:bg-red-500 focus:text-white flex items-center gap-2">
-                  <LogOut className="h-4 w-4" /> Terminate_Session
-                </DropdownMenuItem>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className={cn(
+                      "rounded-none border-2 border-foreground bg-background hover:bg-primary/5 transition-all cursor-pointer",
+                      "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                    )}
+                  >
+                    <div className="h-8 w-8 bg-primary/20 flex items-center justify-center border border-foreground/20 relative">
+                      <Activity className="h-4 w-4" />
+                      <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 border border-foreground animate-pulse" />
+                    </div>
+                    <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden text-left">
+                      <span className="font-black uppercase text-[10px]">Auth_Admin_01</span>
+                      <span className="text-[9px] font-mono text-primary font-bold flex items-center gap-1">
+                        <Zap className="h-3 w-3 fill-primary" />VIP_ACCESS
+                      </span>
+                    </div>
+                    <ChevronUp className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden opacity-40" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="top"
+                  align="start"
+                  sideOffset={8}
+                  className="w-80 rounded-none border-4 border-foreground shadow-[8px_8px_0px_0px_var(--foreground)] p-0 bg-background"
+                >
+                  <DropdownMenuLabel className="font-black uppercase italic bg-foreground text-background p-3 border-b-2 border-foreground flex items-center justify-between">
+                    <span className="flex items-center gap-2"><Cpu className="h-4 w-4" /> User_Control_Panel</span>
+                    <Badge className="bg-green-500 text-white text-[8px]">ONLINE</Badge>
+                  </DropdownMenuLabel>
+                  
+                  <div className="p-2">
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="text-[9px] font-black uppercase text-foreground/60 px-2 py-1">Account</DropdownMenuLabel>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <User className="h-4 w-4" /> Profile_Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <Settings className="h-4 w-4" /> App_Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <Key className="h-4 w-4" /> API_Keys_Management
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    
+                    <DropdownMenuSeparator className="bg-foreground h-0.5 my-2" />
+                    
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="text-[9px] font-black uppercase text-foreground/60 px-2 py-1">Preferences</DropdownMenuLabel>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" /> Notifications_Prefs
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <Clock className="h-4 w-4" /> Display_&_Appearance
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <Globe className="h-4 w-4" /> Language_&_Region
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <Radio className="h-4 w-4" /> Data_Provider_Status
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    
+                    <DropdownMenuSeparator className="bg-foreground h-0.5 my-2" />
+                    
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="text-[9px] font-black uppercase text-foreground/60 px-2 py-1">System</DropdownMenuLabel>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <PieChart className="h-4 w-4" /> Performance_Metrics
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <Zap className="h-4 w-4" /> API_Usage_Stats
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <ShieldAlert className="h-4 w-4" /> Security_Vault
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    
+                    <DropdownMenuSeparator className="bg-foreground h-0.5 my-2" />
+                    
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="p-3 font-bold uppercase text-xs rounded-none cursor-pointer focus:bg-primary focus:text-primary-foreground flex items-center gap-2">
+                        <Settings className="h-4 w-4" /> Open_Settings_Page
+                      </Link>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator className="bg-foreground h-0.5" />
+                    
+                    <DropdownMenuItem className="p-3 font-black uppercase text-xs rounded-none cursor-pointer text-red-500 focus:bg-red-500 focus:text-white flex items-center gap-2">
+                      <LogOut className="h-4 w-4" /> Terminate_Session
+                    </DropdownMenuItem>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarFooter>
 
         <SidebarRail />
