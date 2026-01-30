@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@tanstack/react-table": "^8.21.3",
+    "jspdf": "^4.0.0",
     "lightweight-charts": "^5.1.0"
   },
   "devDependencies": {
