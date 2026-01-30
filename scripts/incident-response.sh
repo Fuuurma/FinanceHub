@@ -265,24 +265,73 @@ EOF
 }
 
 #############################################
-# Incident Lifecycle Management
+# Incident Lifecycle Management (Bash 3.2 compatible)
 #############################################
 
-declare -A incident_count
-declare -A incident_start_time
+# Use simple variables instead of associative arrays
+api_failure_count=0
+api_failure_start=0
+database_failure_count=0
+database_failure_start=0
+redis_failure_count=0
+redis_failure_start=0
+container_failure_count=0
+container_failure_start=0
+memory_failure_count=0
+memory_failure_start=0
+cpu_failure_count=0
+cpu_failure_start=0
+disk_failure_count=0
+disk_failure_start=0
 
 track_incident() {
     local incident_type="$1"
-    incident_count["${incident_type}"]=$((${incident_count[${incident_type}]:-0} + 1))
-    incident_start_time["${incident_type}"]=$(date +%s)
 
-    local count=${incident_count[${incident_type}]}
+    case "${incident_type}" in
+        api_failure)
+            api_failure_count=$((${api_failure_count:-0} + 1))
+            api_failure_start=$(date +%s)
+            local count=${api_failure_count}
+            ;;
+        database_failure)
+            database_failure_count=$((${database_failure_count:-0} + 1))
+            database_failure_start=$(date +%s)
+            local count=${database_failure_count}
+            ;;
+        redis_failure)
+            redis_failure_count=$((${redis_failure_count:-0} + 1))
+            redis_failure_start=$(date +%s)
+            local count=${redis_failure_count}
+            ;;
+        container_failure)
+            container_failure_count=$((${container_failure_count:-0} + 1))
+            container_failure_start=$(date +%s)
+            local count=${container_failure_count}
+            ;;
+        high_memory)
+            memory_failure_count=$((${memory_failure_count:-0} + 1))
+            memory_failure_start=$(date +%s)
+            local count=${memory_failure_count}
+            ;;
+        high_cpu)
+            cpu_failure_count=$((${cpu_failure_count:-0} + 1))
+            cpu_failure_start=$(date +%s)
+            local count=${cpu_failure_count}
+            ;;
+        disk_space)
+            disk_failure_count=$((${disk_failure_count:-0} + 1))
+            disk_failure_start=$(date +%s)
+            local count=${disk_failure_count}
+            ;;
+        *)
+            return
+            ;;
+    esac
 
     if [[ "${count}" -ge "${ALERT_THRESHOLD}" ]]; then
         incident "🚨 THRESHOLD REACHED: ${incident_type} failed ${count} times"
         send_slack_alert "${incident_type} has failed ${count} consecutive checks"
 
-        # Trigger automated remediation
         if [[ "${AUTO_REMEDIATE}" == "true" ]]; then
             remediate_incident "${incident_type}"
         fi
@@ -291,8 +340,43 @@ track_incident() {
 
 clear_incident() {
     local incident_type="$1"
-    local count=${incident_count[${incident_type}]:-0}
-    local start_time=${incident_start_time[${incident_type}]:-0}
+    local count=0
+    local start_time=0
+
+    case "${incident_type}" in
+        api_failure)
+            count=${api_failure_count:-0}
+            start_time=${api_failure_start:-0}
+            ;;
+        database_failure)
+            count=${database_failure_count:-0}
+            start_time=${database_failure_start:-0}
+            ;;
+        redis_failure)
+            count=${redis_failure_count:-0}
+            start_time=${redis_failure_start:-0}
+            ;;
+        container_failure)
+            count=${container_failure_count:-0}
+            start_time=${container_failure_start:-0}
+            ;;
+        high_memory)
+            count=${memory_failure_count:-0}
+            start_time=${memory_failure_start:-0}
+            ;;
+        high_cpu)
+            count=${cpu_failure_count:-0}
+            start_time=${cpu_failure_start:-0}
+            ;;
+        disk_space)
+            count=${disk_failure_count:-0}
+            start_time=${disk_failure_start:-0}
+            ;;
+        *)
+            return
+            ;;
+    esac
+
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
 
@@ -300,9 +384,36 @@ clear_incident() {
         incident "✅ RESOLVED: ${incident_type} recovered after ${count} failures (duration: ${duration}s)"
         send_slack_recovery "${incident_type} is back to normal. Downtime: ${duration}s"
 
-        # Reset counters
-        incident_count["${incident_type}"]=0
-        incident_start_time["${incident_type}"]=0
+        case "${incident_type}" in
+            api_failure)
+                api_failure_count=0
+                api_failure_start=0
+                ;;
+            database_failure)
+                database_failure_count=0
+                database_failure_start=0
+                ;;
+            redis_failure)
+                redis_failure_count=0
+                redis_failure_start=0
+                ;;
+            container_failure)
+                container_failure_count=0
+                container_failure_start=0
+                ;;
+            high_memory)
+                memory_failure_count=0
+                memory_failure_start=0
+                ;;
+            high_cpu)
+                cpu_failure_count=0
+                cpu_failure_start=0
+                ;;
+            disk_space)
+                disk_failure_count=0
+                disk_failure_start=0
+                ;;
+        esac
     fi
 }
 

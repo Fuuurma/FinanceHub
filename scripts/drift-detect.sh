@@ -91,7 +91,7 @@ capture_environment_state() {
     env_state+="\"timestamp\": \"$(date -Iseconds)\""
     env_state+="}"
 
-    echo "${env_state}" | jq '.' > "${STATE_FILE}.env.json
+    echo "${env_state}" | jq '.' > "${STATE_FILE}.env.json"
     log "✅ Environment state captured"
 }
 
