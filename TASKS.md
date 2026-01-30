@@ -621,7 +621,7 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 | N9 | useDebounce | hooks/useDebounce.ts | P1 | `COMPLETED` ✅ | 50 lines |
 | N10 | useInterval | hooks/useInterval.ts | P1 | `COMPLETED` ✅ | 60 lines |
 | N11 | PositionRiskCard | components/risk/PositionRiskCard.tsx | P1 | `COMPLETED` ✅ | 220 lines - VaR, beta, liquidity, risk/reward |
-| N12 | GreeksCalculator | components/risk/GreeksCalculator.tsx | P1 | `PENDING` | Create new |
+| N12 | GreeksCalculator | components/risk/GreeksCalculator.tsx | P1 | `COMPLETED` ✅ | 240 lines - Black-Scholes model with Delta, Gamma, Theta, Vega, Rho |
 | N13 | StressTestPanel | components/risk/StressTestPanel.tsx | P1 | `PENDING` | Create new |
 | N14 | PerformanceChart | components/portfolio/PerformanceChart.tsx | P1 | `PENDING` | Create new |
 | N15 | RebalancingTool | components/portfolio/RebalancingTool.tsx | P1 | `PENDING` | Create new |
