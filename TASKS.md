@@ -510,14 +510,14 @@ All affected files now use the `useDownloadFile` hook (N2 - Completed):
 |------|-----------|------|-------|----------|--------|-------------|
 | N44 | EarningsEstimatesPanel | `components/research/EarningsEstimatesPanel.tsx` | 150 | P2 | `COMPLETED` ✅ | EPS/revenue estimates with analyst consensus |
 | N45 | PriceTargetChart | `components/research/PriceTargetChart.tsx` | 120 | P2 | `COMPLETED` ✅ | Analyst targets, distribution chart, upside potential |
-| N46 | SECFilingsList | `components/research/SECFilingsList.tsx` | 100 | P2 | `PENDING` |
+| N46 | SECFilingsList | `components/research/SECFilingsList.tsx` | 100 | P2 | `COMPLETED` ✅ | SEC filings list, timeline view, form type filtering |
 
 ### Economics & Fundamentals
-| Task | Component | Path | Lines |
-|------|-----------|------|-------|
-| N47 | EconomicIndicatorChart | `components/economics/EconomicIndicatorChart.tsx` | 150 |
-| N48 | FinancialStatements | `components/fundamentals/FinancialStatements.tsx` | 200 |
-| N49 | CompanyProfile | `components/fundamentals/CompanyProfile.tsx` | 150 |
+| Task | Component | Path | Lines | Priority | Status | Description |
+|------|-----------|------|-------|----------|--------|-------------|
+| N47 | EconomicIndicatorChart | `components/economics/EconomicIndicatorChart.tsx` | 150 | P2 | `COMPLETED` ✅ | Economic indicators, trend analysis |
+| N48 | FinancialStatements | `components/fundamentals/FinancialStatements.tsx` | 200 | P2 | `PENDING` |
+| N49 | CompanyProfile | `components/fundamentals/CompanyProfile.tsx` | 150 | P2 | `PENDING` |
 
 ### Options Components
 | Task | Component | Path | Lines |
