@@ -6,7 +6,7 @@
 import { create } from 'zustand'
 import type {
   RealTimePrice,
-  Trade,
+  RealTimeTrade,
   OrderBook,
   DataType,
 } from '@/lib/types/realtime'
@@ -21,7 +21,7 @@ interface RealTimeStore {
   error: string | null
   subscribedSymbols: string[]
   prices: Record<string, RealTimePrice>
-  trades: Record<string, Trade[]>
+  trades: Record<string, RealTimeTrade[]>
   orderBooks: Record<string, OrderBook>
   charts: Record<string, ChartTimeframe>
   
@@ -35,7 +35,7 @@ interface RealTimeStore {
   clearData: (symbol?: string) => void
   
   updatePrice: (symbol: string, price: RealTimePrice) => void
-  addTrade: (symbol: string, trade: Trade) => void
+  addTrade: (symbol: string, trade: RealTimeTrade) => void
   updateOrderBook: (symbol: string, orderBook: OrderBook) => void
   setChartTimeframe: (symbol: string, timeframe: ChartTimeframe) => void
   setError: (error: string | null) => void
@@ -78,7 +78,7 @@ export const useRealtimeStore = create<RealTimeStore>((set, get) => ({
             
             case 'trades':
               if (symbol && Array.isArray(data.trades)) {
-                data.trades.forEach((trade: Trade) => {
+                data.trades.forEach((trade: RealTimeTrade) => {
                   get().addTrade(symbol, trade)
                 })
               }
@@ -209,7 +209,7 @@ export const useRealtimeStore = create<RealTimeStore>((set, get) => ({
     }))
   },
 
-  addTrade: (symbol: string, trade: Trade) => {
+  addTrade: (symbol: string, trade: RealTimeTrade) => {
     set((state) => {
       const symbolTrades = state.trades[symbol] || []
       const newTrades = [trade, ...symbolTrades].slice(0, WS_CONFIG.TRADE_FEED_LIMIT)

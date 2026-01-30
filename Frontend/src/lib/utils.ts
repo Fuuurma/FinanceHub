@@ -37,6 +37,13 @@ export function formatDateTime(date: string | Date): string {
   })
 }
 
+export function formatTime(date: string | Date): string {
+  return new Date(date).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export function formatNumber(value: number | string | undefined | null): string {
   if (value === undefined || value === null) return '--'
   const numValue = typeof value === 'string' ? parseFloat(value) : value

@@ -182,7 +182,7 @@ export function OptionsPayoffChart({ symbol, currentPrice, legs: propLegs, strat
       },
     })
 
-    const lineSeries = chart.addLineSeries({
+    const lineSeries = (chart as any).addLineSeries({
       color: '#3b82f6',
       lineWidth: 2,
     })

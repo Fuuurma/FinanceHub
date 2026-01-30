@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, Trash2, Edit2, Star, TrendingUp, TrendingDown } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
+import { WatchlistItem as WatchlistItemComponent } from './WatchlistItem'
 
 export interface WatchlistItem {
   id: string
@@ -172,7 +173,7 @@ export function WatchlistManager({ className }: WatchlistManagerProps) {
                   </div>
                 ) : (
                   watchlist.items.map((item) => (
-                    <WatchlistItem
+                    <WatchlistItemComponent
                       key={item.id}
                       item={item}
                       onRemove={() => removeFromWatchlist(watchlist.id, item.id)}

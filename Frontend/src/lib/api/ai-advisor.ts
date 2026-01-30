@@ -224,12 +224,12 @@ export async function getBondMarketAnalysis(): Promise<BondMarketAnalysisRespons
 export async function getAITemplates(
   templateType?: string,
   assetClass?: string
-): Promise<AITemplateListResponse> {
+): Promise<any> {
   const params: Record<string, string> = {}
   if (templateType) params.template_type = templateType
   if (assetClass) params.asset_class = assetClass
 
-  return apiClient.get<AITemplateListResponse>(`${AI_API_BASE}/templates`, { params })
+  return apiClient.get(`${AI_API_BASE}/templates`, { params })
 }
 
 // ================= AI ADVISOR API EXPORTS =================

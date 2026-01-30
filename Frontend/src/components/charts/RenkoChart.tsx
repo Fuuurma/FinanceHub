@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useEffect, useState } from 'react'
-import { createChart, ColorType, IChartApi, ISeriesApi, IHistogramSeries, Time } from 'lightweight-charts'
+import { createChart, ColorType, IChartApi, ISeriesApi, Time } from 'lightweight-charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

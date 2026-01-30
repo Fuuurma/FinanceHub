@@ -104,7 +104,7 @@ export function HeikinAshiChart({
 
     chartRef.current = chart
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const candlestickSeries = (chart as any).addCandlestickSeries({
       upColor: '#22c55e',
       downColor: '#ef4444',
       borderUpColor: '#22c55e',
@@ -115,7 +115,7 @@ export function HeikinAshiChart({
     seriesRef.current = candlestickSeries
 
     if (showVolume) {
-      const volumeSeries = chart.addHistogramSeries({
+      const volumeSeries = (chart as any).addHistogramSeries({
         color: '#64748b',
         priceFormat: {
           type: 'volume',

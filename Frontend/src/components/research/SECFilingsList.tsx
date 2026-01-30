@@ -25,6 +25,8 @@ export interface SECFilingsListProps {
 
 type FilingType = 'all' | '10-K' | '10-Q' | '8-K' | '4' | 'DEF 14A' | 'S-1' | 'S-3'
 
+export type { FilingType as FilingType, SECFiling, FilingsSummary }
+
 const FORM_TYPE_LABELS: Record<string, string> = {
   '10-K': 'Annual Report',
   '10-Q': 'Quarterly Report',

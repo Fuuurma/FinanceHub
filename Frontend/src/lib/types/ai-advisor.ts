@@ -338,12 +338,11 @@ export interface TemplateField {
   options?: string[];
 }
 
-// ================= ERROR TYPES =================
-
-export interface AIAdvisorError {
-  error: string;
-  code: string;
-  details?: Record<string, unknown>;
+export interface AITemplateListResponse {
+  templates: AnalysisTemplate[];
+  total: number;
+  page: number;
+  page_size: number;
 }
 
 export function isAIAdvisorError(obj: unknown): obj is AIAdvisorError {

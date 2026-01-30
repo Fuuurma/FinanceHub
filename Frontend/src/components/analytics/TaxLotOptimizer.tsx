@@ -202,8 +202,8 @@ export function TaxLotOptimizer({ lots, className }: TaxLotOptimizerProps) {
                         <TableCell className="font-medium">{lot.symbol}</TableCell>
                         <TableCell>{formatDate(lot.purchaseDate)}</TableCell>
                         <TableCell className="text-right">{lot.shares}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(lot.costPerShare)}</TableCell>
-                        <TableCell className="text-right text-red-600">{formatCurrency(lot.unrealizedGain)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(lot.costPerShare ?? 0)}</TableCell>
+                        <TableCell className="text-right text-red-600">{formatCurrency(lot.unrealizedGain ?? 0)}</TableCell>
                         <TableCell>
                           <Badge variant={lot.term === 'long' ? 'default' : 'secondary'}>
                             {lot.term}

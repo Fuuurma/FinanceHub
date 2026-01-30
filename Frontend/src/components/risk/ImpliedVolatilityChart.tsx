@@ -15,6 +15,8 @@ interface IVData {
   ivRank: number
 }
 
+export type { IVData as IVData }
+
 interface ImpliedVolatilityChartProps {
   data?: IVData[]
   symbol?: string

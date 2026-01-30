@@ -14,6 +14,8 @@ interface ExposureData {
   netExposure: number
 }
 
+export type { ExposureData as ExposureData }
+
 interface ExposureChartProps {
   data?: ExposureData[]
   title?: string

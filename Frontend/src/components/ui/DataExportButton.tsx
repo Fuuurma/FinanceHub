@@ -56,24 +56,24 @@ function convertToCSV(data: unknown[]): string {
   return [headers.join(','), ...rows].join('\n')
 }
 
-function convertToText(data: unknown[]): string {
+function convertToText(data: Record<string, unknown>[]): string {
   if (data.length === 0) return ''
 
-  const headers = Object.keys(data[0] as object)
+  const headers = Object.keys(data[0])
   const maxWidths = headers.map((h, i) => {
     const colWidth = Math.max(
       h.length,
-      ...data.map(row => String((row as Record<string, unknown>)[h] ?? '').length)
+      ...data.map(row => String(row[h] ?? '').length)
     )
     return colWidth
   })
 
-  const formatRow = (row: object) =>
-    headers.map((h, i) => String((row as Record<string, unknown>)[h] ?? '').padEnd(maxWidths[i])).join('  ')
+  const formatRow = (row: Record<string, unknown>) =>
+    headers.map((h, i) => String(row[h] ?? '').padEnd(maxWidths[i])).join('  ')
 
   const separator = maxWidths.map(w => '-'.repeat(w)).join('  ')
 
-  return [formatRow({} as object), separator, ...data.map(formatRow)].join('\n')
+  return [formatRow({} as Record<string, unknown>), separator, ...data.map(formatRow)].join('\n')
 }
 
 function downloadFile(content: string | Blob, filename: string, mimeType: string) {
@@ -118,7 +118,7 @@ export function DataExportButton({
           content = JSON.stringify(exportData, null, 2)
           break
         case 'txt':
-          content = convertToText(exportData as unknown[])
+          content = convertToText(exportData as Record<string, unknown>[])
           break
         case 'xlsx':
           content = new Blob([exportData as BlobPart], { type: option.mimeType })

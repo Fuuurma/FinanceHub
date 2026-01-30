@@ -121,7 +121,7 @@ export interface RecentTradesResponse {
   source: string
 }
 
-export interface OrderBookLevel {
+export interface MarketOrderBookLevel {
   price: number
   volume: number
   total_size: number
@@ -132,7 +132,7 @@ export interface OrderBookLevel {
 
 export interface OrderBookResponse {
   symbol: string
-  levels: OrderBookLevel[]
+  levels: MarketOrderBookLevel[]
   mid_price?: number
   spread: number
   depth: number
