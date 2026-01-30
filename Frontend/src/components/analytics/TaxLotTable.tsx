@@ -1,30 +1,34 @@
 "use client"
 
-import { useState, useMemo } from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn, formatCurrency, formatDate } from '@/lib/utils'
-import { Download, DollarSign, TrendingUp, TrendingDown, Calendar } from 'lucide-react'
+import * as React from "react"
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+
+import { cn, formatCurrency, formatPercent, formatDate } from "@/lib/utils"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+export type TaxLotStatus = "held" | "partial" | "realized" | "harvested"
 
 export interface TaxLot {
   id: string
   symbol: string
+  purchaseDate: string
   shares: number
   costBasis: number
-  costPerShare: number
-  purchaseDate: string
-  currentPrice: number
   currentValue: number
-  unrealizedGain: number
-  unrealizedGainPercent: number
-  term: 'short' | 'long'
-  washSale: boolean
+  status: TaxLotStatus
+  realizedGain?: number
+  realizedDate?: string
 }
 
 export interface TaxLotSummary {
@@ -32,158 +36,418 @@ export interface TaxLotSummary {
   totalShares: number
   totalCostBasis: number
   totalCurrentValue: number
-  totalUnrealizedGain: number
-  shortTermGain: number
-  longTermGain: number
+  unrealizedGain: number
+  unrealizedGainPercent: number
+  shortTermLots: number
+  longTermLots: number
+  heldLots: number
+  partialLots: number
+  realizedLots: number
+  harvestedLots: number
 }
 
 export interface TaxLotTableProps {
   lots?: TaxLot[]
   summary?: TaxLotSummary
-  symbol?: string
-  loading?: boolean
-  error?: string
-  className?: string
+  isLoading?: boolean
+  onLotClick?: (lot: TaxLot) => void
 }
 
-type FilterType = 'all' | 'short' | 'long' | 'gainers' | 'losers' | 'wash'
+const STATUS_CONFIG = {
+  held: { label: "Held", variant: "default" as const },
+  partial: { label: "Partial", variant: "secondary" as const },
+  realized: { label: "Realized", variant: "outline" as const },
+  harvested: { label: "Harvested", variant: "destructive" as const },
+}
 
-function TaxLotRow({ lot }: { lot: TaxLot }) {
-  const isGain = lot.unrealizedGain >= 0
+const HOLDING_PERIOD_THRESHOLD_DAYS = 365
+
+function calculateHoldingPeriod(purchaseDate: string): { isLongTerm: boolean; days: number } {
+  const purchase = new Date(purchaseDate)
+  const now = new Date()
+  const diffTime = Math.abs(now.getTime() - purchase.getTime())
+  const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return { isLongTerm: days > HOLDING_PERIOD_THRESHOLD_DAYS, days }
+}
+
+function calculateGainLoss(costBasis: number, currentValue: number): { amount: number; percent: number } {
+  const amount = currentValue - costBasis
+  const percent = costBasis > 0 ? (amount / costBasis) * 100 : 0
+  return { amount, percent }
+}
+
+export function generateMockTaxLots(): TaxLot[] {
+  const symbols = ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "JPM", "V", "JNJ"]
+  const statuses: TaxLotStatus[] = ["held", "partial", "realized", "harvested"]
+  const lots: TaxLot[] = []
+
+  for (let i = 0; i < 20; i++) {
+    const symbol = symbols[Math.floor(Math.random() * symbols.length)]
+    const shares = Math.floor(Math.random() * 100) + 10
+    const purchaseDate = new Date(Date.now() - Math.random() * 730 * 24 * 60 * 60 * 1000)
+    const costPerShare = Math.random() * 200 + 50
+    const currentValuePerShare = costPerShare * (1 + (Math.random() - 0.4) * 0.5)
+    const costBasis = shares * costPerShare
+    const currentValue = shares * currentValuePerShare
+    const status = statuses[Math.floor(Math.random() * statuses.length)]
+
+    const realizedGain = status === "realized" || status === "harvested"
+      ? (Math.random() - 0.3) * costBasis
+      : undefined
+
+    const realizedDate = status === "realized" || status === "harvested"
+      ? new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString()
+      : undefined
+
+    lots.push({
+      id: `lot-${i + 1}`,
+      symbol,
+      purchaseDate: purchaseDate.toISOString(),
+      shares,
+      costBasis,
+      currentValue,
+      status,
+      realizedGain,
+      realizedDate,
+    })
+  }
+
+  return lots
+}
+
+export function generateMockSummary(taxLots: TaxLot[]): TaxLotSummary {
+  const totalCostBasis = taxLots.reduce((sum, lot) => sum + lot.costBasis, 0)
+  const totalCurrentValue = taxLots.reduce((sum, lot) => sum + lot.currentValue, 0)
+  const unrealizedGain = totalCurrentValue - totalCostBasis
+  const unrealizedGainPercent = totalCostBasis > 0 ? (unrealizedGain / totalCostBasis) * 100 : 0
+
+  return {
+    totalLots: taxLots.length,
+    totalShares: taxLots.reduce((sum, lot) => sum + lot.shares, 0),
+    totalCostBasis,
+    totalCurrentValue,
+    unrealizedGain,
+    unrealizedGainPercent,
+    shortTermLots: taxLots.filter(
+      lot => !calculateHoldingPeriod(lot.purchaseDate).isLongTerm
+    ).length,
+    longTermLots: taxLots.filter(
+      lot => calculateHoldingPeriod(lot.purchaseDate).isLongTerm
+    ).length,
+    heldLots: taxLots.filter(lot => lot.status === "held").length,
+    partialLots: taxLots.filter(lot => lot.status === "partial").length,
+    realizedLots: taxLots.filter(lot => lot.status === "realized").length,
+    harvestedLots: taxLots.filter(lot => lot.status === "harvested").length,
+  }
+}
+function TaxLotRow({
+  lot,
+  onClick,
+}: {
+  lot: TaxLot
+  onClick?: (lot: TaxLot) => void
+}) {
+  const { amount, percent } = calculateGainLoss(lot.costBasis, lot.currentValue)
+  const { isLongTerm } = calculateHoldingPeriod(lot.purchaseDate)
+  const statusConfig = STATUS_CONFIG[lot.status]
+
   return (
-    <TableRow className="hover:bg-muted/50">
-      <TableCell className="py-3">
-        <div className="flex flex-col">
-          <span className="font-medium">{lot.symbol}</span>
-          <span className="text-xs text-muted-foreground">{formatDate(lot.purchaseDate)}</span>
-        </div>
-      </TableCell>
-      <TableCell className="py-3 text-right">{lot.shares.toLocaleString()}</TableCell>
-      <TableCell className="py-3 text-right">{formatCurrency(lot.costPerShare)}</TableCell>
-      <TableCell className="py-3 text-right">{formatCurrency(lot.costBasis)}</TableCell>
-      <TableCell className="py-3 text-right">{formatCurrency(lot.currentValue)}</TableCell>
-      <TableCell className="py-3">
-        <div className="flex flex-col items-end">
-          <span className={cn('font-medium', isGain ? 'text-green-500' : 'text-red-500')}>
-            {isGain ? '+' : ''}{formatCurrency(lot.unrealizedGain)}
-          </span>
-          <span className={cn('text-xs', isGain ? 'text-green-600' : 'text-red-600')}>
-            {isGain ? '+' : ''}{lot.unrealizedGainPercent.toFixed(2)}%
-          </span>
-        </div>
-      </TableCell>
-      <TableCell className="py-3">
-        <Badge variant={lot.term === 'long' ? 'default' : 'secondary'}>
-          {lot.term === 'long' ? 'Long' : 'Short'}
+    <tr
+      className={cn(
+        "border-b transition-colors hover:bg-muted/50 cursor-pointer",
+        onClick && "cursor-pointer"
+      )}
+      onClick={() => onClick?.(lot)}
+    >
+      <td className="p-4 font-medium">{lot.symbol}</td>
+      <td className="p-4">{formatDate(lot.purchaseDate)}</td>
+      <td className="p-4 text-right">{lot.shares.toLocaleString()}</td>
+      <td className="p-4 text-right">{formatCurrency(lot.costBasis)}</td>
+      <td className="p-4 text-right">{formatCurrency(lot.currentValue)}</td>
+      <td
+        className={cn(
+          "p-4 text-right font-medium",
+          amount >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+        )}
+      >
+        <div>{formatCurrency(amount)}</div>
+        <div className="text-xs">{formatPercent(percent)}</div>
+      </td>
+      <td className="p-4">
+        <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+      </td>
+      <td className="p-4">
+        <Badge variant={isLongTerm ? "secondary" : "outline"}>
+          {isLongTerm ? "Long" : "Short"}
         </Badge>
-        {lot.washSale && <Badge variant="destructive" className="ml-1">WS</Badge>}
-      </TableCell>
-    </TableRow>
+      </td>
+    </tr>
   )
 }
 
+function TaxLotTableSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+      <div className="rounded-md border">
+        <div className="border-b bg-muted/50 p-4">
+          <div className="grid grid-cols-8 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-4 w-20" />
+            ))}
+          </div>
+        </div>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="border-b p-4">
+            <div className="grid grid-cols-8 gap-4">
+              {Array.from({ length: 8 }).map((_, j) => (
+                <Skeleton key={j} className="h-4 w-full" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+function SummaryView({ summary }: { summary: TaxLotSummary }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Total Lots</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{summary.totalLots}</div>
+          <p className="text-xs text-muted-foreground">
+            {summary.heldLots} held, {summary.partialLots} partial, {summary.realizedLots} realized, {summary.harvestedLots} harvested
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formatCurrency(summary.totalCurrentValue)}</div>
+          <p className="text-xs text-muted-foreground">
+            Cost basis: {formatCurrency(summary.totalCostBasis)}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Unrealized Gain/Loss</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div
+            className={cn(
+              "text-2xl font-bold",
+              summary.unrealizedGain >= 0
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-600 dark:text-red-400"
+            )}
+          >
+            {formatCurrency(summary.unrealizedGain)}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {formatPercent(summary.unrealizedGainPercent)}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Holding Period</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {summary.longTermLots}/{summary.shortTermLots}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Long-term / Short-term lots
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="md:col-span-2 lg:col-span-4">
+        <CardHeader>
+          <CardTitle>Tax Lot Distribution</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-muted/50">
+              <span className="text-sm text-muted-foreground">Held</span>
+              <span className="text-xl font-bold">{summary.heldLots}</span>
+            </div>
+            <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-muted/50">
+              <span className="text-sm text-muted-foreground">Partial</span>
+              <span className="text-xl font-bold">{summary.partialLots}</span>
+            </div>
+            <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-muted/50">
+              <span className="text-sm text-muted-foreground">Realized</span>
+              <span className="text-xl font-bold">{summary.realizedLots}</span>
+            </div>
+            <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-muted/50">
+              <span className="text-sm text-muted-foreground">Harvested</span>
+              <span className="text-xl font-bold">{summary.harvestedLots}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+type SortField = "date" | "gain" | "value"
+type SortDirection = "asc" | "desc"
+
 export function TaxLotTable({
-  lots = [],
-  summary,
-  symbol,
-  loading = false,
-  error,
-  className,
+  lots = generateMockTaxLots(),
+  summary = generateMockSummary(lots),
+  isLoading = false,
+  onLotClick,
 }: TaxLotTableProps) {
-  const [filter, setFilter] = useState<FilterType>('all')
-  const [search, setSearch] = useState('')
+  const [sortField, setSortField] = React.useState<SortField>("date")
+  const [sortDirection, setSortDirection] = React.useState<SortDirection>("desc")
+  const [statusFilter, setStatusFilter] = React.useState<TaxLotStatus | "all">("all")
 
-  const filteredLots = useMemo(() => {
-    let result = [...lots]
-    if (search) result = result.filter(l => l.symbol.toLowerCase().includes(search.toLowerCase()))
-    switch (filter) {
-      case 'short': return result.filter(l => l.term === 'short')
-      case 'long': return result.filter(l => l.term === 'long')
-      case 'gainers': return result.filter(l => l.unrealizedGain >= 0)
-      case 'losers': return result.filter(l => l.unrealizedGain < 0)
-      case 'wash': return result.filter(l => l.washSale)
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("desc")
     }
+  }
+
+  const filteredLots = React.useMemo(() => {
+    let result = [...lots]
+
+    if (statusFilter !== "all") {
+      result = result.filter(lot => lot.status === statusFilter)
+    }
+
+    result.sort((a, b) => {
+      let comparison = 0
+
+      switch (sortField) {
+        case "date":
+          comparison = new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
+          break
+        case "gain": {
+          const aGain = calculateGainLoss(a.costBasis, a.currentValue)
+          const bGain = calculateGainLoss(b.costBasis, b.currentValue)
+          comparison = aGain.percent - bGain.percent
+          break
+        }
+        case "value":
+          comparison = a.currentValue - b.currentValue
+          break
+      }
+
+      return sortDirection === "asc" ? comparison : -comparison
+    })
+
     return result
-  }, [lots, filter, search])
+  }, [lots, sortField, sortDirection, statusFilter])
 
-  const handleExport = () => {
-    const csv = ['Symbol,Shares,Cost/Share,Cost Basis,Current Value,Gain/Loss,Gain %,Term,Purchase Date',
-      ...filteredLots.map(l => `${l.symbol},${l.shares},${l.costPerShare.toFixed(2)},${l.costBasis.toFixed(2)},${l.currentValue.toFixed(2)},${l.unrealizedGain.toFixed(2)},${l.unrealizedGainPercent.toFixed(2)},${l.term},${l.purchaseDate}`)].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${symbol || 'tax'}-lots.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
-  if (loading) {
-    return (
-      <Card className={cn('w-full', className)}>
-        <CardHeader><Skeleton className="h-6 w-32" /><Skeleton className="h-4 w-48 mt-2" /></CardHeader>
-        <CardContent><Skeleton className="h-24 w-full mb-4" /><Skeleton className="h-64 w-full" /></CardContent>
-      </Card>
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return null
+    return sortDirection === "asc" ? (
+      <ChevronUpIcon className="ml-1 h-4 w-4" />
+    ) : (
+      <ChevronDownIcon className="ml-1 h-4 w-4" />
     )
   }
 
-  if (error || (!lots.length && !summary)) {
-    return (
-      <Card className={cn('w-full', className)}>
-        <CardHeader><CardTitle>Tax Lots</CardTitle><CardDescription>Track cost basis and unrealized gains/losses</CardDescription></CardHeader>
-        <CardContent><p className="text-sm text-red-500">{error || 'No tax lot data available'}</p></CardContent>
-      </Card>
-    )
+  if (isLoading) {
+    return <TaxLotTableSkeleton />
   }
 
   return (
-    <Card className={cn('w-full', className)}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5" />Tax Lots{symbol && <Badge variant="outline">{symbol}</Badge>}</CardTitle>
-            <CardDescription>Track cost basis and unrealized gains/losses</CardDescription>
-          </div>
+    <div className="space-y-4">
+      <Tabs defaultValue="lots" className="w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <TabsList>
+            <TabsTrigger value="lots">Lots View</TabsTrigger>
+            <TabsTrigger value="summary">Summary</TabsTrigger>
+          </TabsList>
+
           <div className="flex items-center gap-2">
-            <Input placeholder="Search symbol..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-32 h-8" />
-            <Select value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
-              <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as TaxLotStatus | "all")}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="short">Short Term</SelectItem>
-                <SelectItem value="long">Long Term</SelectItem>
-                <SelectItem value="gainers">Gainers</SelectItem>
-                <SelectItem value="losers">Losers</SelectItem>
-                <SelectItem value="wash">Wash Sales</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="held">Held</SelectItem>
+                <SelectItem value="partial">Partial</SelectItem>
+                <SelectItem value="realized">Realized</SelectItem>
+                <SelectItem value="harvested">Harvested</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="icon" onClick={handleExport}><Download className="h-4 w-4" /></Button>
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-32">Symbol</TableHead>
-                <TableHead className="text-right">Shares</TableHead>
-                <TableHead className="text-right">Cost/Share</TableHead>
-                <TableHead className="text-right">Cost Basis</TableHead>
-                <TableHead className="text-right">Value</TableHead>
-                <TableHead className="text-right">G/L</TableHead>
-                <TableHead>Term</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLots.map((lot) => <TaxLotRow key={lot.id} lot={lot} />)}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="mt-4 pt-4 border-t">
-          <p className="text-xs text-muted-foreground text-center">{filteredLots.length} lots</p>
-        </div>
-      </CardContent>
-    </Card>
+
+        <TabsContent value="lots" className="mt-4">
+          <div className="rounded-md border">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="p-4 text-left font-medium">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort("date")}
+                        className="flex items-center"
+                      >
+                        Date
+                        <SortIcon field="date" />
+                      </Button>
+                    </th>
+                    <th className="p-4 text-left font-medium">Symbol</th>
+                    <th className="p-4 text-right font-medium">Shares</th>
+                    <th className="p-4 text-right font-medium">Cost Basis</th>
+                    <th className="p-4 text-right font-medium">Current Value</th>
+                    <th className="p-4 text-right font-medium">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort("gain")}
+                        className="flex items-center justify-end"
+                      >
+                        Gain/Loss
+                        <SortIcon field="gain" />
+                      </Button>
+                    </th>
+                    <th className="p-4 text-left font-medium">Status</th>
+                    <th className="p-4 text-left font-medium">Holding</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLots.map((lot) => (
+                    <TaxLotRow key={lot.id} lot={lot} onClick={onLotClick} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="summary" className="mt-4">
+          <SummaryView summary={summary} />
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }
