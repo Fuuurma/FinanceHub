@@ -168,8 +168,8 @@ export function HoldingsAllocationChart({
               />
             ))}
           </Pie>
-          <Tooltip content={<CustomTooltip />} />
-          <Legend content={renderLegend} />
+          <Tooltip content={CustomTooltip as any} />
+          <Legend content={renderLegend as any} />
         </PieChart>
       </ResponsiveContainer>
     </div>

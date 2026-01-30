@@ -58,6 +58,7 @@ export function SectorAttributionChart({
       weight: number
       return: number
       contribution?: number
+      holdings_count?: number
     }
   }
 
@@ -83,24 +84,23 @@ export function SectorAttributionChart({
               <span className="text-muted-foreground">Weight:</span>
               <span className="font-medium">{item.weight.toFixed(1)}%</span>
             </div>
-            <div className="flex justify-between gap-8">
-              <span className="text-muted-foreground">Return:</span>
-              <span className={cn(
-                'font-medium',
-                item.return >= 0 ? 'text-green-600' : 'text-red-600'
-              )}>
-                {formatPercent(item.return)}
-              </span>
-            </div>
-            <div className="flex justify-between gap-8">
-              <span className="text-muted-foreground">Contribution:</span>
-              <span className={cn(
-                'font-medium',
-                item.contribution >= 0 ? 'text-green-600' : 'text-red-600'
-              )}>
-                {formatPercent(item.contribution)}
-              </span>
-            </div>
+            {item.holdings_count !== undefined && (
+              <div className="flex justify-between gap-8">
+                <span className="text-muted-foreground">Holdings:</span>
+                <span className="font-medium">{item.holdings_count}</span>
+              </div>
+            )}
+            {item.contribution !== undefined && (
+              <div className="flex justify-between gap-8">
+                <span className="text-muted-foreground">Contribution:</span>
+                <span className={cn(
+                  'font-medium',
+                  item.contribution >= 0 ? 'text-green-600' : 'text-red-600'
+                )}>
+                  {formatPercent(item.contribution)}
+                </span>
+              </div>
+            )}
             {outperformance !== undefined && (
               <div className="flex justify-between gap-8">
                 <span className="text-muted-foreground">vs Benchmark:</span>
@@ -170,10 +170,10 @@ export function SectorAttributionChart({
                   key={`cell-${index}`}
                   fill={SECTOR_COLORS[entry.sector] || SECTOR_COLORS['Other']}
                 />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend content={renderLegend} />
+            ))}
+          </Pie>
+          <Tooltip content={CustomTooltip as any} />
+          <Legend content={renderLegend as any} />
           </PieChart>
         </ResponsiveContainer>
       </div>
