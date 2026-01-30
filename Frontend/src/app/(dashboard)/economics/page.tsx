@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import {
   Select,
   SelectContent,
@@ -71,7 +72,7 @@ const ECONOMIC_CATEGORIES = [
   { id: 'industrial', name: 'Industrial', icon: Factory, color: 'text-cyan-600' },
 ] as const
 
-export default function EconomicsPage() {
+function EconomicsPageContent() {
   const {
     macroData,
     loading,
@@ -584,5 +585,17 @@ export default function EconomicsPage() {
         </Tabs>
       )}
     </div>
+  )
+}
+
+export default function EconomicsPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Economics page error:', error, errorInfo)
+      }}
+    >
+      <EconomicsPageContent />
+    </PageErrorBoundary>
   )
 }

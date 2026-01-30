@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import { RefreshCw, Download, Calendar, FileJson, FileSpreadsheet } from 'lucide-react'
 import { ChartCard } from '@/components/analytics/ChartCard'
 import { AllocationPieChart } from '@/components/analytics/AllocationPieChart'
@@ -53,7 +54,7 @@ const BENCHMARKS: { value: BenchmarkType; label: string }[] = [
   { value: 'dow', label: 'Dow Jones' },
 ]
 
-export default function AnalyticsPage() {
+function AnalyticsPageContent() {
   const {
     selectedPortfolioId,
     selectedPeriod,
@@ -368,5 +369,17 @@ export default function AnalyticsPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function AnalyticsPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Analytics page error:', error, errorInfo)
+      }}
+    >
+      <AnalyticsPageContent />
+    </PageErrorBoundary>
   )
 }

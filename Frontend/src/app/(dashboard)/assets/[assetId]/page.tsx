@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ConnectionStatus } from '@/components/realtime/ConnectionStatus'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import { TradingViewChart, ChartControls } from '@/components/charts'
 import { OrderBook } from '@/components/realtime/OrderBook'
 import { TradeFeed } from '@/components/realtime/TradeFeed'
@@ -22,6 +23,8 @@ import type { ChartType, Timeframe } from '@/components/charts'
 
 type TimeFrame = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'
 type IndicatorType = 'SMA' | 'EMA' | 'RSI' | 'MACD' | 'BB'
+
+function AssetPageContent() {
 
 const TIMEFRAME_MAP: Record<string, string> = {
   '1D': '1d',
@@ -149,7 +152,7 @@ interface AssetData {
   }
 }
 
-export default function AssetDetailPage() {
+function AssetDetailPageContent() {
   const params = useParams()
   const assetId = params.assetId as string
   
@@ -1706,5 +1709,17 @@ export default function AssetDetailPage() {
         </Card>
       ) : null}
     </div>
+  )
+}
+
+export default function AssetDetailPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Asset detail page error:', error, errorInfo)
+      }}
+    >
+      <AssetDetailPageContent />
+    </PageErrorBoundary>
   )
 }

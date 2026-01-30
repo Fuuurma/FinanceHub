@@ -19,12 +19,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import { TrendingUp, TrendingDown, Wallet, PieChart, BarChart3, History, Plus } from 'lucide-react'
 import type { Holding, Transaction, HoldingsFilter, TransactionFilter } from '@/lib/types/holdings'
 import { exportHoldingsToCSV, exportHoldingsToJSON, exportTransactionsToCSV, exportTransactionsToJSON } from '@/lib/utils/export'
 import { cn, formatCurrency } from '@/lib/utils'
 
-export default function HoldingsPage() {
+function HoldingsPageContent() {
   const params = useParams()
   const portfolioId = (params.id as string) || 'default'
 
@@ -408,5 +409,17 @@ export default function HoldingsPage() {
         }))}
       />
     </div>
+  )
+}
+
+export default function HoldingsPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Holdings page error:', error, errorInfo)
+      }}
+    >
+      <HoldingsPageContent />
+    </PageErrorBoundary>
   )
 }
