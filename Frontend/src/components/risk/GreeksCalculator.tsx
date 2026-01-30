@@ -1,318 +1,183 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Calculator, TrendingUp, Clock, Activity, Percent } from 'lucide-react'
-import { cn, formatCurrency } from '@/lib/utils'
+import { useState, useMemo, useCallback } from 'react'
+import { Calculator, RefreshCw } from 'lucide-react'
+import { cn, formatCurrency, formatPercent } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 export type OptionType = 'call' | 'put'
 
-export interface GreeksInput {
-  spotPrice: number
-  strikePrice: number
-  timeToExpiration: number
-  volatility: number
-  riskFreeRate: number
-  optionType: OptionType
-}
-
-export interface GreeksResult {
+export interface OptionGreeks {
   delta: number
   gamma: number
   theta: number
   vega: number
   rho: number
-  d1: number
-  d2: number
-  optionPrice: number
+  vanna: number
+  charm: number
+  speed: number
+  zomma: number
+  color: number
+  vor: number
+  dvegaDtime: number
 }
 
-interface GreeksCalculatorProps {
-  initialData?: Partial<GreeksInput>
-  className?: string
+export interface GreeksInput {
+  spotPrice: number
+  strikePrice: number
+  timeToExpiry: number
+  volatility: number
+  riskFreeRate: number
+  dividendYield: number
+  optionType: OptionType
 }
 
-const STANDARD_NORMAL = {
-  cdf(x: number): number {
-    const a1 = 0.254829592
-    const a2 = -0.284496736
-    const a3 = 1.421413741
-    const a4 = -1.453152027
-    const a5 = 1.061405429
-    const p = 0.3275911
-
-    const sign = x < 0 ? -1 : 1
-    const absX = Math.abs(x) / Math.sqrt(2)
-
-    const t = 1.0 / (1.0 + p * absX)
-    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-absX * absX)
-
-    return 0.5 * (1.0 + sign * y)
-  },
-  pdf(x: number): number {
-    return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI)
-  }
+export interface GreeksResult extends OptionGreeks {
+  blackScholesPrice: number
+  intrinsicValue: number
+  timeValue: number
+  breakeven: number
+  probabilityITM: number
 }
 
-export function calculateGreeks(input: GreeksInput): GreeksResult {
-  const { spotPrice, strikePrice, timeToExpiration, volatility, riskFreeRate, optionType } = input
+const DAYS_PER_YEAR = 365
 
-  if (spotPrice <= 0 || strikePrice <= 0 || timeToExpiration <= 0 || volatility <= 0) {
-    return { delta: 0, gamma: 0, theta: 0, vega: 0, rho: 0, d1: 0, d2: 0, optionPrice: 0 }
-  }
+function normalCDF(x: number): number {
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741
+  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911
+  const sign = x < 0 ? -1 : 1
+  x = Math.abs(x) / Math.sqrt(2)
+  const t = 1.0 / (1.0 + p * x)
+  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x)
+  return 0.5 * (1.0 + sign * y)
+}
 
-  const sqrtT = Math.sqrt(timeToExpiration)
-  const d1 = (Math.log(spotPrice / strikePrice) + (riskFreeRate + 0.5 * volatility * volatility) * timeToExpiration) / (volatility * sqrtT)
-  const d2 = d1 - volatility * sqrtT
+function normalPDF(x: number): number {
+  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI)
+}
 
-  let delta: number
-  let theta: number
-  let rho: number
-
+function calculateBlackScholes(spot: number, strike: number, time: number, vol: number, rate: number, dividend: number, optionType: OptionType): { price: number; d1: number; d2: number } {
+  const sqrtTime = Math.sqrt(time), volSqrtTime = vol * sqrtTime
+  const d1 = (Math.log(spot / strike) + (rate - dividend + 0.5 * vol * vol) * time) / volSqrtTime
+  const d2 = d1 - volSqrtTime
+  let price: number
   if (optionType === 'call') {
-    delta = STANDARD_NORMAL.cdf(d1)
-    theta = -(spotPrice * STANDARD_NORMAL.pdf(d1) * volatility) / (2 * sqrtT) - riskFreeRate * strikePrice * Math.exp(-riskFreeRate * timeToExpiration) * STANDARD_NORMAL.cdf(d2)
-    rho = strikePrice * timeToExpiration * Math.exp(-riskFreeRate * timeToExpiration) * STANDARD_NORMAL.cdf(d2)
+    price = spot * Math.exp(-dividend * time) * normalCDF(d1) - strike * Math.exp(-rate * time) * normalCDF(d2)
   } else {
-    delta = -STANDARD_NORMAL.cdf(-d1)
-    theta = -(spotPrice * STANDARD_NORMAL.pdf(d1) * volatility) / (2 * sqrtT) + riskFreeRate * strikePrice * Math.exp(-riskFreeRate * timeToExpiration) * STANDARD_NORMAL.cdf(-d2)
-    rho = -strikePrice * timeToExpiration * Math.exp(-riskFreeRate * timeToExpiration) * STANDARD_NORMAL.cdf(-d2)
+    price = strike * Math.exp(-rate * time) * normalCDF(-d2) - spot * Math.exp(-dividend * time) * normalCDF(-d1)
   }
-
-  const gamma = STANDARD_NORMAL.pdf(d1) / (spotPrice * volatility * sqrtT)
-  const vega = spotPrice * sqrtT * STANDARD_NORMAL.pdf(d1)
-
-  let optionPrice: number
-  if (optionType === 'call') {
-    optionPrice = spotPrice * STANDARD_NORMAL.cdf(d1) - strikePrice * Math.exp(-riskFreeRate * timeToExpiration) * STANDARD_NORMAL.cdf(d2)
-  } else {
-    optionPrice = strikePrice * Math.exp(-riskFreeRate * timeToExpiration) * STANDARD_NORMAL.cdf(-d2) - spotPrice * STANDARD_NORMAL.cdf(-d1)
-  }
-
-  return {
-    delta: Math.max(-1, Math.min(1, delta)),
-    gamma: Math.max(0, gamma),
-    theta,
-    vega: Math.max(0, vega),
-    rho,
-    d1,
-    d2,
-    optionPrice: Math.max(0, optionPrice)
-  }
+  return { price, d1, d2 }
 }
 
-function GreekCard({ name, value }: { name: keyof GreeksResult; value: number }) {
-  const labels: Record<string, { label: string; description: string; icon: typeof TrendingUp }> = {
-    delta: { label: 'Delta (Δ)', description: 'Price sensitivity - change in option price per $1 change in underlying', icon: TrendingUp },
-    gamma: { label: 'Gamma (Γ)', description: 'Delta sensitivity - rate of change of delta', icon: Activity },
-    theta: { label: 'Theta (Θ)', description: 'Time decay - daily value loss from time passing', icon: Clock },
-    vega: { label: 'Vega (ν)', description: 'Volatility sensitivity - change per 1% volatility change', icon: Percent },
-    rho: { label: 'Rho (ρ)', description: 'Interest rate sensitivity - change per 1% rate change', icon: Percent }
-  }
+export function calculateGreeks(spot: number, strike: number, time: number, vol: number, rate: number, dividend: number, optionType: OptionType): GreeksResult {
+  const { price: blackScholesPrice, d1, d2 } = calculateBlackScholes(spot, strike, time, vol, rate, dividend, optionType)
+  const sqrtTime = Math.sqrt(time), volSqrtTime = vol * sqrtTime, nd1 = normalCDF(d1), nd2 = normalCDF(d2), n_d1 = normalPDF(d1)
+  const expDiv = Math.exp(-dividend * time), expRate = Math.exp(-rate * time)
+  const intrinsicValue = optionType === 'call' ? Math.max(0, spot * expDiv - strike * expRate) : Math.max(0, strike * expRate - spot * expDiv)
+  const timeValue = Math.max(0, blackScholesPrice - intrinsicValue)
+  let delta: number = optionType === 'call' ? expDiv * nd1 : expDiv * (nd1 - 1)
+  const gamma = (expDiv * n_d1) / (spot * volSqrtTime)
+  let theta: number = optionType === 'call'
+    ? (-(spot * vol * expDiv * n_d1) / (2 * sqrtTime) - rate * strike * expRate * nd2 + dividend * spot * expDiv * nd1) / DAYS_PER_YEAR
+    : (-(spot * vol * expDiv * n_d1) / (2 * sqrtTime) + rate * strike * expRate * normalCDF(-d2) - dividend * spot * expDiv * normalCDF(-d1)) / DAYS_PER_YEAR
+  const vega = (spot * expDiv * n_d1 * sqrtTime) / 100
+  let rho: number = optionType === 'call' ? (strike * time * expRate * nd2) / 100 : (-strike * time * expRate * normalCDF(-d2)) / 100
+  const vanna = (expDiv * n_d1 * (d1 * d2 - 1)) / 100
+  const charm = expDiv * (n_d1 * (rate - dividend) / volSqrtTime + (optionType === 'call' ? -nd1 : nd1 - 1))
+  const speed = gamma * (1 - delta / spot)
+  const zomma = gamma * (d1 * d2 - 1)
+  const color = gamma * (1 - d1 / volSqrtTime)
+  const vor = -n_d1 * d1 / vol
+  const dvegaDtime = -(spot * expDiv * n_d1) / (2 * sqrtTime)
+  const breakeven = optionType === 'call' ? strike * Math.exp(-rate * time) - blackScholesPrice * Math.exp(dividend * time) : strike * Math.exp(-rate * time) + blackScholesPrice * Math.exp(dividend * time)
+  const probabilityITM = optionType === 'call' ? normalCDF(d2) : normalCDF(-d2)
+  return { delta, gamma, theta, vega, rho, vanna, charm, speed, zomma, color, vor, dvegaDtime, blackScholesPrice, intrinsicValue, timeValue, breakeven, probabilityITM }
+}
 
-  const { label, description, icon: Icon } = labels[name] || { label: name, description: '', icon: Calculator }
-
-  const getColor = (val: number, greek: string): string => {
-    if (greek === 'theta') return val < 0 ? 'text-red-600' : 'text-green-600'
-    if (greek === 'delta') {
-      if (val > 0.5) return 'text-green-600'
-      if (val < -0.5) return 'text-red-600'
-      return 'text-yellow-600'
-    }
-    return ''
-  }
-
+function GreeksCard({ greeks, label }: { greeks: GreeksResult; label: string }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-help">
-            <div className="flex items-center gap-2 mb-2">
-              <Icon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">{label}</span>
-            </div>
-            <p className={cn('text-2xl font-bold', getColor(value, name))}>
-              {value.toFixed(4)}
-            </p>
-            {name === 'delta' && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {value >= 0 ? `${(value * 100).toFixed(0)}%` : `${(Math.abs(value) * 100).toFixed(0)}%`} delta
-              </p>
-            )}
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">{label}</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Price</span>
+          <span className="font-semibold">{formatCurrency(greeks.blackScholesPrice)}</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground cursor-help border-b border-dotted">Delta</span></TooltipTrigger><TooltipContent className="max-w-xs"><p>Rate of change of option price w.r.t underlying</p></TooltipContent></Tooltip></TooltipProvider>
+            <div className={cn('text-lg font-bold', greeks.delta > 0 ? 'text-green-600' : 'text-red-600')}>{greeks.delta.toFixed(4)}</div>
           </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="text-sm">{description}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+          <div className="space-y-1">
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground cursor-help border-b border-dotted">Gamma</span></TooltipTrigger><TooltipContent className="max-w-xs"><p>Rate of change of Delta w.r.t underlying</p></TooltipContent></Tooltip></TooltipProvider>
+            <div className="text-lg font-bold">{greeks.gamma.toFixed(4)}</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground cursor-help border-b border-dotted">Theta</span></TooltipTrigger><TooltipContent className="max-w-xs"><p>Time decay per day</p></TooltipContent></Tooltip></TooltipProvider>
+            <div className="text-lg font-bold text-red-600">{greeks.theta.toFixed(4)}</div>
+          </div>
+          <div className="space-y-1">
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground cursor-help border-b border-dotted">Vega</span></TooltipTrigger><TooltipContent className="max-w-xs"><p>Volatility sensitivity (1%)</p></TooltipContent></Tooltip></TooltipProvider>
+            <div className="text-lg font-bold text-green-600">{greeks.vega.toFixed(4)}</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1"><span className="text-xs text-muted-foreground">Intrinsic</span><div className="text-sm font-semibold">{formatCurrency(greeks.intrinsicValue)}</div></div>
+          <div className="space-y-1"><span className="text-xs text-muted-foreground">Time Value</span><div className="text-sm font-semibold">{formatCurrency(greeks.timeValue)}</div></div>
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t">
+          <span className="text-xs text-muted-foreground">Prob. ITM</span>
+          <Badge variant={greeks.probabilityITM > 0.5 ? 'default' : 'secondary'}>{formatPercent(greeks.probabilityITM)}</Badge>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
-export function GreeksCalculator({ initialData, className }: GreeksCalculatorProps) {
-  const [spotPrice, setSpotPrice] = useState(initialData?.spotPrice || 100)
-  const [strikePrice, setStrikePrice] = useState(initialData?.strikePrice || 100)
-  const [timeToExpiration, setTimeToExpiration] = useState(initialData?.timeToExpiration || 0.25)
-  const [volatility, setVolatility] = useState(initialData?.volatility || 0.2)
-  const [riskFreeRate, setRiskFreeRate] = useState(initialData?.riskFreeRate || 0.05)
-  const [optionType, setOptionType] = useState<OptionType>(initialData?.optionType || 'call')
-
-  const greeks = useMemo(() => {
-    return calculateGreeks({ spotPrice, strikePrice, timeToExpiration, volatility, riskFreeRate, optionType })
-  }, [spotPrice, strikePrice, timeToExpiration, volatility, riskFreeRate, optionType])
-
-  const daysToExpiration = useMemo(() => Math.round(timeToExpiration * 365), [timeToExpiration])
-
-  const intrinsicValue = useMemo(() => {
-    if (optionType === 'call') return Math.max(0, spotPrice - strikePrice)
-    return Math.max(0, strikePrice - spotPrice)
-  }, [spotPrice, strikePrice, optionType])
-
-  const extrinsicValue = useMemo(() => Math.max(0, greeks.optionPrice - intrinsicValue), [greeks.optionPrice, intrinsicValue])
-
-  const moneyness = useMemo(() => spotPrice / strikePrice, [spotPrice, strikePrice])
-
-  const getMoneynessLabel = (): { label: string; variant: 'default' | 'destructive' | 'secondary' | 'outline' } => {
-    if (moneyness > 1.05) return { label: 'ITM', variant: 'default' }
-    if (moneyness < 0.95) return { label: 'OTM', variant: 'destructive' }
-    return { label: 'ATM', variant: 'secondary' }
-  }
-
-  const moneynessStatus = getMoneynessLabel()
-
+export function GreeksCalculator({ className }: { className?: string }) {
+  const [inputs, setInputs] = useState<GreeksInput>({ spotPrice: 100, strikePrice: 100, timeToExpiry: 30, volatility: 20, riskFreeRate: 5, dividendYield: 0, optionType: 'call' })
+  const greeks = useMemo(() => calculateGreeks(inputs.spotPrice, inputs.strikePrice, inputs.timeToExpiry / DAYS_PER_YEAR, inputs.volatility / 100, inputs.riskFreeRate / 100, inputs.dividendYield / 100, inputs.optionType), [inputs])
+  const updateInput = useCallback((key: keyof GreeksInput, value: number | string) => setInputs(prev => ({ ...prev, [key]: value })), [])
+  const resetToDefault = useCallback(() => setInputs({ spotPrice: 100, strikePrice: 100, timeToExpiry: 30, volatility: 20, riskFreeRate: 5, dividendYield: 0, optionType: 'call' }), [])
   return (
     <Card className={cn('', className)}>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Calculator className="h-5 w-5" />
-              Options Greeks Calculator
-            </CardTitle>
-            <CardDescription>Black-Scholes model calculations</CardDescription>
-          </div>
-          <Badge variant={moneynessStatus.variant}>
-            {moneynessStatus.label} ({moneyness.toFixed(2)}x)
-          </Badge>
+          <div><CardTitle className="flex items-center gap-2"><Calculator className="h-5 w-5" />Greeks Calculator</CardTitle><CardDescription>Black-Scholes option pricing and Greeks analysis</CardDescription></div>
+          <Button variant="outline" size="sm" onClick={resetToDefault}><RefreshCw className="h-4 w-4 mr-2" />Reset</Button>
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="inputs" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="inputs">Inputs</TabsTrigger>
-            <TabsTrigger value="results">Results</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="inputs" className="space-y-6">
+        <Tabs defaultValue="inputs" className="w-full">
+          <TabsList className="grid w-full grid-cols-2"><TabsTrigger value="inputs">Inputs</TabsTrigger><TabsTrigger value="greeks">Greeks</TabsTrigger></TabsList>
+          <TabsContent value="inputs" className="space-y-6 mt-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="spotPrice">Spot Price ($)</Label>
-                <Input id="spotPrice" type="number" value={spotPrice} onChange={(e) => setSpotPrice(parseFloat(e.target.value) || 0)} min={0} step={0.01} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="strikePrice">Strike Price ($)</Label>
-                <Input id="strikePrice" type="number" value={strikePrice} onChange={(e) => setStrikePrice(parseFloat(e.target.value) || 0)} min={0} step={0.01} />
-              </div>
+              <div className="space-y-2"><Label>Option Type</Label><Select value={inputs.optionType} onValueChange={(v) => updateInput('optionType', v as OptionType)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="call">Call</SelectItem><SelectItem value="put">Put</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label>Spot Price ($)</Label><Input type="number" value={inputs.spotPrice} onChange={(e) => updateInput('spotPrice', parseFloat(e.target.value) || 0)} min={0} step={0.01} /></div>
             </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>Time to Expiration</Label>
-                  <span className="text-sm text-muted-foreground">{daysToExpiration} days</span>
-                </div>
-                <Slider value={[timeToExpiration]} onValueChange={([value]) => setTimeToExpiration(value)} min={0.01} max={2} step={0.01} />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>1 day</span><span>2 years</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>Volatility (σ)</Label>
-                  <span className="text-sm text-muted-foreground">{(volatility * 100).toFixed(1)}%</span>
-                </div>
-                <Slider value={[volatility]} onValueChange={([value]) => setVolatility(value)} min={0.01} max={2} step={0.01} />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>Risk-Free Rate</Label>
-                  <span className="text-sm text-muted-foreground">{(riskFreeRate * 100).toFixed(2)}%</span>
-                </div>
-                <Slider value={[riskFreeRate]} onValueChange={([value]) => setRiskFreeRate(value)} min={0} max={0.2} step={0.001} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Option Type</Label>
-              <Select value={optionType} onValueChange={(v) => setOptionType(v as OptionType)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="call">Call Option</SelectItem>
-                  <SelectItem value="put">Put Option</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="space-y-2"><div className="flex items-center justify-between"><Label>Strike Price ($)</Label><span className="text-sm font-medium">{formatCurrency(inputs.strikePrice)}</span></div><Slider value={[inputs.strikePrice]} onValueChange={([v]) => updateInput('strikePrice', v)} min={1} max={inputs.spotPrice * 3} step={1} /></div>
+            <div className="space-y-2"><div className="flex items-center justify-between"><Label>Days to Expiry</Label><span className="text-sm font-medium">{inputs.timeToExpiry} days</span></div><Slider value={[inputs.timeToExpiry]} onValueChange={([v]) => updateInput('timeToExpiry', v)} min={1} max={365} step={1} /></div>
+            <div className="space-y-2"><div className="flex items-center justify-between"><Label>Volatility (%)</Label><span className="text-sm font-medium">{inputs.volatility}%</span></div><Slider value={[inputs.volatility]} onValueChange={([v]) => updateInput('volatility', v)} min={1} max={200} step={0.5} /></div>
+            <div className="space-y-2"><div className="flex items-center justify-between"><Label>Risk-Free Rate (%)</Label><span className="text-sm font-medium">{inputs.riskFreeRate}%</span></div><Slider value={[inputs.riskFreeRate]} onValueChange={([v]) => updateInput('riskFreeRate', v)} min={0} max={20} step={0.1} /></div>
+            <div className="space-y-2"><div className="flex items-center justify-between"><Label>Dividend Yield (%)</Label><span className="text-sm font-medium">{inputs.dividendYield}%</span></div><Slider value={[inputs.dividendYield]} onValueChange={([v]) => updateInput('dividendYield', v)} min={0} max={20} step={0.1} /></div>
           </TabsContent>
-
-          <TabsContent value="results" className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <GreekCard name="delta" value={greeks.delta} />
-              <GreekCard name="gamma" value={greeks.gamma} />
-              <GreekCard name="theta" value={greeks.theta} />
-              <GreekCard name="vega" value={greeks.vega} />
-              <GreekCard name="rho" value={greeks.rho} />
-            </div>
-
-            <div className="p-6 rounded-lg bg-primary/5 border border-primary/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Theoretical Option Price</p>
-                  <p className="text-xs text-muted-foreground mt-1">d1: {greeks.d1.toFixed(4)} | d2: {greeks.d2.toFixed(4)}</p>
-                </div>
-                <p className="text-3xl font-bold">{formatCurrency(greeks.optionPrice)}</p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Intrinsic Value</p>
-                  <p className="text-sm font-semibold">{formatCurrency(intrinsicValue)}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Extrinsic Value</p>
-                  <p className="text-sm font-semibold">{formatCurrency(extrinsicValue)}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Break-Even</p>
-                  <p className="text-sm font-semibold">{formatCurrency(optionType === 'call' ? strikePrice + greeks.optionPrice : strikePrice - greeks.optionPrice)}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="text-muted-foreground">If Stock Goes Up $1</p>
-                <p className="font-semibold text-green-600">{formatCurrency(greeks.delta)}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="text-muted-foreground">If 1 Day Passes</p>
-                <p className={cn('font-semibold', greeks.theta < 0 ? 'text-red-600' : 'text-green-600')}>{formatCurrency(greeks.theta)}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="text-muted-foreground">If Volatility +1%</p>
-                <p className="font-semibold text-green-600">{formatCurrency(greeks.vega * 0.01)}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="text-muted-foreground">If Rates +1%</p>
-                <p className={cn('font-semibold', greeks.rho > 0 ? 'text-green-600' : 'text-red-600')}>{formatCurrency(greeks.rho * 0.01)}</p>
-              </div>
+          <TabsContent value="greeks" className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <GreeksCard greeks={greeks} label="Option Greeks" />
+              <Card className="overflow-hidden"><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Advanced Greeks</CardTitle></CardHeader><CardContent className="space-y-2">
+                <div className="grid grid-cols-2 gap-2 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Rho:</span><span className="font-medium">{greeks.rho.toFixed(4)}</span></div><div className="flex justify-between"><span className="text-muted-foreground">Vanna:</span><span className="font-medium">{greeks.vanna.toFixed(4)}</span></div><div className="flex justify-between"><span className="text-muted-foreground">Charm:</span><span className="font-medium">{greeks.charm.toFixed(4)}</span></div><div className="flex justify-between"><span className="text-muted-foreground">Speed:</span><span className="font-medium">{greeks.speed.toFixed(4)}</span></div><div className="flex justify-between"><span className="text-muted-foreground">Zomma:</span><span className="font-medium">{greeks.zomma.toFixed(4)}</span></div><div className="flex justify-between"><span className="text-muted-foreground">Color:</span><span className="font-medium">{greeks.color.toFixed(4)}</span></div></div>
+                <div className="pt-2 border-t"><div className="flex justify-between text-sm"><span className="text-muted-foreground">Breakeven:</span><span className="font-medium">{formatCurrency(greeks.breakeven)}</span></div></div>
+              </CardContent></Card>
             </div>
           </TabsContent>
         </Tabs>
@@ -320,5 +185,3 @@ export function GreeksCalculator({ initialData, className }: GreeksCalculatorPro
     </Card>
   )
 }
-
-export default GreeksCalculator
