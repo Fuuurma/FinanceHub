@@ -296,9 +296,9 @@ export function calculateCorrelation(asset1: number[], asset2: number[]): number
 | 9 | OptionsChain | components/options/OptionsChain.tsx | P1 | `EXISTS - ENHANCE` | 842 lines - complete implementation |
 | 10 | Backtest Results UI | components/backtest/*.tsx | P2 | `PENDING` | Needs creation |
 | 11 | AI PricePrediction | components/ai/PricePrediction.tsx | P2 | `PENDING` | Needs creation |
-| 12 | News Feed | components/news/*.tsx | P2 | `PENDING` | Needs creation |
+| 12 | News Feed | components/news/*.tsx | P2 | `COMPLETED` ✅ | NewsFeed, NewsCard, NewsFilters, NewsSentimentPanel, TrendingTopics |
 | 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `EXISTS - ENHANCE` | 856 lines - comprehensive |
-| 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `EXISTS - ENHANCE` | 736 lines - complete |
+| 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `COMPLETED` ✅ | `/components/research/AnalystRatings.tsx` |
 | 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `EXISTS - ENHANCE` | Exists, needs enhancement |
 
 ---

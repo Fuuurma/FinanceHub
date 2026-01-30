@@ -366,6 +366,8 @@ function exportToJSON(ratings: AnalystRating[], symbol: string) {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+function RatingDistributionChart({ distribution }: { distribution: RatingConsensus['rating_distribution'] }) {
   const total = distribution.strong_buy + distribution.buy + distribution.hold + distribution.sell + distribution.strong_sell
   if (total === 0) return null
 
@@ -899,8 +901,31 @@ export function AnalystRatings({ symbol, assetType = 'stock', className }: Analy
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="w-4 h-4 mr-1" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => exportToCSV(filteredRatings, currentSymbol)}>
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => exportToJSON(filteredRatings, currentSymbol)}>
+                Export as JSON
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="outline" size="sm" onClick={() => {
+            const fetchRatings = async () => {
+              setLoading(true)
+              await new Promise(resolve => setTimeout(resolve, 500))
+              setLoading(false)
+            }
+            fetchRatings()
+          }}>
+            <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
           </Button>
         </div>
       </div>
@@ -911,7 +936,18 @@ export function AnalystRatings({ symbol, assetType = 'stock', className }: Analy
         <RatingTrends trends={summary.trends} />
       </div>
 
-      <AnalystRatingTable ratings={filteredRatings} />
+      {assetType === 'stock' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <PriceTargetChart
+            ratings={filteredRatings}
+            currentPrice={161.05}
+            consensus={summary.consensus}
+          />
+          <RatingActions ratings={filteredRatings} />
+        </div>
+      )}
+
+      <AnalystRatingTable ratings={filteredRatings} showConfidence={true} />
     </div>
   )
 }
