@@ -331,3 +331,81 @@ ci-validate: ## Validate CI/CD configuration
 	@which docker > /dev/null || (echo "$(RED)Docker not installed$(NC)" && exit 1)
 	@which docker-compose > /dev/null || (echo "$(RED)Docker Compose not installed$(NC)" && exit 1)
 	@echo "$(GREEN)✓ CI/CD configuration valid$(NC)"
+
+##@ Backup & Restore
+
+backup: ## Create backup of database and files
+	@echo "$(BLUE)Creating backup...$(NC)"
+	@./scripts/backup.sh
+
+restore-list: ## List available backups
+	@./scripts/restore.sh list
+
+restore: ## Restore from backup (interactive)
+	@./scripts/restore.sh
+
+##@ Database Migrations
+
+migrate-create: ## Create new migration
+	@echo "$(YELLOW)Usage: make migrate-create NAME=migration_name$(NC)"
+	@./scripts/migrate.sh create $(NAME)
+
+migrate: ## Apply pending migrations
+	@echo "$(BLUE)Applying migrations...$(NC)"
+	@./scripts/migrate.sh migrate
+
+migrate-status: ## Show migration status
+	@./scripts/migrate.sh status
+
+migrate-plan: ## Show migration plan
+	@./scripts/migrate.sh plan
+
+migrate-rollback: ## Rollback migration
+	@echo "$(YELLOW)Usage: make migrate-rollback APP=app_name$(NC)"
+	@./scripts/migrate.sh rollback $(APP)
+
+##@ Performance Testing
+
+perf-test: ## Run performance tests (headless)
+	@echo "$(BLUE)Running performance tests...$(NC)"
+	@echo "$(YELLOW)Install locust first: pip install locust$(NC)"
+	@if command -v locust >/dev/null 2>&1; then \
+		locust -f tests/performance/locustfile.py --headless --users 100 --spawn-rate 10 --run-time 5m --host $(TEST_HOST); \
+	else \
+		echo "$(RED)locust not found. Install with: pip install locust$(NC)"; \
+		exit 1; \
+	fi
+
+perf-test-ui: ## Start performance test UI
+	@echo "$(BLUE)Starting performance test UI...$(NC)"
+	@echo "$(GREEN)Open http://localhost:8089 when started$(NC)"
+	@if command -v locust >/dev/null 2>&1; then \
+		locust -f tests/performance/locustfile.py --host $(TEST_HOST); \
+	else \
+		echo "$(RED)locust not found. Install with: pip install locust$(NC)"; \
+		exit 1; \
+	fi
+
+##@ Cost Monitoring
+
+cost-summary: ## Show AWS cost summary
+	@echo "$(BLUE)Fetching AWS cost summary...$(NC)"
+	@./scripts/cost-monitor.sh summary
+
+cost-all: ## Show detailed AWS cost breakdown
+	@echo "$(BLUE)Fetching AWS costs...$(NC)"
+	@./scripts/cost-monitor.sh all
+
+cost-report: ## Generate cost report
+	@echo "$(BLUE)Generating cost report...$(NC)"
+	@./scripts/cost-monitor.sh report cost-report-$$(date +%Y%m%d).txt
+	@echo "$(GREEN)✓ Report generated$(NC)"
+
+##@ Quick Operations
+
+smoke-test: ## Run smoke tests
+	@echo "$(BLUE)Running smoke tests...$(NC)"
+	@./scripts/smoke-test.sh
+
+check-health: ## Quick health check
+	@./scripts/health-check.sh

@@ -14,3 +14,4 @@ export { VolumeProfileChart, type VolumeProfileData, type VolumeProfilePoint } f
 export { CandlestickChart, type CandlestickData } from './CandlestickChart'
 export { LineChart, type LineData } from './LineChart'
 export { AreaChart, type AreaData } from './AreaChart'
+export { HeikinAshiChart, type HeikinAshiData } from './HeikinAshiChart'

@@ -353,11 +353,12 @@ useEffect(() => {
 | N32 | useKeyPress | `hooks/useKeyPress.ts` | 35 |
 
 ### More Charts
-| Task | Component | Path | Lines |
-|------|-----------|------|-------|
-| N33 | HeikinAshiChart | `components/charts/HeikinAshiChart.tsx` | 200 |
-| N34 | RenkoChart | `components/charts/RenkoChart.tsx` | 180 |
-| N35 | KagiChart | `components/charts/KagiChart.tsx` | 180 |
+### More Charts
+| Task | Component | Path | Lines | Priority | Status | Description |
+|------|-----------|------|-------|----------|--------|-------------|
+| N33 | HeikinAshiChart | `components/charts/HeikinAshiChart.tsx` | 220 | P2 | `COMPLETED` ✅ | Heikin Ashi candlesticks with trend interpretation |
+| N34 | RenkoChart | `components/charts/RenkoChart.tsx` | 200 | P2 | `COMPLETED` ✅ | Renko brick chart with customizable brick size |
+| N35 | KagiChart | `components/charts/KagiChart.tsx` | 180 | P2 | `COMPLETED` ✅ | Kagi line chart with yang/yin visualization |
 
 ### AI Components
 | Task | Component | Path | Lines | Status |
@@ -651,8 +652,9 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 | N25 | DateRangePicker | components/ui/DateRangePicker.tsx | P2 | `COMPLETED` ✅ | Calendar picker with presets and quick select |
 | N26 | SkipLink | components/ui/SkipLink.tsx | P2 | `COMPLETED` ✅ | Accessibility skip link component |
 | N27 | FocusTrap | components/ui/FocusTrap.tsx | P2 | `COMPLETED` ✅ | Keyboard focus trapping for modals |
-| N28-N32 | Utility Hooks | See lists above | P2 | `PENDING` | Create new |
-| N33-N35 | Advanced Charts | See lists above | P2 | `PENDING` | Create new |
+| N28 | useThrottle | hooks/useThrottle.ts | P2 | `COMPLETED` ✅ | Throttle function, value, and callback variants |
+| N29-N32 | Utility Hooks | See lists above | P2 | `PENDING` | Create new |
+| N33-N35 | Advanced Charts | See lists above | P2 | `COMPLETED` ✅ | Heikin Ashi, Renko, Kagi chart implementations |
 
 ---
 
