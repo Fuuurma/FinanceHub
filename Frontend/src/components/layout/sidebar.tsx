@@ -60,6 +60,7 @@ const navItems: NavItem[] = [
       { title: 'Holdings', href: '/holdings' },
       { title: 'Transactions', href: '/transactions' },
       { title: 'Performance', href: '/analytics' },
+      { title: 'Attribution', href: '/holdings?tab=attribution' },
     ]
   },
   {
@@ -74,7 +75,11 @@ const navItems: NavItem[] = [
     href: '/analytics',
     icon: BarChart3,
     shortcut: '5',
-    description: 'Analytics & reports'
+    description: 'Analytics & reports',
+    submenu: [
+      { title: 'Performance', href: '/analytics' },
+      { title: 'Attribution', href: '/analytics?tab=attribution' },
+    ]
   },
   {
     title: 'Fundamentals',
