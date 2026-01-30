@@ -893,8 +893,8 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 
 | Int# | Backend Module | Frontend Module | Status | Missing Endpoints |
 |------|---------------|-----------------|--------|-------------------|
-| I9 | `fixed_income_analytics.py` | NEW: bond-analytics.ts | `COMPLETED` ✅ | Z-spread (in fixed-income.ts), credit spreads (in economic.ts) |
-| I10 | `quantitative_models.py` | NEW: time-series.ts | `COMPLETED` ✅ | Mean reversion (half-life) in analytics.ts, no cointegration backend |
+| I9 | `fixed_income_analytics.py` | NEW: bond-analytics.ts | `COMPLETED` ✅ | Z-spread, credit spreads dashboard |
+| I10 | `quantitative_models.py` | analytics.ts (enhanced) | `COMPLETED` ✅ | Mean reversion, Hurst exponent, volatility regimes |
 
 ---
 
@@ -957,8 +957,8 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 
 | Int# | Backend Module | Frontend Module | Status |
 |------|---------------|-----------------|--------|
-| I9 | fixed_income_analytics.py | NEW: bond-analytics.ts | COMPLETED ✅ - Z-spread (in fixed-income.ts), credit spreads (in economic.ts) |
-| I10 | quantitative_models.py | NEW: time-series.ts | COMPLETED ✅ - Mean reversion (half-life) already in analytics.ts, no cointegration backend endpoint |
+| I9 | fixed_income_analytics.py | NEW: bond-analytics.ts | COMPLETED ✅ - Z-spread, credit spreads dashboard |
+| I10 | quantitative_models.py | analytics.ts (enhanced) | COMPLETED ✅ - ARIMA, GARCH, Kalman filter, half-life, Hurst exponent, volatility regimes |
 
 ---
 

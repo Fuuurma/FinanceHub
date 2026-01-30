@@ -32,6 +32,7 @@ import type {
   BacktestResult,
   StrategyComparisonRequest,
   StrategyComparisonResult,
+  VolatilityRegimesResponse,
 } from '@/lib/types/analytics'
 
 export const analyticsApi = {
@@ -96,6 +97,15 @@ export const analyticsApi = {
     apiClient.post<HurstExponentResult>('/quantitative/hurst-exponent', {
       data,
       max_scale
+    }),
+
+  getVolatilityRegimes: (returns: number[], thresholdLow = 0.5, thresholdHigh = 1.5) =>
+    apiClient.get<VolatilityRegimesResponse>('/quantitative/volatility-regimes', {
+      params: {
+        returns: returns.join(','),
+        threshold_low: thresholdLow,
+        threshold_high: thresholdHigh,
+      },
     }),
 
   // Backtesting

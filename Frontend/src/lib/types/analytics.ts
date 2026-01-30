@@ -295,3 +295,26 @@ export interface BacktestResultEnhanced extends BacktestResult {
     consecutive_losses: number
   }
 }
+
+// Volatility Regimes
+export interface VolatilityRegimePoint {
+  index: number
+  return: number
+  volatility: number
+  regime: 'low' | 'normal' | 'high'
+}
+
+export interface VolatilityRegimesResponse {
+  regimes: VolatilityRegimePoint[]
+  summary: {
+    low: number
+    normal: number
+    high: number
+  }
+  current_regime: 'low' | 'normal' | 'high'
+  thresholds: {
+    low: number
+    high: number
+  }
+  overall_volatility: number
+}
