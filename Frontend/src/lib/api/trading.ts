@@ -8,21 +8,24 @@ import type {
   Trade,
   TradeFilters,
   TradeStats,
+  OrderFilters,
+  OrderStats,
+  OrderStatusFilter,
+  OrderTypeFilter,
 } from '../types/trading'
 
 export const tradingApi = {
   orders: {
-    list: async (params?: {
-      status?: string
-      portfolio_id?: string
-      asset_id?: string
-      limit?: number
-      offset?: number
-    }) => {
+    list: async (params?: OrderFilters & { limit?: number; offset?: number }) => {
       const queryParams = new URLSearchParams()
-      if (params?.status) queryParams.append('status', params.status)
       if (params?.portfolio_id) queryParams.append('portfolio_id', params.portfolio_id)
       if (params?.asset_id) queryParams.append('asset_id', params.asset_id)
+      if (params?.asset_symbol) queryParams.append('asset_symbol', params.asset_symbol)
+      if (params?.side) queryParams.append('side', params.side)
+      if (params?.status && params.status !== 'all') queryParams.append('status', params.status)
+      if (params?.order_type && params.order_type !== 'all') queryParams.append('order_type', params.order_type)
+      if (params?.start_date) queryParams.append('start_date', params.start_date)
+      if (params?.end_date) queryParams.append('end_date', params.end_date)
       if (params?.limit) queryParams.append('limit', params.limit.toString())
       if (params?.offset) queryParams.append('offset', params.offset.toString())
 
@@ -41,8 +44,16 @@ export const tradingApi = {
       return apiClient.put<Order>(`/trading/orders/${orderId}`, data)
     },
 
-    cancel: async (orderId: string) => {
-      return apiClient.delete<{ success: boolean; message: string }>(`/trading/orders/${orderId}`)
+    cancel: async (orderId: string, reason?: string) => {
+      const body = reason ? { reason } : {}
+      return apiClient.post<{ success: boolean; message: string }>(`/trading/orders/${orderId}/cancel`, body)
+    },
+
+    getStats: async (params?: { portfolio_id?: string }) => {
+      const queryParams = new URLSearchParams()
+      if (params?.portfolio_id) queryParams.append('portfolio_id', params.portfolio_id)
+
+      return apiClient.get<OrderStats>(`/trading/orders/stats?${queryParams.toString()}`)
     },
   },
 

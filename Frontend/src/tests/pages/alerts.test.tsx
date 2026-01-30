@@ -4,26 +4,29 @@ import '@testing-library/jest-dom'
 import AlertsPage from '@/app/(dashboard)/alerts/page'
 import { alertsApi } from '@/lib/api/alerts'
 
+const mockListAlerts = jest.fn()
+const mockGetStats = jest.fn()
+const mockCreateAlert = jest.fn()
+const mockDeleteAlert = jest.fn()
+const mockEnableAlert = jest.fn()
+const mockDisableAlert = jest.fn()
+const mockGetHistory = jest.fn()
+const mockTestAlert = jest.fn()
+
 jest.mock('@/lib/api/alerts', () => ({
   alertsApi: {
-    list: jest.fn(),
-    getStats: jest.fn(),
-    create: jest.fn(),
-    delete: jest.fn(),
-    enable: jest.fn(),
-    disable: jest.fn(),
-    getHistory: jest.fn(),
-    test: jest.fn(),
+    list: (...args: any[]) => mockListAlerts(...args),
+    getStats: (...args: any[]) => mockGetStats(...args),
+    create: (...args: any[]) => mockCreateAlert(...args),
+    delete: (...args: any[]) => mockDeleteAlert(...args),
+    enable: (...args: any[]) => mockEnableAlert(...args),
+    disable: (...args: any[]) => mockDisableAlert(...args),
+    getHistory: (...args: any[]) => mockGetHistory(...args),
+    test: (...args: any[]) => mockTestAlert(...args),
   },
 }))
 
 describe('AlertsPage', () => {
-  const mockListAlerts = alertsApi.list as jest.Mock
-  const mockGetStats = alertsApi.getStats as jest.Mock
-  const mockDeleteAlert = alertsApi.delete as jest.Mock
-  const mockToggleAlert = alertsApi.enable as jest.Mock
-  const mockGetHistory = alertsApi.getHistory as jest.Mock
-
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -137,8 +140,7 @@ describe('AlertsPage', () => {
   it('creates new alert', async () => {
     mockListAlerts.mockResolvedValue([])
     mockGetStats.mockResolvedValue({} as any)
-    mockListAlerts.mockResolvedValue([])
-    (alertsApi.create as jest.Mock).mockResolvedValue({ id: '2', message: 'Alert created successfully' })
+    mockCreateAlert.mockResolvedValue({ id: '2', message: 'Alert created successfully' })
 
     render(<AlertsPage />)
     
@@ -163,7 +165,7 @@ describe('AlertsPage', () => {
     })
 
     await waitFor(() => {
-      expect(alertsApi.create).toHaveBeenCalledWith({
+      expect(mockCreateAlert).toHaveBeenCalledWith({
         name: 'My Test Alert',
         symbol: 'AAPL',
         alert_type: 'price_above',
@@ -234,7 +236,7 @@ describe('AlertsPage', () => {
     ]
     mockListAlerts.mockResolvedValue(mockAlerts)
     mockGetStats.mockResolvedValue({} as any)
-    (alertsApi.disable as jest.Mock).mockResolvedValue(mockAlerts[0])
+    mockDisableAlert.mockResolvedValue(mockAlerts[0])
 
     render(<AlertsPage />)
     
@@ -244,7 +246,7 @@ describe('AlertsPage', () => {
     })
 
     await waitFor(() => {
-      expect(alertsApi.disable).toHaveBeenCalledWith('1')
+      expect(mockDisableAlert).toHaveBeenCalledWith('1')
     })
   })
 
@@ -316,7 +318,7 @@ describe('AlertsPage', () => {
     ]
     mockListAlerts.mockResolvedValue(mockAlerts)
     mockGetStats.mockResolvedValue({} as any)
-    (alertsApi.test as jest.Mock).mockResolvedValue({ success: true, trigger_value: 152 })
+    mockTestAlert.mockResolvedValue({ success: true, trigger_value: 152 })
 
     render(<AlertsPage />)
     
@@ -326,7 +328,7 @@ describe('AlertsPage', () => {
     })
 
     await waitFor(() => {
-      expect(alertsApi.test).toHaveBeenCalledWith('1')
+      expect(mockTestAlert).toHaveBeenCalledWith('1')
     })
   })
 })

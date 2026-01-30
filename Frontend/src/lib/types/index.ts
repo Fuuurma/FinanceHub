@@ -10,12 +10,38 @@ export * from './portfolio-analytics'
 export * from './watchlist'
 export * from './api'
 export * from './fundamentals'
-export * from './realtime'
+export {
+  RealTimePrice,
+  OrderBook,
+  OrderBookLevel,
+  SubscriptionRequest,
+  SubscriptionResponse,
+  WebSocketMessage,
+  MessageType,
+  ChartDataPoint,
+  ConnectionStatus,
+  WebSocketConfig,
+  DataType,
+} from './realtime'
 export * from './alerts'
 export * from './news-sentiment'
 export * from './screener'
 export * from './ai-advisor'
-export * from './trading'
+export {
+  Order,
+  Position,
+  AccountSummary,
+  PositionSummary,
+  OrderCreateInput,
+  PositionSize,
+  TradeFilters,
+  TradeStats,
+  OrderFilters,
+  OrderStatusFilter,
+  OrderTypeFilter,
+  OrderStats,
+  OrderCancelInput,
+} from './trading'
 export * from './iex-cloud'
 export * from './coinmarketcap'
 export * from './analytics'

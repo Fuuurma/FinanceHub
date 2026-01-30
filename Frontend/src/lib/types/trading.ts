@@ -142,3 +142,32 @@ export interface TradeStats {
   average_trade_size: number
   average_price: number
 }
+
+export type OrderStatusFilter = 'all' | 'pending' | 'partially_filled' | 'filled' | 'cancelled' | 'rejected' | 'expired'
+export type OrderTypeFilter = 'all' | 'market' | 'limit' | 'stop' | 'stop_limit' | 'oco'
+
+export interface OrderFilters {
+  portfolio_id?: string
+  asset_id?: string
+  asset_symbol?: string
+  side?: 'buy' | 'sell'
+  status?: OrderStatusFilter
+  order_type?: OrderTypeFilter
+  start_date?: string
+  end_date?: string
+}
+
+export interface OrderStats {
+  total_orders: number
+  pending_orders: number
+  open_orders_value: number
+  buy_orders: number
+  sell_orders: number
+  limit_orders: number
+  stop_orders: number
+}
+
+export interface OrderCancelInput {
+  order_id: string
+  reason?: string
+}
