@@ -554,8 +554,8 @@ All affected files now use the `useDownloadFile` hook (N2 - Completed):
 |------|-----------|------|-------|----------|--------|-------------|
 | N52 | AttributionBreakdown | `components/analytics/AttributionBreakdown.tsx` | 180 | P2 | `COMPLETED` ✅ | Performance attribution by sector/factor |
 | N53 | FactorAnalysis | `components/analytics/FactorAnalysis.tsx` | 200 | P2 | `COMPLETED` ✅ | Factor exposure analysis, risk decomposition |
-| N54 | RollingCorrelationChart | `components/analytics/RollingReturnsChart.tsx` | 150 | P2 | `COMPLETED` ✅ | Rolling correlation over time |
-| N55 | TaxLotTable | `components/analytics/TaxLotTable.tsx` | 150 | P2 | `PENDING` | Tax lot tracking with gain/loss |
+| N54 | RollingCorrelationChart | `components/analytics/RollingCorrelationChart.tsx` | 180 | P2 | `COMPLETED` ✅ | Rolling correlation over time |
+| N55 | TaxLotTable | `components/analytics/TaxLotTable.tsx` | 200 | P2 | `COMPLETED` ✅ | Tax lot tracking with gain/loss |
 
 ### Watchlist Components
 | Task | Component | Path | Lines | Priority | Status | Description |
@@ -568,7 +568,7 @@ All affected files now use the `useDownloadFile` hook (N2 - Completed):
 | Task | Component | Path | Lines | Priority | Status | Description |
 |------|-----------|------|-------|----------|--------|-------------|
 | N59 | SavedScreensList | `components/screener/ResultsPanel.tsx` | 100 | P2 | `COMPLETED` ✅ | Saved screen results |
-| N60 | ScreenTemplateList | `components/screener/ScreenTemplateList.tsx` | 100 | P2 | `PENDING` | Screen templates library |
+| N60 | ScreenTemplateList | `components/screener/ScreenTemplateList.tsx` | 100 | P2 | `COMPLETED` ✅ | Screen templates library with categories |
 | N61 | ScreenerResultsTable | `components/screener/ResultsPanel.tsx` | 150 | P2 | `COMPLETED` ✅ | Screener results display |
 
 ---
