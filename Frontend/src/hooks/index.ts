@@ -28,3 +28,9 @@ export { useDownload, useDownloadFile } from './useDownload'
 export { useLocalStorage, useLocalStorageJSON, useLocalStorageNumber, useLocalStorageBoolean, useLocalStorageString } from './useLocalStorage'
 
 export { useMediaQuery, useBreakpoint, useMinWidth, useMaxWidth, useWidthRange, useOrientation, usePrefersColorScheme, useReducedMotion, useHover, usePointer, useMediaQuerySync } from './useMediaQuery'
+
+export { useDebounce, useDebouncedCallback, useDebouncedValue } from './useDebounce'
+
+export { useInterval } from './useInterval'
+
+export { useThrottle, useThrottledValue, useThrottledCallback } from './useThrottle'
