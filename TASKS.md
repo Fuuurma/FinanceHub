@@ -877,7 +877,7 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 |------|---------------|-----------------|--------|-------------------|
 | I1 | `fixed_income_analytics.py` | **NEW: fixed-income.ts** | `COMPLETED` ✅ | bond pricing, duration-convexity, yield curve, OAS |
 | I2 | `options_pricing.py` | **NEW: options-pricing.ts** | `COMPLETED` ✅ | Black-Scholes, batch pricing, implied volatility |
-| I3 | `quantitative_models.py` | `analytics.ts` (enhance) | `PENDING` | kalman filter, half-life, hurst exponent |
+| I3 | `quantitative_models.py` | `analytics.ts` (enhanced) | `COMPLETED` ✅ | kalman filter, half-life, hurst exponent (fixed) |
 | I4 | `ai_enhanced.py` | `ai-advisor.ts` (enhance) | `PENDING` | sector analysis, volatility outlook, bond market |
 
 #### P2 - High Priority Integrations (Week 2)
@@ -939,16 +939,13 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
    - Integrated endpoints: `/options-pricing/price`, `/options-pricing/batch-price`, `/options-pricing/implied-volatility`
    - Created types in `/Frontend/src/lib/types/options-pricing.ts`
 
-3. **I3: Quantitative Models Integration (In Progress)**
-   - Add missing endpoints to `analytics.ts`: Kalman Filter, Half-Life, Hurst Exponent
-   - Create types for time series analysis
+3. **✅ COMPLETED: I3: Quantitative Models Integration**
+   - Fixed endpoint paths in `analytics.ts` (removed duplicate /api/v1 prefix)
+   - All quantitative model endpoints now work correctly: `/quantitative/arima-forecast`, `/quantitative/garch-volatility`, `/quantitative/kalman-filter`, `/quantitative/half-life`, `/quantitative/hurst-exponent`
+   - Fixed getHalfLife parameter name
 
-3. **Enhance I3: Quantitative Models Integration**
-   - Add missing endpoints to `analytics.ts`
-   - Add types for Kalman Filter, Half-Life, Hurst Exponent
-
-4. **Enhance I4: AI Enhanced Analysis**
-   - Add missing endpoints to `ai-advisor.ts`
+4. **I4: AI Enhanced Analysis Integration (Next)**
+   - Add missing endpoints to `ai-advisor.ts`: `/ai/market/{symbol}/full`, `/ai/sector/{sector_name}`, `/ai/risk-commentary`, `/ai/volatility-outlook`, `/ai/bond-market`
    - Create new hooks for AI analysis features
 
 ---
