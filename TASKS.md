@@ -288,17 +288,18 @@ export function calculateCorrelation(asset1: number[], asset2: number[]): number
 
 | # | Task | Component | Priority | Status | Existing Path |
 |---|------|-----------|----------|--------|---------------|
-| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `EXISTS - ENHANCE` | Has CSV/JSON/Excel, add PDF/density |
+| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `COMPLETED` ✅ | Export, density toggle, frozen columns |
 | 3 | AdvancedChart | components/charts/AdvancedChart.tsx | P0 | `COMPLETED` ✅ | `/Frontend/src/components/charts/AdvancedChart.tsx` |
-| 4 | MarketHeatmap | components/charts/MarketHeatmap.tsx | P0 | `COMPLETED` ✅ | `/Frontend/src/components/charts/MarketHeatmap.tsx` (497 lines) |
-| 8 | CorrelationMatrix | components/analytics/CorrelationMatrix.tsx | P0 | `PENDING` | Needs creation |
-| 9 | OptionsChain | components/options/Options P1 | `Chain.tsx |PENDING` | Needs creation |
+| 4 | MarketHeatmap | components/charts/MarketHeatmap.tsx | P0 | `COMPLETED` ✅ | Treemap visualization |
+| 7 | Screener FilterPanel | components/screener/FilterPanel.tsx | P0 | `EXISTS - ENHANCE` | 100+ filters, Browse tab |
+| 8 | CorrelationMatrix | components/analytics/CorrelationMatrix.tsx | P0 | `COMPLETED` ✅ | Heatmap visualization |
+| 9 | OptionsChain | components/options/OptionsChain.tsx | P1 | `EXISTS - ENHANCE` | 842 lines - complete implementation |
 | 10 | Backtest Results UI | components/backtest/*.tsx | P2 | `PENDING` | Needs creation |
 | 11 | AI PricePrediction | components/ai/PricePrediction.tsx | P2 | `PENDING` | Needs creation |
-| 12 | News Feed Expansion | components/news/*.tsx | P2 | `PENDING` | Check existing news |
-| 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `PENDING` | Needs creation |
-| 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `PENDING` | Needs creation |
-| 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `PENDING` | Needs creation |
+| 12 | News Feed | components/news/*.tsx | P2 | `PENDING` | Needs creation |
+| 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `EXISTS - ENHANCE` | 856 lines - comprehensive |
+| 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `EXISTS - ENHANCE` | 736 lines - complete |
+| 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `EXISTS - ENHANCE` | Exists, needs enhancement |
 
 ---
 
