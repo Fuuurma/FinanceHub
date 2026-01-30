@@ -288,7 +288,7 @@ useEffect(() => {
 | Task | Component | Path | Lines | Priority | Status |
 |------|-----------|------|-------|----------|--------|
 | N5 | VolumeProfileChart | `components/charts/VolumeProfileChart.tsx` | 520 | P0 | `COMPLETED` ✅ |
-| N6 | DepthChart | `components/charts/DepthChart.tsx` | 200 | P0 | `PENDING` |
+| N6 | DepthChart | `components/charts/DepthChart.tsx` | 380 | P0 | `COMPLETED` ✅ |
 
 ---
 
@@ -634,7 +634,7 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 | N12 | GreeksCalculator | components/risk/GreeksCalculator.tsx | P1 | `COMPLETED` ✅ | 240 lines - Black-Scholes model with Delta, Gamma, Theta, Vega, Rho |
 | N13 | StressTestPanel | components/risk/StressTestPanel.tsx | P1 | `COMPLETED` ✅ | 320 lines - 8 presets, custom scenarios, VaR breach detection |
 | N14 | PerformanceChart | components/portfolio/PerformanceChart.tsx | P1 | `COMPLETED` ✅ | 280 lines - Interactive chart with value/return views, benchmarks, metrics |
-| N15 | RebalancingTool | components/portfolio/RebalancingTool.tsx | P1 | `IN PROGRESS` | Creating comprehensive rebalancing interface |
+| N15 | RebalancingTool | components/portfolio/RebalancingTool.tsx | P1 | `PENDING` | Create new |
 | N16 | InsiderTradingPanel | components/research/InsiderTradingPanel.tsx | P1 | `COMPLETED` ✅ | 220 lines - Transaction tracking, top insiders, buy/sell summary |
 | N17 | InstitutionalHoldingsPanel | components/research/InstitutionalHoldingsPanel.tsx | P1 | `COMPLETED` ✅ | 280 lines - Institutional holdings, changes, ETF allocations |
 | N18 | CandlestickChart | components/charts/CandlestickChart.tsx | P1 | `COMPLETED` ✅ | 200 lines |
