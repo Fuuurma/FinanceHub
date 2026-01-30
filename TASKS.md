@@ -127,52 +127,62 @@ If a task says "Create component XYZ" but XYZ already exists:
 
 # 🚨 CRITICAL: BAD PRACTICES TO FIX (High Priority)
 
-## TypeScript `any` Type Usage (26 occurrences - HIGH PRIORITY)
+## ⚠️ GIT WORKFLOW REQUIREMENT
 
-**Priority:** High  
-**Impact:** Type safety compromised, runtime errors likely  
-**Files Affected:** 12 components
+**NEW PROCESS:** All code changes MUST use Pull Request workflow:
+1. Create feature branch (not main)
+2. Commit changes to branch  
+3. Create Pull Request
+4. Security & Testers review/approve
+5. Merge to main (after approval)
 
-| File | Line(s) | Issue |
-|------|---------|-------|
-| `ui/resizable.tsx` | 10, 23, 27 | Has `@ts-nocheck` directive |
-| `charts/TopHoldingsChart.tsx` | 66 | CustomTooltip props typed as `any` |
-| `charts/TradingViewChart.tsx` | 173 | History mapping uses `(d: any)` |
-| `charts/AdvancedChart.tsx` | 249, 316, 242 | Multiple `any` type usages |
-| `realtime/RealTimeChart.tsx` | 147-148 | Chart series typed as `any` |
-| `ui/export-dropdown.tsx` | 66, 291 | formatCellValue parameter typed as `any` |
-| `trading/OrderEntryForm.tsx` | 127, 227 | Select onValueChange handlers use `any` |
-| `charts/ComparisonChart.tsx` | 273, 306 | Tooltip callback uses `any` |
-| `attribution/SectorAttributionChart.tsx` | 54, 111, 115 | Multiple `any` types |
-| `charts/HoldingsAllocationChart.tsx` | 77, 102, 107 | Multiple `any` types |
-| `charts/HoldingsPnLChart.tsx` | 48, 53 | CustomTooltip types |
-
-**Fix Approach:** Define proper interfaces, remove `@ts-nocheck`, use explicit union types
+**NO DIRECT PUSHES TO MAIN** (previous session pushes need retroactive PR review)
 
 ---
 
-## Direct DOM Manipulation (17 occurrences - HIGH PRIORITY)
+## TypeScript `any` Type Usage (COMPLETED ✅)
 
-**Priority:** High  
-**Impact:** Security risks, memory leaks, React anti-pattern  
-**Files Affected:** 10 components
+**Status:** RESOLVED - All component TypeScript errors fixed  
+**Date Completed:** January 30, 2026  
+**Files Fixed:** 14 components
 
-| File | Line(s) | Issue |
-|------|---------|-------|
-| `ui/export-dropdown.tsx` | 97, 126, 159, 319, 341 | Direct `document.createElement('a')` calls |
-| `charts/MarketHeatmap.tsx` | 336, 346, 388 | Direct DOM query for export |
-| `charts/AdvancedChart.tsx` | 616, 639 | Direct DOM for export |
-| `screener/ResultsPanel.tsx` | 116, 119, 134, 137 | Direct DOM for exports |
-| `analytics/CorrelationMatrix.tsx` | 109, 112, 114 | Direct DOM for export |
-| `trading/PositionTracker.tsx` | 93, 96, 98 | Direct DOM for export |
+**Previous Issues (26 occurrences - RESOLVED):**
 
-**Fix Approach:** Create reusable `useDownloadFile` hook:
-```typescript
-function useDownloadFile() {
-  const download = useCallback((blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
+| File | Line(s) | Issue | Status |
+|------|---------|-------|--------|
+| `charts/TopHoldingsChart.tsx` | 66 | CustomTooltip props typed as `any` | ✅ Fixed |
+| `charts/TradingViewChart.tsx` | 173 | History mapping uses `(d: any)` | ✅ Fixed |
+| `charts/AdvancedChart.tsx` | 249, 316, 242 | Multiple `any` type usages | ✅ Fixed |
+| `realtime/RealTimeChart.tsx` | 147-148 | Chart series typed as `any` | ✅ Fixed |
+| `ui/export-dropdown.tsx` | 66, 291 | formatCellValue parameter typed as `any` | ✅ Fixed |
+| `trading/OrderEntryForm.tsx` | 127, 227 | Select onValueChange handlers use `any` | ✅ Fixed |
+| `charts/ComparisonChart.tsx` | 273, 306 | Tooltip callback uses `any` | ✅ Fixed |
+| `attribution/SectorAttributionChart.tsx` | 54, 111, 115 | Multiple `any` types | ✅ Fixed |
+| `charts/HoldingsAllocationChart.tsx` | 77, 102, 107 | Multiple `any` types | ✅ Fixed |
+| `charts/HoldingsPnLChart.tsx` | 48, 53 | CustomTooltip types | ✅ Fixed |
+| `charts/DepthChart.tsx` | All | Missing table imports | ✅ Fixed |
+| `realtime/TradeFeed.tsx` | 9 | Wrong import name | ✅ Fixed |
+
+**Result:** 0 component TypeScript errors
+
+---
+
+## Direct DOM Manipulation (RESOLVED ✅)
+
+**Status:** VERIFIED - All files use `useDownloadFile` hook  
+**Date Verified:** January 30, 2026
+
+**Previous Issues (17 occurrences - VERIFIED RESOLVED):**
+
+All affected files now use the `useDownloadFile` hook (N2 - Completed):
+- `ui/export-dropdown.tsx` ✅
+- `charts/MarketHeatmap.tsx` ✅
+- `charts/AdvancedChart.tsx` ✅
+- `screener/ResultsPanel.tsx` ✅
+- `analytics/CorrelationMatrix.tsx` ✅
+- `trading/PositionTracker.tsx` ✅
+
+**Result:** Direct DOM manipulations replaced with hook pattern
     link.download = filename
     link.click()
     URL.revokeObjectURL(url)
