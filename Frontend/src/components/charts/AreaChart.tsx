@@ -28,7 +28,7 @@ import {
   Maximize2,
   Minimize2,
 } from 'lucide-react'
-import { useDownloadFile } from '@/hooks/useDownload'
+import { useDownload } from '@/hooks/useDownload'
 import { cn } from '@/lib/utils'
 
 export type Timeframe = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w' | '1M'
@@ -68,7 +68,7 @@ export function AreaChart({
   const areaSeriesRef = useRef<ISeriesApi<'Area'> | null>(null)
   
   const { theme } = useTheme()
-  const downloadFile = useDownloadFile()
+  const { download } = useDownload()
   
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe)
   const [isLoading, setIsLoading] = useState(false)
@@ -197,12 +197,12 @@ export function AreaChart({
       if (canvas) {
         canvas.toBlob((blob) => {
           if (blob) {
-            downloadFile(blob, `${symbol.replace('/', '-')}-area-${timeframe}.png`)
+            download(blob, { filename: `${symbol.replace('/', '-')}-area-${timeframe}.png`, mimeType: 'image/png' })
           }
         })
       }
     }
-  }, [chartRef, downloadFile, symbol, timeframe])
+  }, [chartRef, download, symbol, timeframe])
 
   const currentValue = data[data.length - 1]
   const previousValue = data[data.length - 2]
