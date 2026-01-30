@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useDownloadFile } from '@/hooks/useDownload'
-import { formatDate, subDays, subMonths, subYears } from 'date-fns'
+import { format, subDays, subMonths, subYears } from 'date-fns'
 
 interface HistoricalDataExportProps {
   symbol?: string
@@ -92,7 +92,7 @@ function generateMockData(config: ExportConfig): Array<{
 
   while (currentDate <= end) {
     const dayData = {
-      date: formatDate(currentDate),
+      date: format(currentDate, 'yyyy-MM-dd'),
       open: basePrice,
       high: basePrice * (1 + Math.random() * 0.04),
       low: basePrice * (1 - Math.random() * 0.04),
@@ -112,8 +112,8 @@ export function HistoricalDataExport({ symbol = 'AAPL', className }: HistoricalD
   const [loading, setLoading] = useState(false)
   const [config, setConfig] = useState<ExportConfig>({
     symbol,
-    startDate: formatDate(subYears(new Date(), 1)),
-    endDate: formatDate(new Date()),
+    startDate: format(subYears(new Date(), 1), 'yyyy-MM-dd'),
+    endDate: format(new Date(), 'yyyy-MM-dd'),
     interval: '1d',
     adjustments: 'all',
     includeExtended: false,
@@ -136,14 +136,16 @@ export function HistoricalDataExport({ symbol = 'AAPL', className }: HistoricalD
       startDate = subDays(endDate, preset.days)
     } else if (preset.months) {
       startDate = subMonths(endDate, preset.months)
-    } else {
+    } else if (preset.years) {
       startDate = subYears(endDate, preset.years)
+    } else {
+      startDate = subYears(endDate, 1)
     }
 
     setConfig((prev) => ({
       ...prev,
-      startDate: formatDate(startDate),
-      endDate: formatDate(endDate),
+      startDate: format(startDate, 'yyyy-MM-dd'),
+      endDate: format(endDate, 'yyyy-MM-dd'),
     }))
   }
 
@@ -159,16 +161,16 @@ export function HistoricalDataExport({ symbol = 'AAPL', className }: HistoricalD
   const handleExportCSV = () => {
     const data = generateMockData(config)
     const headers = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Adjusted_Close']
-    const rows = data.map((d) => [
-      d.date,
-      d.open.toFixed(4),
-      d.high.toFixed(4),
-      d.low.toFixed(4),
-      d.close.toFixed(4),
-      d.volume.toString(),
-      d.adjusted_close.toFixed(4),
-    ])
-    downloadCSV(rows, `${symbol}_historical_data`, headers)
+    const rows = data.map((d) => ({
+      Date: d.date,
+      Open: d.open.toFixed(4),
+      High: d.high.toFixed(4),
+      Low: d.low.toFixed(4),
+      Close: d.close.toFixed(4),
+      Volume: d.volume.toString(),
+      Adjusted_Close: d.adjusted_close.toFixed(4),
+    }))
+    downloadCSV(rows, `${symbol}_historical_data`)
   }
 
   const handleExportJSON = () => {

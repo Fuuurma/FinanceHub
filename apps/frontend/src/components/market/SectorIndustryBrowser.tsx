@@ -129,12 +129,27 @@ export function SectorIndustryBrowser({ onSectorSelect, onIndustrySelect, classN
   }, [onIndustrySelect])
 
   const filteredSectors = useMemo(() => {
-    let filtered = searchQuery 
+    let filtered = searchQuery
       ? sectors.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.code.toLowerCase().includes(searchQuery.toLowerCase()))
       : sectors
     return filtered.sort((a, b) => {
-      const aVal = sortField === 'name' ? a[sortField].toLowerCase() : a[sortField]
-      const bVal = sortField === 'name' ? b[sortField].toLowerCase() : b[sortField]
+      let aVal: string | number
+      let bVal: string | number
+
+      if (sortField === 'name') {
+        aVal = a.name.toLowerCase()
+        bVal = b.name.toLowerCase()
+      } else if (sortField === 'change') {
+        aVal = a.avgChange
+        bVal = b.avgChange
+      } else if (sortField === 'marketCap') {
+        aVal = a.totalMarketCap
+        bVal = b.totalMarketCap
+      } else {
+        aVal = a.name
+        bVal = b.name
+      }
+
       return sortDir === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
     })
   }, [sectors, searchQuery, sortField, sortDir])

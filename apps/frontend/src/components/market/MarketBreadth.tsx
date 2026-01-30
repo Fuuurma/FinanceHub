@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -116,7 +116,7 @@ export function MarketBreadth({ className }: MarketBreadthProps) {
   const [data, setData] = useState<MarketBreadthData[]>([])
   const [chartType, setChartType] = useState<'adLine' | 'highsLows' | 'trin'>('adLine')
 
-  const days = useCallback(() => {
+  const days = useMemo(() => {
     switch (timeframe) {
       case '1d': return 1
       case '5d': return 5
@@ -126,12 +126,12 @@ export function MarketBreadth({ className }: MarketBreadthProps) {
       case '1y': return 365
       default: return 30
     }
-  }, [timeframe])()
+  }, [timeframe])
 
   useEffect(() => {
     setLoading(true)
     const timer = setTimeout(() => {
-      const mockData = generateMockData(days())
+      const mockData = generateMockData(days)
       setData(mockData)
       setLoading(false)
     }, 800)
@@ -389,7 +389,7 @@ export function MarketBreadth({ className }: MarketBreadthProps) {
         </ResponsiveContainer>
 
         <div className="mt-2 text-xs text-center text-muted-foreground">
-          {timeframe === '1d' ? 'Intraday' : `${days()} day`} market breadth analysis
+          {timeframe === '1d' ? 'Intraday' : `${days} day`} market breadth analysis
         </div>
       </CardContent>
     </Card>
