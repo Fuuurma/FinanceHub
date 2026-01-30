@@ -4,11 +4,11 @@ import { holdingsApi, type HoldingsListResponse, type TransactionsListResponse }
 import type {
   Holding,
   Transaction,
-  PortfolioSummary,
   HoldingsFilter,
   TransactionFilter,
   PnLHistoryPoint,
   AssetAllocationItem,
+  HoldingsPortfolioSummary,
 } from '@/lib/types/holdings'
 
 interface HoldingsState {
@@ -16,7 +16,7 @@ interface HoldingsState {
   holdings: Holding[]
   transactions: Transaction[]
   selectedPortfolioId: string | null
-  portfolioSummary: PortfolioSummary | null
+  portfolioSummary: HoldingsPortfolioSummary | null
   pnlHistory: PnLHistoryPoint[]
   allocation: AssetAllocationItem[]
 

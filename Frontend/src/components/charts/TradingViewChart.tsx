@@ -237,7 +237,7 @@ export function TradingViewChart({
 
       chartRef.current = chart
 
-      const chartAny = chart as unknown as Record<string, (...args: any[]) => any>
+      const chartAny = chart as unknown as any
 
       let mainSeries: ISeriesApi<any>
 

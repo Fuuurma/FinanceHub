@@ -42,7 +42,7 @@ export interface Transaction {
   created_at: string
 }
 
-export interface PortfolioSummary {
+export interface HoldingsPortfolioSummary {
   id: string
   name: string
   total_value: number

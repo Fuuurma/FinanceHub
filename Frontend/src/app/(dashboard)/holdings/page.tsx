@@ -1,375 +1,412 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { holdingsApi, Holding } from '@/lib/api/holdings'
+import { useParams } from 'next/navigation'
+import { useHoldings } from '@/stores/holdingsStore'
+import {
+  HoldingsDataTable,
+  HoldingsToolbar,
+  EditHoldingDialog,
+  TransactionHistory,
+} from '@/components/holdings'
+import {
+  HoldingsPnLChart,
+  HoldingsAllocationChart,
+  TopHoldingsChart,
+} from '@/components/charts'
+import { AddTransactionDialog } from '@/components/holdings/AddTransactionDialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { TrendingUp, TrendingDown, Plus, Trash2, Edit2, DollarSign, BarChart3 } from 'lucide-react'
-import { AttributionDashboard } from '@/components/attribution/AttributionDashboard'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { TrendingUp, TrendingDown, Wallet, PieChart, BarChart3, History, Plus } from 'lucide-react'
+import type { Holding, Transaction, HoldingsFilter, TransactionFilter } from '@/lib/types/holdings'
+import { exportHoldingsToCSV, exportHoldingsToJSON, exportTransactionsToCSV, exportTransactionsToJSON } from '@/lib/utils/export'
+import { cn, formatCurrency } from '@/lib/utils'
 
 export default function HoldingsPage() {
-  const [portfolioId] = useState('default')
-  const [portfolioName] = useState('My Portfolio')
-  const [holdings, setHoldings] = useState<Holding[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [showAddDialog, setShowAddDialog] = useState(false)
-  const [newSymbol, setNewSymbol] = useState('')
-  const [newName, setNewName] = useState('')
-  const [newAssetClass, setNewAssetClass] = useState<'stocks' | 'crypto' | 'bonds' | 'etf' | 'options' | 'cash' | 'commodities' | 'real_estate' | 'other'>('stocks')
-  const [newQuantity, setNewQuantity] = useState('')
-  const [newAvgPrice, setNewAvgPrice] = useState('')
-  const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null)
+  const params = useParams()
+  const portfolioId = (params.id as string) || 'default'
+
+  const {
+    holdings,
+    transactions,
+    portfolioSummary,
+    pnlHistory,
+    allocation,
+    holdingsLoading,
+    transactionsLoading,
+    summaryLoading,
+    pnlLoading,
+    holdingsError,
+    transactionsError,
+    fetchHoldings,
+    fetchTransactions,
+    fetchSummary,
+    fetchPnL,
+    fetchAllocation,
+    addHolding,
+    updateHolding,
+    removeHolding,
+    addTransaction,
+    removeTransaction,
+    setHoldingsFilters,
+    setTransactionsFilters,
+  } = useHoldings()
+
+  const [holdingsFilters, setLocalHoldingsFilters] = useState<HoldingsFilter>({})
+  const [transactionsFilters, setLocalTransactionsFilters] = useState<TransactionFilter>({})
+  const [editHolding, setEditHolding] = useState<Holding | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [editQuantity, setEditQuantity] = useState('')
-  const [editAvgPrice, setEditAvgPrice] = useState('')
+  const [addTransactionOpen, setAddTransactionOpen] = useState(false)
 
   useEffect(() => {
-    fetchHoldings()
+    fetchHoldings(portfolioId, holdingsFilters)
+    fetchTransactions(portfolioId, transactionsFilters)
+    fetchSummary(portfolioId)
+    fetchPnL(portfolioId, '1y')
+    fetchAllocation(portfolioId)
   }, [portfolioId])
 
-  const fetchHoldings = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await holdingsApi.list(portfolioId)
-      setHoldings(data.holdings)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch holdings')
-    } finally {
-      setLoading(false)
-    }
+  const handleSearch = (search: string) => {
+    const newFilters = { ...holdingsFilters, search }
+    setLocalHoldingsFilters(newFilters)
+    fetchHoldings(portfolioId, newFilters)
   }
 
-  const handleAddHolding = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      await holdingsApi.create(portfolioId, {
-        symbol: newSymbol.toUpperCase(),
-        name: newName,
-        asset_class: newAssetClass,
-        quantity: Number(newQuantity),
-        average_cost: Number(newAvgPrice),
-      })
-      setShowAddDialog(false)
-      setNewSymbol('')
-      setNewName('')
-      setNewAssetClass('stocks')
-      setNewQuantity('')
-      setNewAvgPrice('')
-      fetchHoldings()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add holding')
-    }
+  const handleFilterChange = (filters: Partial<HoldingsFilter>) => {
+    const newFilters = { ...holdingsFilters, ...filters }
+    setLocalHoldingsFilters(newFilters)
+    fetchHoldings(portfolioId, newFilters)
   }
 
-  const handleUpdateHolding = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedHolding) return
-    try {
-      await holdingsApi.update(portfolioId, selectedHolding.id, {
-        quantity: Number(editQuantity),
-        average_cost: editAvgPrice ? Number(editAvgPrice) : undefined,
-      })
-      setEditDialogOpen(false)
-      setSelectedHolding(null)
-      fetchHoldings()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update holding')
-    }
+  const handleRefresh = () => {
+    fetchHoldings(portfolioId, holdingsFilters)
+    fetchTransactions(portfolioId, transactionsFilters)
+    fetchSummary(portfolioId)
+    fetchPnL(portfolioId, '1y')
+    fetchAllocation(portfolioId)
   }
 
-  const handleDeleteHolding = async (holdingId: string) => {
-    if (!confirm('Are you sure you want to remove this holding?')) return
-    try {
-      await holdingsApi.delete(portfolioId, holdingId)
-      fetchHoldings()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete holding')
-    }
-  }
-
-  const openEditDialog = (holding: Holding) => {
-    setSelectedHolding(holding)
-    setEditQuantity(String(holding.quantity))
-    setEditAvgPrice(String(holding.average_cost || ''))
+  const handleEditHolding = (holding: Holding) => {
+    setEditHolding(holding)
     setEditDialogOpen(true)
   }
 
-  const totalValue = holdings.reduce((sum, h) => sum + (h.current_value || 0), 0)
-  const totalPnl = holdings.reduce((sum, h) => sum + (h.unrealized_pnl || 0), 0)
+  const handleUpdateHolding = async (data: any) => {
+    if (!editHolding) return
+    await updateHolding(portfolioId, editHolding.id, data)
+    setEditDialogOpen(false)
+    setEditHolding(null)
+  }
+
+  const handleDeleteHolding = async (holding: Holding) => {
+    if (!confirm(`Are you sure you want to remove ${holding.symbol} from your portfolio?`)) {
+      return
+    }
+    await removeHolding(portfolioId, holding.id)
+  }
+
+  const handleAddTransaction = async (data: any) => {
+    await addTransaction(portfolioId, data)
+    setAddTransactionOpen(false)
+  }
+
+  const handleViewTransaction = (transaction: Transaction) => {
+    console.log('View transaction:', transaction)
+  }
+
+  const handleDeleteTransaction = async (transaction: Transaction) => {
+    if (!confirm(`Are you sure you want to delete this ${transaction.type} transaction?`)) {
+      return
+    }
+    await removeTransaction(portfolioId, transaction.id)
+  }
+
+  const handleTransactionFilterChange = (filters: Partial<TransactionFilter>) => {
+    const newFilters = { ...transactionsFilters, ...filters }
+    setLocalTransactionsFilters(newFilters)
+    fetchTransactions(portfolioId, newFilters)
+  }
+
+  const handleExportHoldingsCSV = () => {
+    exportHoldingsToCSV(holdings)
+  }
+
+  const handleExportHoldingsJSON = () => {
+    exportHoldingsToJSON(holdings)
+  }
+
+  const handleExportTransactionsCSV = () => {
+    exportTransactionsToCSV(transactions)
+  }
+
+  const handleExportTransactionsJSON = () => {
+    exportTransactionsToJSON(transactions)
+  }
+
+  const totalValue = portfolioSummary?.total_value || 0
+  const totalPnl = portfolioSummary?.total_pnl || 0
+  const dayChange = portfolioSummary?.day_change || 0
 
   return (
-    <Tabs defaultValue="holdings" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-6">
-        <TabsTrigger value="holdings">Holdings</TabsTrigger>
-        <TabsTrigger value="attribution">
-          <BarChart3 className="w-4 h-4 mr-2" />
-          Attribution
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="holdings" className="space-y-6">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">{portfolioName}</h1>
-              <p className="text-muted-foreground">Portfolio Holdings</p>
-            </div>
-            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Holding
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Holding</DialogTitle>
-                  <DialogDescription>Add a new asset to your portfolio</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleAddHolding} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="symbol">Symbol</Label>
-                    <Input
-                      id="symbol"
-                      value={newSymbol}
-                      onChange={(e) => setNewSymbol(e.target.value)}
-                      placeholder="AAPL"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      placeholder="Apple Inc."
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="assetClass">Asset Class</Label>
-                    <select
-                      id="assetClass"
-                      value={newAssetClass}
-                      onChange={(e) => setNewAssetClass(e.target.value as any)}
-                      className="w-full px-3 py-2 border rounded-md bg-background"
-                    >
-                      <option value="stocks">Stocks</option>
-                      <option value="crypto">Cryptocurrency</option>
-                      <option value="bonds">Bonds</option>
-                      <option value="etf">ETFs</option>
-                      <option value="options">Options</option>
-                      <option value="cash">Cash</option>
-                      <option value="commodities">Commodities</option>
-                      <option value="real_estate">Real Estate</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="quantity">Quantity</Label>
-                    <Input
-                      id="quantity"
-                      type="number"
-                      step="any"
-                      value={newQuantity}
-                      onChange={(e) => setNewQuantity(e.target.value)}
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="avgPrice">Average Cost</Label>
-                    <Input
-                      id="avgPrice"
-                      type="number"
-                      step="any"
-                      value={newAvgPrice}
-                      onChange={(e) => setNewAvgPrice(e.target.value)}
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit">Add</Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {error && (
-            <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
-              <p>{error}</p>
-            </div>
-          )}
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardDescription>Total Value</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardDescription>Total Holdings</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{holdings.length}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardDescription>Unrealized P&L</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className={`text-3xl font-bold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <Card key={i}>
-                  <CardContent className="pt-6">
-                    <Skeleton className="h-20 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : holdings.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <DollarSign className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No holdings in this portfolio</p>
-                <Button onClick={() => setShowAddDialog(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Holding
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {holdings.map((holding) => (
-                <Card key={holding.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-xl font-bold">{holding.symbol}</h3>
-                          <Badge variant="outline">{holding.asset_class}</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-4">{holding.name}</p>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Quantity</p>
-                            <p className="font-semibold">{holding.quantity.toLocaleString()}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Avg. Buy Price</p>
-                            <p className="font-semibold">${holding.average_cost.toFixed(2)}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Current Price</p>
-                            <p className="font-semibold">${holding.current_price.toFixed(2)}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Current Value</p>
-                            <p className="font-semibold">${holding.current_value.toFixed(2)}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">P&L</p>
-                            <p className={`font-semibold flex items-center ${holding.unrealized_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {holding.unrealized_pnl >= 0 ? (
-                                <TrendingUp className="w-4 h-4 mr-1" />
-                              ) : (
-                                <TrendingDown className="w-4 h-4 mr-1" />
-                              )}
-                              ${Math.abs(holding.unrealized_pnl).toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 ml-4">
-                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(holding)}>
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteHolding(holding.id)}>
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Holding</DialogTitle>
-                <DialogDescription>Update holding quantity and average buy price</DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleUpdateHolding} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Asset</Label>
-                  <Input value={selectedHolding?.symbol || ''} disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="editQuantity">Quantity</Label>
-                  <Input
-                    id="editQuantity"
-                    type="number"
-                    step="any"
-                    value={editQuantity}
-                    onChange={(e) => setEditQuantity(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="editAvgPrice">Average Buy Price</Label>
-                  <Input
-                    id="editAvgPrice"
-                    type="number"
-                    step="any"
-                    value={editAvgPrice}
-                    onChange={(e) => setEditAvgPrice(e.target.value)}
-                    placeholder="Optional"
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Save</Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Portfolio Holdings</h1>
+          <p className="text-muted-foreground">
+            {portfolioSummary?.name || 'My Portfolio'} - Manage your investments
+          </p>
         </div>
-      </TabsContent>
+        <Button onClick={() => setAddTransactionOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Transaction
+        </Button>
+      </div>
 
-      <TabsContent value="attribution" className="space-y-6">
-        <AttributionDashboard holdings={holdings} initialBenchmark="sp500" />
-      </TabsContent>
-    </Tabs>
+      {holdingsError && (
+        <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+          <p>{holdingsError}</p>
+        </div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-base">Total Value</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {summaryLoading ? (
+              <Skeleton className="h-9 w-32" />
+            ) : (
+              <p className="text-3xl font-bold">{formatCurrency(totalValue)}</p>
+            )}
+            {dayChange !== 0 && (
+              <p className={cn(
+                'text-sm mt-1 flex items-center',
+                dayChange >= 0 ? 'text-green-600' : 'text-red-600'
+              )}>
+                {dayChange >= 0 ? (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 mr-1" />
+                )}
+                {dayChange >= 0 ? '+' : ''}{formatCurrency(dayChange)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-base">Total P&L</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {summaryLoading ? (
+              <Skeleton className="h-9 w-32" />
+            ) : (
+              <p className={cn(
+                'text-3xl font-bold',
+                totalPnl >= 0 ? 'text-green-600' : 'text-red-600'
+              )}>
+                {totalPnl >= 0 ? '+' : ''}{formatCurrency(totalPnl)}
+              </p>
+            )}
+            {portfolioSummary && (
+              <p className={cn(
+                'text-sm mt-1',
+                portfolioSummary.total_pnl_percent >= 0 ? 'text-green-600' : 'text-red-600'
+              )}>
+                {portfolioSummary.total_pnl_percent >= 0 ? '+' : ''}{portfolioSummary.total_pnl_percent.toFixed(2)}%
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-base">Holdings</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {summaryLoading ? (
+              <Skeleton className="h-9 w-20" />
+            ) : (
+              <p className="text-3xl font-bold">{portfolioSummary?.holdings_count || holdings.length}</p>
+            )}
+            <p className="text-sm text-muted-foreground mt-1">
+              Across {(portfolioSummary?.asset_allocation?.length || 0)} asset classes
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-base">Day Change</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {summaryLoading ? (
+              <Skeleton className="h-9 w-32" />
+            ) : (
+              <p className={cn(
+                'text-3xl font-bold',
+                dayChange >= 0 ? 'text-green-600' : 'text-red-600'
+              )}>
+                {dayChange >= 0 ? '+' : ''}{formatCurrency(dayChange)}
+              </p>
+            )}
+            {portfolioSummary && (
+              <p className={cn(
+                'text-sm mt-1',
+                portfolioSummary.day_change_percent >= 0 ? 'text-green-600' : 'text-red-600'
+              )}>
+                {portfolioSummary.day_change_percent >= 0 ? '+' : ''}{portfolioSummary.day_change_percent.toFixed(2)}%
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="holdings" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="holdings">
+            <Wallet className="w-4 h-4 mr-2" />
+            Holdings
+          </TabsTrigger>
+          <TabsTrigger value="charts">
+            <PieChart className="w-4 h-4 mr-2" />
+            Charts
+          </TabsTrigger>
+          <TabsTrigger value="transactions">
+            <History className="w-4 h-4 mr-2" />
+            Transactions
+          </TabsTrigger>
+          <TabsTrigger value="overview">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Overview
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="holdings" className="space-y-4">
+          <HoldingsToolbar
+            onSearch={handleSearch}
+            onFilterChange={handleFilterChange}
+            onRefresh={handleRefresh}
+            onExport={handleExportHoldingsCSV}
+            loading={holdingsLoading}
+            filters={holdingsFilters}
+          />
+          <HoldingsDataTable
+            holdings={holdings}
+            loading={holdingsLoading}
+            onEdit={handleEditHolding}
+            onDelete={handleDeleteHolding}
+          />
+        </TabsContent>
+
+        <TabsContent value="charts" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>P&L History</CardTitle>
+                <CardDescription>Portfolio value and profit over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <HoldingsPnLChart data={pnlHistory} loading={pnlLoading} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Asset Allocation</CardTitle>
+                <CardDescription>Distribution by asset class</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <HoldingsAllocationChart data={allocation} loading={summaryLoading} />
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Holdings</CardTitle>
+              <CardDescription>Your largest positions by value</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TopHoldingsChart holdings={holdings} loading={holdingsLoading} topN={10} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="transactions" className="space-y-4">
+          <TransactionHistory
+            transactions={transactions}
+            loading={transactionsLoading}
+            onView={handleViewTransaction}
+            onDelete={handleDeleteTransaction}
+            onFilterChange={handleTransactionFilterChange}
+            filters={transactionsFilters}
+            pagination={{
+              page: 1,
+              pageSize: 20,
+              total: transactions.length,
+              onPageChange: (page) => console.log('Page:', page),
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Asset Allocation</CardTitle>
+                <CardDescription>Distribution by asset class</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <HoldingsAllocationChart data={allocation} loading={summaryLoading} type="pie" />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Holdings</CardTitle>
+                <CardDescription>Your largest positions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TopHoldingsChart holdings={holdings} loading={holdingsLoading} topN={10} />
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance History</CardTitle>
+              <CardDescription>Portfolio value and P&L over time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <HoldingsPnLChart data={pnlHistory} loading={pnlLoading} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <EditHoldingDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        holding={editHolding}
+        onSubmit={handleUpdateHolding}
+      />
+
+      <AddTransactionDialog
+        open={addTransactionOpen}
+        onOpenChange={setAddTransactionOpen}
+        onSubmit={handleAddTransaction}
+        existingHoldings={holdings.map((h) => ({
+          symbol: h.symbol,
+          name: h.name,
+          quantity: h.quantity,
+          average_cost: h.average_cost,
+        }))}
+      />
+    </div>
   )
 }

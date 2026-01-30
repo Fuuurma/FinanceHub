@@ -2,7 +2,7 @@ import { apiClient } from './client'
 import type {
   Holding,
   Transaction,
-  PortfolioSummary,
+  HoldingsPortfolioSummary,
   HoldingsFilter,
   TransactionFilter,
   CreateHoldingInput,
@@ -12,7 +12,7 @@ import type {
   AssetAllocationItem,
 } from '@/lib/types/holdings'
 
-export type { Holding, Transaction, PortfolioSummary, HoldingsFilter, TransactionFilter, CreateHoldingInput, UpdateHoldingInput, CreateTransactionInput, PnLHistoryPoint, AssetAllocationItem }
+export type { Holding, Transaction, HoldingsPortfolioSummary as PortfolioSummary, HoldingsFilter, TransactionFilter, CreateHoldingInput, UpdateHoldingInput, CreateTransactionInput, PnLHistoryPoint, AssetAllocationItem }
 
 export interface HoldingsListResponse {
   holdings: Holding[]
@@ -146,7 +146,7 @@ export const holdingsApi = {
   getAllocation: (portfolioId: string): Promise<PortfolioAllocationResponse> =>
     apiClient.get(`/portfolios/${portfolioId}/allocation/`),
 
-  getSummary: (portfolioId: string): Promise<PortfolioSummary> =>
+  getSummary: (portfolioId: string): Promise<HoldingsPortfolioSummary> =>
     apiClient.get(`/portfolios/${portfolioId}/summary/`),
 
   // Bulk operations

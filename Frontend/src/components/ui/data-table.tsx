@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,12 +9,15 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, Columns, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, Columns, ChevronLeft, ChevronRight, Copy, Download, FileJson, FileSpreadsheet, FileText, Rows, Maximize2, Minimize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export type SortDirection = 'asc' | 'desc'
+export type Density = 'compact' | 'normal' | 'spacious'
 
 export interface Column<T> {
   key: keyof T | string
@@ -24,6 +27,7 @@ export interface Column<T> {
   render?: (value: any, item: T) => React.ReactNode
   className?: string
   headerClassName?: string
+  frozen?: boolean
 }
 
 interface DataTableProps<T> {
@@ -37,6 +41,10 @@ interface DataTableProps<T> {
   searchPlaceholder?: string
   pageSize?: number
   showColumnToggle?: boolean
+  showDensityToggle?: boolean
+  showExport?: boolean
+  exportFilename?: string
+  frozenColumns?: number
   emptyMessage?: string
   onRowClick?: (item: T) => void
 }
@@ -52,6 +60,10 @@ export function DataTable<T extends Record<string, any>>({
   searchPlaceholder = 'Search...',
   pageSize = 10,
   showColumnToggle = false,
+  showDensityToggle = false,
+  showExport = false,
+  exportFilename = 'data-table',
+  frozenColumns = 0,
   emptyMessage = 'No data available',
   onRowClick,
 }: DataTableProps<T>) {
@@ -62,6 +74,8 @@ export function DataTable<T extends Record<string, any>>({
     new Set(columns.map((c) => String(c.key)))
   )
   const [currentPage, setCurrentPage] = useState(0)
+  const [density, setDensity] = useState<Density>('normal')
+  const tableRef = useRef<HTMLTableElement>(null)
 
   const handleSort = useCallback((key: string) => {
     if (sortColumn === key) {
@@ -120,6 +134,82 @@ export function DataTable<T extends Record<string, any>>({
 
   const visibleColumnsList = columns.filter((c) => visibleColumns.has(String(c.key)))
   const sortableColumns = columns.filter((c) => c.sortable)
+  const frozenColumnsList = visibleColumnsList.filter((c) => c.frozen)
+  const scrollableColumnsList = visibleColumnsList.filter((c) => !c.frozen)
+
+  const densityClasses: Record<Density, string> = {
+    compact: 'py-1',
+    normal: 'py-3',
+    spacious: 'py-4',
+  }
+
+  const exportToCSV = useCallback(() => {
+    const headers = visibleColumnsList.map((c) => c.label).join(',')
+    const rows = filteredData.map((item) =>
+      visibleColumnsList.map((col) => {
+        const value = item[col.key]
+        const rendered = col.render ? col.render(value, item) : value
+        const cellValue = typeof rendered === 'string' ? rendered : String(rendered ?? '')
+        const escaped = cellValue.includes(',') || cellValue.includes('"') || cellValue.includes('\n')
+          ? `"${cellValue.replace(/"/g, '""')}"`
+          : cellValue
+        return escaped
+      }).join(',')
+    ).join('\n')
+    const csv = `${headers}\n${rows}`
+    downloadFile(csv, `${exportFilename}.csv`, 'text/csv')
+  }, [filteredData, visibleColumnsList, exportFilename])
+
+  const exportToJSON = useCallback(() => {
+    const jsonData = filteredData.map((item) => {
+      const row: Record<string, any> = {}
+      visibleColumnsList.forEach((col) => {
+        const value = item[col.key]
+        row[col.label] = col.render ? col.render(value, item) : value
+      })
+      return row
+    })
+    const json = JSON.stringify(jsonData, null, 2)
+    downloadFile(json, `${exportFilename}.json`, 'application/json')
+  }, [filteredData, visibleColumnsList, exportFilename])
+
+  const exportToExcel = useCallback(() => {
+    const headers = visibleColumnsList.map((c) => c.label).join('\t')
+    const rows = filteredData.map((item) =>
+      visibleColumnsList.map((col) => {
+        const value = item[col.key]
+        const rendered = col.render ? col.render(value, item) : value
+        return typeof rendered === 'string' ? rendered : String(rendered ?? '')
+      }).join('\t')
+    ).join('\n')
+    const tsv = `${headers}\n${rows}`
+    downloadFile(tsv, `${exportFilename}.tsv`, 'text/tab-separated-values')
+  }, [filteredData, visibleColumnsList, exportFilename])
+
+  const copyToClipboard = useCallback(() => {
+    const headers = visibleColumnsList.map((c) => c.label).join('\t')
+    const rows = filteredData.map((item) =>
+      visibleColumnsList.map((col) => {
+        const value = item[col.key]
+        const rendered = col.render ? col.render(value, item) : value
+        return typeof rendered === 'string' ? rendered : String(rendered ?? '')
+      }).join('\t')
+    ).join('\n')
+    const text = `${headers}\n${rows}`
+    navigator.clipboard.writeText(text)
+  }, [filteredData, visibleColumnsList])
+
+  const downloadFile = (content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
 
   const SortIcon = ({ column }: { column: Column<T> }) => {
     const key = String(column.key)
@@ -158,14 +248,14 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <Card>
-      {(title || searchable || showColumnToggle) && (
+      {(title || searchable || showColumnToggle || showDensityToggle || showExport) && (
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               {title && <CardTitle>{title}</CardTitle>}
               {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {searchable && (
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -179,6 +269,71 @@ export function DataTable<T extends Record<string, any>>({
                     className="pl-9 w-48 sm:w-64"
                   />
                 </div>
+              )}
+              {showExport && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={copyToClipboard}>
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy to Clipboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={exportToCSV}>
+                      <FileText className="w-4 h-4 mr-2" />
+                      Export as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={exportToExcel}>
+                      <FileSpreadsheet className="w-4 h-4 mr-2" />
+                      Export as Excel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={exportToJSON}>
+                      <FileJson className="w-4 h-4 mr-2" />
+                      Export as JSON
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              {showDensityToggle && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      {density === 'compact' ? (
+                        <Minimize2 className="w-4 h-4 mr-2" />
+                      ) : density === 'spacious' ? (
+                        <Maximize2 className="w-4 h-4 mr-2" />
+                      ) : (
+                        <Rows className="w-4 h-4 mr-2" />
+                      )}
+                      {density === 'compact' ? 'Compact' : density === 'spacious' ? 'Spacious' : 'Normal'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuCheckboxItem
+                      checked={density === 'compact'}
+                      onCheckedChange={() => setDensity('compact')}
+                    >
+                      Compact
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={density === 'normal'}
+                      onCheckedChange={() => setDensity('normal')}
+                    >
+                      Normal
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={density === 'spacious'}
+                      onCheckedChange={() => setDensity('spacious')}
+                    >
+                      Spacious
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
               {showColumnToggle && (
                 <DropdownMenu>
@@ -207,10 +362,29 @@ export function DataTable<T extends Record<string, any>>({
       )}
       <CardContent>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full" ref={tableRef}>
             <thead>
               <tr className="border-b text-left text-sm text-muted-foreground">
-                {visibleColumnsList.map((column) => (
+                {frozenColumns > 0 && frozenColumnsList.map((column) => (
+                  <th
+                    key={String(column.key)}
+                    className={cn('pb-3 font-medium sticky left-0 bg-background z-10', column.headerClassName)}
+                  >
+                    {column.sortable ? (
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleSort(String(column.key))}
+                        className="p-0 hover:bg-transparent"
+                      >
+                        {column.label}
+                        <SortIcon column={column} />
+                      </Button>
+                    ) : (
+                      column.label
+                    )}
+                  </th>
+                ))}
+                {scrollableColumnsList.map((column) => (
                   <th
                     key={String(column.key)}
                     className={cn('pb-3 font-medium', column.headerClassName)}
@@ -241,8 +415,18 @@ export function DataTable<T extends Record<string, any>>({
                   )}
                   onClick={() => onRowClick?.(item)}
                 >
-                  {visibleColumnsList.map((column) => (
-                    <td key={String(column.key)} className={cn('py-3', column.className)}>
+                  {frozenColumns > 0 && frozenColumnsList.map((column) => (
+                    <td
+                      key={String(column.key)}
+                      className={cn('py-3 sticky left-0 bg-background z-10', densityClasses[density], column.className)}
+                    >
+                      {column.render
+                        ? column.render(item[column.key], item)
+                        : String(item[column.key] ?? '')}
+                    </td>
+                  ))}
+                  {scrollableColumnsList.map((column) => (
+                    <td key={String(column.key)} className={cn(densityClasses[density], column.className)}>
                       {column.render
                         ? column.render(item[column.key], item)
                         : String(item[column.key] ?? '')}

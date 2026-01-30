@@ -5,6 +5,8 @@ export interface PortfolioSummary {
   total_invested: number
   total_pnl: number
   total_pnl_percent: number
+  day_change: number
+  day_change_percent: number
   total_fees_paid: number
   asset_count: number
   top_performers: Array<{
