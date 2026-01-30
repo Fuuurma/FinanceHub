@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { useScreenerStore } from '@/stores/screenerStore'
 import { formatNumber, formatPercent } from '@/lib/utils/formatters'
+import { useDownloadFile } from '@/hooks/useDownload'
 
 export function ResultsPanel() {
   const router = useRouter()
@@ -48,6 +49,7 @@ export function ResultsPanel() {
     runScreener,
     lastUpdated,
   } = useScreenerStore()
+  const { downloadCSV, downloadJSON } = useDownloadFile()
 
   useEffect(() => {
     if (results.length === 0 && !loading) {
@@ -110,16 +112,10 @@ export function ResultsPanel() {
       peRatio: r.pe_ratio?.toFixed(2) || 'N/A'
     }))
 
+    const filename = `screener-results-${new Date().toISOString().split('T')[0]}`
+
     if (format === 'json') {
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `screener-results-${new Date().toISOString().split('T')[0]}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadJSON(exportData, `${filename}.json`)
     } else {
       const headers = ['Symbol', 'Name', 'Type', 'Price', 'Change %', 'Volume', 'Market Cap', 'P/E']
       const rows = exportData.map(r => Object.values(r))
@@ -129,17 +125,9 @@ export function ResultsPanel() {
         ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
       ].join('\n')
 
-      const blob = new Blob([csvContent], { type: 'text/csv' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `screener-results-${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadCSV(csvContent, `${filename}.csv`)
     }
-  }, [sortedResults])
+  }, [sortedResults, downloadCSV, downloadJSON])
 
   const handlePageChange = useCallback((newPage: number) => {
     setCurrentPage(Math.max(1, Math.min(newPage, totalPages)))

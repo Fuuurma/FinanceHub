@@ -19,6 +19,8 @@ module.exports = {
         type: 'commonjs',
       },
     })
-    return result.code
+    return {
+      code: result.code,
+    }
   },
 }

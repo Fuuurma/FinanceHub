@@ -18,7 +18,7 @@ const config = {
   ],
   testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>'],
 }
 
 module.exports = config

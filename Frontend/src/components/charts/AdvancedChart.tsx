@@ -58,6 +58,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { HelpCircle } from 'lucide-react'
+import { useDownloadFile } from '@/hooks/useDownload'
 import { cn } from '@/lib/utils'
 
 export type ChartType = 'candlestick' | 'line' | 'area' | 'bar' | 'histogram'
@@ -158,6 +159,7 @@ export function AdvancedChart({
   const chartRef = useRef<IChartApi | null>(null)
   const { theme } = useTheme()
   const { prices } = useRealtimeStore()
+  const { downloadCSV, downloadText } = useDownloadFile()
   
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -612,18 +614,16 @@ export function AdvancedChart({
     try {
       const canvas = (chartRef.current as unknown as IChartApi).takeScreenshot()
       if (canvas) {
-        const url = canvas.toDataURL('image/png')
-        const link = document.createElement('a')
-        link.download = `${symbol}-${chartType}-${timeframe}-${new Date().toISOString().slice(0, 10)}.png`
-        link.href = url
-        link.click()
+        const filename = `${symbol}-${chartType}-${timeframe}-${new Date().toISOString().slice(0, 10)}.png`
+        const dataUrl = canvas.toDataURL('image/png')
+        downloadText(dataUrl, filename, 'image/png')
       }
     } catch (err) {
       console.error('Failed to export chart:', err)
     } finally {
       setIsExporting(false)
     }
-  }, [symbol, chartType, timeframe])
+  }, [symbol, chartType, timeframe, downloadText])
 
   const handleExportCSV = useCallback(() => {
     if (currentData.length === 0) return
@@ -634,14 +634,9 @@ export function AdvancedChart({
     ).join('\n')
     
     const csv = headers + rows
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.download = `${symbol}-${chartType}-${timeframe}-${new Date().toISOString().slice(0, 10)}.csv`
-    link.href = url
-    link.click()
-    URL.revokeObjectURL(url)
-  }, [currentData, symbol, chartType, timeframe])
+    const filename = `${symbol}-${chartType}-${timeframe}-${new Date().toISOString().slice(0, 10)}.csv`
+    downloadCSV(csv, filename)
+  }, [currentData, symbol, chartType, timeframe, downloadCSV])
 
   const latestData = currentData[currentData.length - 1]
   const previousClose = currentData[currentData.length - 2]?.close
