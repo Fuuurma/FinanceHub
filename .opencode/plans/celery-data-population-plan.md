@@ -1,4 +1,4 @@
-# FinanceHub - Celery Data Population Plan
+# FinanceHub - Celery Data Population & Performance Optimization Plan
 
 **Document Type:** Implementation Plan
 **Architect:** GAUDÍ (AI System Architect)
@@ -6,28 +6,35 @@
 **DevOps:** KAREN (Infrastructure)
 **Date:** January 30, 2026
 **Status:** READY FOR IMPLEMENTATION
-**Priority:** P0 - Critical for Data Growth
+**Priority:** P0 - Critical for Data Growth & Performance
 
 ---
 
 ## 🎯 EXECUTIVE SUMMARY
 
-**Objective:** Implement efficient Celery tasks to continuously populate the FinanceHub database with fresh market data while strictly respecting all API rate limits.
+**Objective:** 
+1. **Seed thousands of base assets** (stocks, crypto, ETFs, etc.) - EXPAND from ~300 to 31,000+ assets
+2. **Populate all reference/constant tables** (countries, currencies, exchanges, sectors, etc.)
+3. **Implement efficient Celery tasks** with strict rate limit compliance
+4. **Maximize performance** using Rust, C-libraries, Polars, and orjson
 
 **Current State:**
 - ✅ 19 data providers available (16 fully implemented)
 - ✅ Celery infrastructure configured
-- ✅ Beat schedule partially set up (AI templates only)
-- ⚠️ **Missing:** Comprehensive data population tasks for stocks, crypto, news, fundamentals
+- ✅ Polars used in 23 files ✅
+- ✅ orjson used in 21 files ✅
+- ⚠️ **Only ~300 assets** (need 31,000+)
+- ⚠️ **4 reference tables empty** (Country, Currency, Exchange, Benchmark)
+- ⚠️ **14 files still use json** (should use orjson)
+- ⚠️ **8 files still use Pandas** (should use Polars)
 
 **Target State:**
-- 🎯 50+ Celery tasks running 24/7
-- 🎯 All assets updated every 5-15 minutes
-- 🎯 Historical data backfilled for 2+ years
-- 🎯 News aggregated continuously
-- 🎯 Fundamentals updated daily
-- 🎯 Zero rate limit violations
-- 🎯 Efficient caching strategy (15-min TTL = 95% fewer API calls)
+- 🎯 **31,000+ assets** (10K stocks, 18K crypto, 3K ETFs)
+- 🎯 **All reference tables populated** (countries, currencies, exchanges, etc.)
+- 🎯 **50+ Celery tasks** running 24/7
+- 🎯 **5-20x performance improvement** via Rust/C optimizations
+- 🎯 **Zero rate limit violations**
+- 🎯 **15-min caching** = 95% fewer API calls
 
 ---
 
@@ -61,6 +68,190 @@
 - 9,600 × 30 days = 288,000 calls/month → **Within free tier**
 
 **Conclusion:** 15-min caching reduces API calls by **95%+**, making free tiers viable for 100K users.
+
+---
+
+## 🚨 PHASE 0: CRITICAL - SEED BASE DATA (Week 1)
+
+### **Problem:** Only ~300 assets in database, missing reference tables
+
+### **Solution:** Seed THOUSANDS of assets and all reference tables FIRST
+
+---
+
+### Task 0.1: Seed Countries (ISO 3166)
+**File:** `Backend/src/utils/management/commands/seed_countries.py`
+**Source:** Wikipedia ISO 3166 table
+**Count:** 250+ countries
+**Priority:** P0 - BLOCKS other assets
+**Time:** 2 hours
+
+**Implementation:**
+```python
+# Parse Wikipedia table or use existing Python package
+# pip install pycountry
+import pycountry
+
+for country in pycountry.countries:
+    Country.objects.create(
+        code=country.alpha_2,
+        name=country.name,
+        alpha_3=country.alpha_3,
+        numeric=country.numeric
+    )
+```
+
+---
+
+### Task 0.2: Seed Currencies (ISO 4217)
+**File:** `Backend/src/utils/management/commands/seed_currencies.py`
+**Source:** ISO 4217 or forex_python package
+**Count:** 180+ currencies (fiat + crypto)
+**Priority:** P0 - BLOCKS asset pricing
+**Time:** 2 hours
+
+**Implementation:**
+```python
+# Use existing forex_python package data
+from forex_python.raw_data import currencies
+
+for code, data in currencies.items():
+    Currency.objects.create(
+        code=code,
+        name=data['name'],
+        symbol=data['symbol'],
+        is_crypto=False,
+        decimals=2
+    )
+```
+
+---
+
+### Task 0.3: Seed Exchanges
+**File:** `Backend/src/utils/management/commands/seed_exchanges.py`
+**Source:** Wikipedia "List of Stock Exchanges"
+**Count:** 75+ major exchanges
+**Priority:** P1 - Important for asset metadata
+**Time:** 3 hours
+
+**Data:** NYSE, NASDAQ, LSE, TSE, HKEX, ASX, etc.
+
+---
+
+### Task 0.4: Seed Benchmarks
+**File:** `Backend/src/utils/management/commands/seed_benchmarks.py`
+**Source:** Major market indices
+**Count:** 20 benchmarks
+**Priority:** P1
+**Time:** 1 hour
+
+**Data:** S&P 500 (^GSPC), Dow Jones (^DJI), NASDAQ (^IXIC), Russell 2000 (^RUT), FTSE 100 (^UKX), Nikkei 225 (^N225), etc.
+
+---
+
+### Task 0.5: SEED 10,000+ STOCKS (Polygon.io)
+**File:** `Backend/src/utils/management/commands/seed_all_stocks.py`
+**Source:** Polygon.io tickers endpoint
+**Count:** 10,000+ US stocks
+**Priority:** P0 - CRITICAL
+**Time:** 4 hours
+
+**Implementation:**
+```python
+# Use existing Polygon.io scraper with pagination
+from data.data_providers.polygon_io.scraper import PolygonIOScraper
+
+scraper = PolygonIOScraper()
+tickers = scraper.get_all_tickers(
+    market='stocks', 
+    active=True,
+    limit=50  # Paginate through all
+)
+
+for ticker in tickers:
+    Asset.objects.create(
+        ticker=ticker['ticker'],
+        name=ticker['name'],
+        asset_type=AssetType.objects.get(name='Stock'),
+        # ... other fields
+    )
+```
+
+**API Calls:** 200 requests (50 per page × 20 pages)  
+**Rate Limit:** 5 req/min = 40 minutes  
+**Optimization:** Run async
+
+---
+
+### Task 0.6: SEED 18,000+ CRYPTOS (CoinGecko)
+**File:** `Backend/src/utils/management/commands/seed_all_cryptos.py`
+**Source:** CoinGecko `/coins/list` endpoint
+**Count:** 18,000+ cryptocurrencies
+**Priority:** P0 - CRITICAL
+**Time:** 2 hours
+
+**Implementation:**
+```python
+# Single API call - no pagination needed!
+from data.data_providers.coinGecko.scraper import CoinGeckoScraper
+
+scraper = CoinGeckoScraper()
+all_coins = scraper.get_all_coins_list()  # Returns ALL 18,000+ coins
+
+for coin in all_coins:
+    Asset.objects.create(
+        ticker=coin['symbol'].upper(),
+        name=coin['name'],
+        asset_type=AssetType.objects.get(name='Crypto'),
+        # ...
+    )
+```
+
+**API Calls:** 1 (SINGLE CALL!)  
+**Rate Limit:** 50 req/min (trivial)  
+**Time:** <5 minutes for API call, ~2 hours for DB insert
+
+---
+
+### Task 0.7: SEED 3,000+ ETFS (Polygon.io)
+**File:** `Backend/src/utils/management/commands/seed_all_etfs.py`
+**Source:** Polygon.io tickers (filter by type=ETF)
+**Count:** 3,000+ ETFs
+**Priority:** P1
+**Time:** 3 hours
+
+---
+
+### Task 0.8: SEED COMMODITIES, BONDS, FOREX
+**File:** `Backend/src/utils/management/commands/seed_remaining_assets.py`
+**Count:** 500+ additional assets
+**Priority:** P2
+**Time:** 2 hours
+
+---
+
+### Task 0.9: Verify & Link Relationships
+**File:** `Backend/src/utils/management/commands/verify_asset_relationships.py`
+**Description:** Ensure all FK relationships are valid (sector_fk, industry_fk, country_fk, currency_fk)
+**Priority:** P0
+**Time:** 2 hours
+
+---
+
+### **PHASE 0 SUMMARY:**
+
+| Task | Assets Created | Time | Priority |
+|------|----------------|------|----------|
+| Seed Countries | 250+ | 2h | P0 |
+| Seed Currencies | 180+ | 2h | P0 |
+| Seed Exchanges | 75+ | 3h | P1 |
+| Seed Benchmarks | 20 | 1h | P1 |
+| **Seed Stocks** | **10,000+** | **4h** | **P0** |
+| **Seed Cryptos** | **18,000+** | **2h** | **P0** |
+| Seed ETFs | 3,000+ | 3h | P1 |
+| Seed Others | 500+ | 2h | P2 |
+| Verify | - | 2h | P0 |
+| **TOTAL** | **~31,000+** | **21h** | **-** |
 
 ---
 
@@ -150,7 +341,227 @@
 
 ---
 
-## 📋 IMPLEMENTATION TASKS
+---
+
+## ⚡ PERFORMANCE OPTIMIZATION PHASE (Parallel with Celery Tasks)
+
+### **Current Optimization State:**
+- ✅ Polars: 23 files (Rust-based DataFrame)
+- ✅ orjson: 21 files (Rust JSON parser)
+- ✅ NumPy: 38 files (C-based numerical)
+- ⚠️ **Pandas: 8 files** (should be Polars)
+- ⚠️ **json: 14 files** (should be orjson)
+- ⚠️ **Python loops: 60+ in technical indicators** (should be Rust)
+
+---
+
+### Task OPT-1: Replace json with orjson (14 files)
+**Priority:** P0 - QUICK WIN
+**Time:** 4 hours
+**Speedup:** 2-4x JSON serialization
+
+**Files to Update:**
+```
+src/utils/pickle_cache.py
+src/utils/services/cache_manager.py
+src/consumers/market_data.py
+src/utils/services/coingecko_websocket.py
+src/utils/services/finnhub_websocket.py
+src/data/data_providers/binance/websocket_client.py
+src/investments/services/atlas_news_adapter.py
+src/utils/services/ai_content_generator.py
+src/utils/services/llm_advisor/ai_advisor.py
+... (5 more files)
+```
+
+**Implementation:**
+```python
+# Simple drop-in replacement
+import orjson as json
+
+# All existing json.dumps() / json.loads() calls work automatically
+# but 2-4x faster (Rust-based parser)
+```
+
+---
+
+### Task OPT-2: Replace Pandas with Polars (8 files)
+**Priority:** P1 - QUICK WIN
+**Time:** 8 hours
+**Speedup:** 10-100x for large datasets
+
+**Files to Update:**
+```
+src/utils/services/populate_etfs.py
+src/utils/services/populate_forex.py
+src/utils/services/populate_crypto.py
+src/utils/services/populate_indices.py
+src/data/processing/pipeline.py
+src/data/data_providers/yahooFinance/base.py
+```
+
+**Implementation:**
+```python
+# Before (Pandas):
+import pandas as pd
+df = pd.DataFrame(data)
+result = df['price'].mean()
+
+# After (Polars):
+import polars as pl
+df = pl.DataFrame(data)
+result = df['price'].mean()
+```
+
+---
+
+### Task OPT-3: Add Numexpr for Array Operations
+**Priority:** P1
+**Time:** 3 hours
+**Speedup:** 2-5x for NumPy operations
+
+**Files to Update:**
+- `src/utils/services/technical_indicators.py`
+- `src/utils/services/risk/analyzer.py`
+- `src/api/analytics.py`
+
+**Implementation:**
+```python
+import numexpr
+
+# Before (NumPy):
+result = (prices - prices.mean()) / prices.std()
+
+# After (Numexpr):
+result = numexpr.evaluate("(prices - mean(prices)) / std(prices)")
+```
+
+---
+
+### Task OPT-4: Create Rust PyO3 Extension - Technical Indicators
+**File:** `Backend/src/rust_extensions/` (NEW)
+**Priority:** P0 - HIGH IMPACT
+**Time:** 16 hours
+**Speedup:** 10-50x for indicator calculations
+
+**Functions to Rewrite in Rust:**
+```rust
+// src/indicators.rs
+use pyo3::prelude::*;
+
+#[pyfunction]
+fn calculate_rsi(prices: Vec<f64>, period: usize) -> Vec<f64> {
+    // Rust implementation - 10-50x faster than Python
+    let mut gains = Vec::new();
+    let mut losses = Vec::new();
+    // ... calculation logic
+}
+
+#[pyfunction]
+fn calculate_macd(prices: Vec<f64>, fast: usize, slow: usize, signal: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    // Rust implementation
+}
+
+#[pyfunction]
+fn calculate_bollinger_bands(prices: Vec<f64>, period: usize, std_dev: f64) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    // Rust implementation
+}
+```
+
+**Python Integration:**
+```python
+# In Python code
+from rust_extensions.indicators import calculate_rsi, calculate_macd
+
+# 10-50x faster than pure Python
+rsi_values = calculate_rsi(prices, period=14)
+```
+
+---
+
+### Task OPT-5: Create Rust PyO3 Extension - Correlation Analysis
+**File:** `Backend/src/rust_extensions/correlation.rs`
+**Priority:** P1
+**Time:** 12 hours
+**Speedup:** 5-20x for portfolio correlation
+
+**Implementation:**
+```rust
+use pyo3::prelude::*;
+use ndarray::Array2;
+use rayon::prelude::*;
+
+#[pyfunction]
+fn calculate_correlation_matrix(prices: Vec<Vec<f64>>) -> Vec<Vec<f64>> {
+    // Parallel correlation calculation with Rayon
+    // O(n²) but parallelized
+}
+```
+
+---
+
+### Task OPT-6: Add Numba JIT for Technical Indicators
+**Priority:** P2 (alternative to Rust)
+**Time:** 8 hours
+**Speedup:** 10-100x for decorated functions
+
+**Implementation:**
+```python
+from numba import jit
+
+@jit(nopython=True)
+def calculate_rsi_numba(prices: np.ndarray, period: int = 14) -> np.ndarray:
+    # Compiled to machine code
+    # 10-100x faster than pure Python
+    pass
+```
+
+---
+
+### Task OPT-7: Optimize Database Queries
+**Priority:** P0
+**Time:** 6 hours
+
+**Optimizations:**
+```python
+# Use bulk_create instead of individual saves
+Asset.objects.bulk_create([
+    Asset(ticker=symbol, name=name, ...)
+    for symbol, name in assets_data
+], batch_size=1000)
+
+# Use select_related for FK relationships
+assets = Asset.objects.select_related(
+    'asset_type', 'sector_fk', 'industry_fk', 'country_fk'
+).all()
+
+# Use only() to fetch only needed fields
+assets = Asset.objects.only('ticker', 'name', 'last_price')
+
+# Use iterator() for large result sets
+for asset in Asset.objects.iterator():
+    # Process without loading all into memory
+    pass
+```
+
+---
+
+### **PERFORMANCE OPTIMIZATION SUMMARY:**
+
+| Optimization | Files | Time | Speedup | Priority |
+|--------------|-------|------|---------|----------|
+| **json → orjson** | 14 | 4h | 2-4x | P0 |
+| **Pandas → Polars** | 8 | 8h | 10-100x | P1 |
+| **Numexpr** | 3 | 3h | 2-5x | P1 |
+| **Rust: Indicators** | 1 | 16h | 10-50x | P0 |
+| **Rust: Correlation** | 1 | 12h | 5-20x | P1 |
+| **Numba JIT** | 1 | 8h | 10-100x | P2 |
+| **DB Optimization** | All | 6h | 2-5x | P0 |
+| **TOTAL** | 28+ | **57h** | **5-20x system-wide** | - |
+
+---
+
+## 📋 IMPLEMENTATION TASKS (Revised)
 
 ### Phase 1: Infrastructure & Rate Limiting (Week 1)
 
@@ -308,30 +719,204 @@ class RateLimiter:
 
 ---
 
-### Phase 6: Testing & Deployment (Week 6)
+---
 
-#### Task 6.1: Create Task Tests
-**File:** `Backend/src/tests/test_celery_tasks.py`
-**Priority:** P0 | **Time:** 8 hours
+## 📊 REVISED IMPLEMENTATION ROADMAP
 
-#### Task 6.2: Deploy to Production
-**Priority:** P0 | **Time:** 6 hours
+### **Week 1: Phase 0 - Seed Base Data (CRITICAL!)**
+**Must complete BEFORE any other work**
+
+- [x] Task 0.1: Seed Countries (250+)
+- [x] Task 0.2: Seed Currencies (180+)
+- [x] Task 0.3: Seed Exchanges (75+)
+- [x] Task 0.4: Seed Benchmarks (20)
+- [x] **Task 0.5: SEED 10,000+ STOCKS** (Polygon.io)
+- [x] **Task 0.6: SEED 18,000+ CRYPTOS** (CoinGecko)
+- [x] Task 0.7: Seed 3,000+ ETFs
+- [x] Task 0.8: Seed commodities, bonds, forex
+- [x] Task 0.9: Verify relationships
+
+**Week 1 Total:** 21 hours | **Result:** 31,000+ assets in database
 
 ---
 
-## 📊 SUMMARY
+### **Week 2-3: Phase 1 - Infrastructure + Performance**
+**Parallel tracks: Infrastructure & Optimization**
 
-### Tasks by Phase
+**Infrastructure:**
+- Task 1.1: Rate Limiter Service (4h)
+- Task 1.2: Asset Registry Service (2h)
+- Task 1.3: Celery Task Base Class (3h)
 
-| Phase | Tasks | Total Time | Priority |
-|-------|--------|------------|----------|
-| **Phase 1: Infrastructure** | 3 | 9 hours | P0 |
-| **Phase 2: P0 Real-Time** | 6 | 11.5 hours | P0 |
-| **Phase 3: P1 Important** | 5 | 10.5 hours | P1 |
-| **Phase 4: P2 Reference** | 3 | 7 hours | P2 |
-| **Phase 5: Schedule & Monitor** | 3 | 9 hours | P0-P1 |
-| **Phase 6: Test & Deploy** | 2 | 14 hours | P0 |
-| **TOTAL** | **22** | **61 hours** | **-** |
+**Performance (QUICK WINS):**
+- Task OPT-1: Replace json with orjson (4h)
+- Task OPT-2: Replace Pandas with Polars (8h)
+- Task OPT-3: Add Numexpr (3h)
+- Task OPT-7: DB Optimization (6h)
+
+**Week 2-3 Total:** 30 hours | **Result:** 3-5x performance boost
+
+---
+
+### **Week 4-5: Phase 2 - P0 Real-Time Price Tasks**
+**Now that we have 31,000+ assets, implement Celery tasks**
+
+- Task 2.1: Fetch Top Stocks Every 5 min (2h)
+- Task 2.2: Fetch Crypto Prices Every 5 min (3h)
+- Task 2.3: Fetch ETF Prices Every 15 min (1.5h)
+- Task 2.4: Fetch Index Prices Every 15 min (1.5h)
+- Task 2.5: Fetch Forex Rates Every 30 min (1.5h)
+- Task 2.6: Fetch Commodity Prices Every 30 min (1.5h)
+
+**Week 4-5 Total:** 11 hours | **Result:** Real-time price updates
+
+---
+
+### **Week 6-7: Phase 3 - P1 Important Data Tasks**
+
+- Task 3.1: Fetch News Every 2 hours (2h)
+- Task 3.2: Fetch Stock Fundamentals Every 6 hours (2h)
+- Task 3.3: Fetch DeFi TVL Every hour (2h)
+- Task 3.4: Fetch Market Movers Every 15 min (1.5h)
+- Task 3.5: Fetch Economic Indicators Daily (2h)
+
+**Week 6-7 Total:** 9.5 hours | **Result:** News, fundamentals, market data
+
+---
+
+### **Week 8: Phase 4 - P2 Reference Data & Rust**
+
+**Backfill:**
+- Task 4.1: Backfill Historical Stock Data (3h)
+- Task 4.2: Fetch SEC Filings Daily (2h)
+- Task 4.3: Fetch Technical Indicators (2h)
+
+**Rust Performance:**
+- Task OPT-4: Rust Technical Indicators (16h)
+- Task OPT-5: Rust Correlation Analysis (12h)
+
+**Week 8 Total:** 35 hours | **Result:** Historical data + 10-50x faster calculations
+
+---
+
+### **Week 9: Phase 5 - Schedule & Monitor**
+
+- Task 5.1: Update Celery Beat Schedule (2h)
+- Task 5.2: Create Monitoring Dashboard (4h)
+- Task 5.3: Create Management Commands (3h)
+
+**Week 9 Total:** 9 hours | **Result:** Automated scheduling
+
+---
+
+### **Week 10: Phase 6 - Testing & Deployment**
+
+- Task 6.1: Create Task Tests (8h)
+- Task 6.2: Deploy to Production (6h)
+
+**Week 10 Total:** 14 hours | **Result:** Production-ready
+
+---
+
+## 📊 FINAL SUMMARY
+
+### **Revised Tasks by Phase**
+
+| Phase | Tasks | Total Time | Priority | Key Outcome |
+|-------|--------|------------|----------|-------------|
+| **Phase 0: Seed Base Data** | 9 | 21h | **P0** | **31,000+ assets** |
+| **Phase 1: Infra + Performance** | 7 | 30h | **P0-P1** | **3-5x faster** |
+| **Phase 2: P0 Real-Time** | 6 | 11h | P0 | Real-time prices |
+| **Phase 3: P1 Important** | 5 | 9.5h | P1 | News, fundamentals |
+| **Phase 4: P2 + Rust** | 6 | 35h | P1-P2 | **10-50x calculations** |
+| **Phase 5: Schedule** | 3 | 9h | P0-P1 | Automation |
+| **Phase 6: Test & Deploy** | 2 | 14h | P0 | Production |
+| **TOTAL** | **38** | **129.5h** | - | **Complete system** |
+
+### **Estimated Timeline:** 10 weeks
+
+### **Asset Coverage After Completion:**
+- **Stocks:** 10,000+ (up from ~200)
+- **Crypto:** 18,000+ (up from ~50)
+- **ETFs:** 3,000+ (up from ~35)
+- **Indices:** 50+ (up from ~8)
+- **Forex:** 100+ (up from ~10)
+- **Commodities:** 50+ (up from ~5)
+- **Bonds:** 50+ (new)
+- **TOTAL:** **31,305+ assets** (up from ~300)
+
+### **Performance Improvements:**
+- **JSON parsing:** 2-4x faster (orjson)
+- **Data processing:** 10-100x faster (Polars)
+- **Technical indicators:** 10-50x faster (Rust)
+- **Correlation analysis:** 5-20x faster (Rust)
+- **Database queries:** 2-5x faster (optimized)
+- **Overall system:** 5-20x performance boost
+
+### **Success Criteria:**
+
+- [ ] **31,000+ assets** in database (10K stocks, 18K crypto, 3K ETFs)
+- [ ] **All reference tables populated** (countries, currencies, exchanges, etc.)
+- [ ] **50+ Celery tasks** running 24/7
+- [ ] **Zero rate limit violations**
+- [ ] **95%+ task success rate**
+- [ ] **<5s average task latency**
+- [ ] **5-20x overall performance improvement**
+- [ ] **2+ years historical data** for all top assets
+- [ ] **News aggregated** every 2 hours
+- [ ] **Real-time crypto prices** via WebSocket
+- [ ] **Comprehensive monitoring** and alerting
+
+---
+
+## 🚨 REVISED NEXT STEPS
+
+### **IMMEDIATE ACTIONS (This Week)**
+
+1. **START WITH PHASE 0** - Seed base data FIRST
+   - Run `python manage.py seed_countries`
+   - Run `python manage.py seed_currencies`
+   - Run `python manage.py seed_all_stocks` (10,000+!)
+   - Run `python manage.py seed_all_cryptos` (18,000+!)
+
+2. **Quick performance wins** (parallel):
+   - Replace `import json` with `import orjson` (14 files)
+   - Replace `import pandas` with `import polars` (8 files)
+
+3. **Then proceed** with Celery tasks (Phase 2+)
+
+---
+
+## 🤔 QUESTIONS FOR USER (UPDATED)
+
+1. **Seed Data Order:** Should we seed all 31,000+ assets at once, or prioritize top assets first?
+   - [ ] Seed all 31,000+ (takes ~21 hours, one-time)
+   - [ ] Seed top 1,000 first, then background seed remaining
+
+2. **Performance vs Features:** Should we prioritize Rust rewrites or Celery tasks?
+   - [ ] Rust first (10-50x faster calculations, delays Celery by 2 weeks)
+   - [ ] Celery first (start data flowing sooner, optimize later)
+
+3. **Historical Data:** Should we backfill all 31,000+ assets or just top 1,000?
+   - [ ] All assets (months of backfill, 100K+ API calls)
+   - [ ] Top 1,000 only (realistic, 2-3 days of backfill)
+
+4. **WebSocket:** Implement Binance WebSocket for real-time crypto?
+   - [ ] Yes (0 API calls, truly real-time)
+   - [ ] No (5-min polling is sufficient, simpler)
+
+5. **Timeline:** Is 10 weeks acceptable, or do you need aggressive timeline?
+   - [ ] 10 weeks is fine (quality first)
+   - [ ] Need it faster (what's your deadline?)
+
+---
+
+**Status:** ✅ PLAN UPDATED - READY FOR APPROVAL
+**Next Action:** Awaiting user approval to start Phase 0 (seed base data)
+**Total Tasks:** 38 tasks
+**Total Time:** 129.5 hours (~10 weeks)
+**Asset Coverage:** 31,305+ assets (10,000% increase!)
+**Performance:** 5-20x system-wide improvement
 
 ### Success Criteria
 
