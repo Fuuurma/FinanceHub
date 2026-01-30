@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ExportDropdown } from '@/components/ui/export-dropdown'
 import { cn, formatCurrency, formatDate } from '@/lib/utils'
 import type { PortfolioTransaction } from '@/lib/types'
-import { ArrowUpDown, Search, Filter, Download } from 'lucide-react'
+import { ArrowUpDown, Search, Filter } from 'lucide-react'
 
 interface TransactionsListProps {
   transactions: PortfolioTransaction[]
@@ -67,25 +68,15 @@ export default function TransactionsList({ transactions, loading }: Transactions
     return styles[type] || 'bg-muted'
   }
 
-  const handleExport = () => {
-    const headers = ['Date', 'Type', 'Symbol', 'Quantity', 'Price', 'Amount', 'Fees']
-    const rows = filteredTransactions.map((t) => [
-      t.date,
-      t.type,
-      t.symbol || '-',
-      t.quantity?.toString() || '-',
-      t.price?.toString() || '-',
-      t.amount.toString(),
-      t.fees.toString(),
-    ])
-    const csv = [headers, ...rows].map((row) => row.join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-  }
+  const exportData = filteredTransactions.map((t) => ({
+    Date: formatDate(t.date),
+    Type: t.type.charAt(0).toUpperCase() + t.type.slice(1),
+    Symbol: t.symbol || '-',
+    Quantity: t.quantity?.toString() || '-',
+    Price: t.price ? formatCurrency(t.price) : '-',
+    Amount: formatCurrency(t.amount),
+    Fees: formatCurrency(t.fees),
+  }))
 
   if (loading) {
     return (
@@ -112,10 +103,9 @@ export default function TransactionsList({ transactions, loading }: Transactions
             <CardTitle>Transactions</CardTitle>
             <CardDescription>Recent portfolio activity</CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
+          {filteredTransactions.length > 0 && (
+            <ExportDropdown data={exportData} options={{ filename: 'transactions' }} />
+          )}
         </div>
       </CardHeader>
       <CardContent>
