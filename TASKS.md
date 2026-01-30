@@ -352,7 +352,7 @@ useEffect(() => {
 ### AI Components
 | Task | Component | Path | Lines | Status |
 |------|-----------|------|-------|--------|
-| N36 | PricePrediction | `components/ai/forecast-chart.tsx` | 186 | `COMPLETED` ✅ |
+| N36 | PricePrediction | `components/ai/PricePrediction.tsx` | 320 | `COMPLETED` ✅ |
 | N37 | BacktestResults | `components/backtest/BacktestResults.tsx` | 491 | `COMPLETED` ✅ |
 | N38 | SentimentAnalysis | `components/ai/SentimentAnalysis.tsx` | 150 | `PENDING` |
 
@@ -614,6 +614,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 | 1 | DataTable Export | components/ui/data-table.tsx | P0 | `EXISTS - ENHANCE` | Has CSV/JSON/Excel |
 | 3 | AdvancedChart | components/charts/AdvancedChart.tsx | P0 | `COMPLETED` ✅ | 680 lines |
 | 4 | MarketHeatmap | components/charts/MarketHeatmap.tsx | P0 | `COMPLETED` ✅ | 527 lines |
+| 11 | PricePrediction | components/ai/PricePrediction.tsx | P2 | `COMPLETED` ✅ | 320 lines |
 
 ## New Missing Components - P0 (Critical)
 | # | Task | Component | Priority | Status | Path |
