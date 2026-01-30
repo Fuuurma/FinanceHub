@@ -45,12 +45,24 @@ export function HoldingsPnLChart({ data, loading = false }: HoldingsPnLChartProp
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface TooltipPayloadItem {
+    name: string
+    value: number
+    color: string
+  }
+
+  interface TooltipProps {
+    active?: boolean
+    payload?: TooltipPayloadItem[]
+    label?: string
+  }
+
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border rounded-lg shadow-lg p-3">
-          <p className="text-sm text-muted-foreground mb-2">{formatDate(label)}</p>
-          {payload.map((entry: any, index: number) => (
+          <p className="text-sm text-muted-foreground mb-2">{label && formatDate(label)}</p>
+          {payload.map((entry, index) => (
             <div key={index} className="flex items-center gap-2">
               <div
                 className="w-2 h-2 rounded-full"

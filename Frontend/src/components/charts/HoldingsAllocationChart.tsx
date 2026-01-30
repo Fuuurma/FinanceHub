@@ -74,7 +74,21 @@ export function HoldingsAllocationChart({
     )
   }
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipPayloadItem {
+    payload: {
+      asset_class: string
+      value: number
+      percentage: number
+      holdings_count: number
+    }
+  }
+
+  interface TooltipProps {
+    active?: boolean
+    payload?: TooltipPayloadItem[]
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
       return (
@@ -99,12 +113,19 @@ export function HoldingsAllocationChart({
     return null
   }
 
-  const renderLegend = (props: any) => {
+  interface LegendProps {
+    payload: Array<{
+      color: string
+      value: string
+    }>
+  }
+
+  const renderLegend = (props: LegendProps) => {
     const { payload } = props
 
     return (
       <ul className="flex flex-wrap justify-center gap-4 mt-4">
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index) => (
           <li key={`legend-${index}`} className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full"

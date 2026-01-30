@@ -63,7 +63,20 @@ export function TopHoldingsChart({
 
   const formatPercent = (value: number) => `${value.toFixed(1)}%`
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipProps {
+    active?: boolean
+    payload?: Array<{
+      payload: {
+        symbol: string
+        current_value: number
+        weight: number
+        unrealized_pnl: number
+        unrealized_pnl_percent: number
+      }
+    }>
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
       return (

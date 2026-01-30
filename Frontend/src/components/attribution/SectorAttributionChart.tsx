@@ -51,7 +51,22 @@ export function SectorAttributionChart({
   const formatPercent = (value: number) =>
     `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipPayloadItem {
+    payload: {
+      sector?: string
+      name?: string
+      weight: number
+      return: number
+      contribution?: number
+    }
+  }
+
+  interface TooltipProps {
+    active?: boolean
+    payload?: TooltipPayloadItem[]
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const item = payload[0].payload
       const outperformance = benchmarkReturn !== undefined
@@ -108,11 +123,18 @@ export function SectorAttributionChart({
     return null
   }
 
-  const renderLegend = (props: any) => {
+  interface LegendProps {
+    payload: Array<{
+      color: string
+      value: string
+    }>
+  }
+
+  const renderLegend = (props: LegendProps) => {
     const { payload } = props
     return (
       <ul className="flex flex-wrap justify-center gap-3 mt-4">
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index) => (
           <li key={`legend-${index}`} className="flex items-center gap-1.5 text-sm">
             <div
               className="w-3 h-3 rounded-full"
