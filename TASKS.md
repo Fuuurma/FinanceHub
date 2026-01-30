@@ -443,10 +443,10 @@ useEffect(() => {
 | N41 | TradingPanel | `components/trading/TradingPanel.tsx` | 160 | P2 | `COMPLETED` ✅ | Trading interface with buy/sell, order types |
 
 ### Risk Components
-| Task | Component | Path | Lines |
-|------|-----------|------|-------|
-| N42 | ExposureChart | `components/risk/ExposureChart.tsx` | 200 |
-| N43 | ImpliedVolatilityChart | `components/risk/ImpliedVolatilityChart.tsx` | 180 |
+| Task | Component | Path | Lines | Priority | Status |
+|------|-----------|------|-------|----------|--------|
+| N42 | ExposureChart | `components/risk/ExposureChart.tsx` | 200 | P2 | `COMPLETED` ✅ |
+| N43 | ImpliedVolatilityChart | `components/risk/ImpliedVolatilityChart.tsx` | 180 | P2 | `COMPLETED` ✅ |
 
 ### Research Components
 | Task | Component | Path | Lines |
@@ -575,8 +575,8 @@ Frontend/src/components/risk/
 ├── PositionRiskCard.tsx      # N11 - P1
 ├── GreeksCalculator.tsx      # N12 - P1
 ├── StressTestPanel.tsx       # N13 - P1
-├── ExposureChart.tsx         # N42 - P2
-├── ImpliedVolatilityChart.tsx # N43 - P2
+├── ExposureChart.tsx         # N42 - P2 - COMPLETED ✅
+├── ImpliedVolatilityChart.tsx # N43 - P2 - COMPLETED ✅
 ├── LeverageAnalysis.tsx      # P3
 ├── RiskLimitPanel.tsx        # P3
 ├── DrawdownChart.tsx         # P3
