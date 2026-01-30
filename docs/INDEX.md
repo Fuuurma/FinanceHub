@@ -1,0 +1,240 @@
+# FinanceHub Documentation Index
+
+**Last Updated:** January 30, 2026
+**Status:** 100% Migration Complete
+
+---
+
+## Quick Navigation
+
+- [Getting Started](#-getting-started)
+- [Architecture](#-architecture)
+- [Development](#-development)
+- [Operations](#-operations)
+- [Security](#-security)
+- [Agents](#-agents)
+- [References](#-references)
+
+---
+
+## Quick Reference
+
+| Task | Documentation |
+|------|---------------|
+| **Setup** | [SETUP_COMPLETE.md](references/SETUP_COMPLETE.md) |
+| **Development** | [docs/development/](development/) |
+| **Deployment** | [DEPLOYMENT.md](DEPLOYMENT.md), [DEVOPS_README.md](operations/DEVOPS_README.md) |
+| **Security** | [SECURITY.md](security/SECURITY.md) |
+| **Architecture** | [docs/architecture/](architecture/) |
+| **Monitoring** | [MONITORING.md](MONITORING.md) |
+| **Testing** | [TESTING_README.md](TESTING_README.md) |
+
+---
+
+## 📐 Architecture
+
+System design, database schema, and implementation plans.
+
+### Core Architecture
+- [ARCHITECTURE_COMPLETE.md](architecture/ARCHITECTURE_COMPLETE.md) - System architecture overview
+- [DATABASE_SCHEMA.md](architecture/DATABASE_SCHEMA.md) - Complete database structure
+- [PROJECT_CONTEXT.md](architecture/PROJECT_CONTEXT.md) - Project overview and goals
+- [ARCHITECT_EXECUTIVE_SUMMARY.md](architecture/ARCHITECT_EXECUTIVE_SUMMARY.md) - Executive summary
+
+### Planning & Roadmap
+- [IMPLEMENTATION_ROADMAP.md](architecture/IMPLEMENTATION_ROADMAP.md) - Feature implementation plan
+- [FEATURES_SPECIFICATION.md](architecture/FEATURES_SPECIFICATION.md) - Feature specifications
+- [FEATURE_IMPLEMENTATION_GUIDES.md](architecture/FEATURE_IMPLEMENTATION_GUIDES.md) - Implementation guides
+
+### Issue Tracking
+- [ARCHITECTURAL_ORDERS.md](architecture/ARCHITECTURAL_ORDERS.md) - Architectural decisions
+- [ARCHITECTURAL_ISSUE_DOUBLE_EXCHANGE_TABLES.md](architecture/ARCHITECTURAL_ISSUE_DOUBLE_EXCHANGE_TABLES.md) - Known issue documentation
+- [INFRASTRUCTURE_CLARIFICATION_PLAN.md](architecture/INFRASTRUCTURE_CLARIFICATION_PLAN.md) - Infrastructure clarifications
+
+---
+
+## 💻 Development
+
+Development guides, implementation documentation, and best practices.
+
+### Getting Started
+- [ONBOARDING.md](references/ONBOARDING.md) - Team member onboarding guide
+- [WHERE_TO_START.md](references/WHERE_TO_START.md) - Where to start contributing
+- [QUICK_INSTRUCTIONS.md](references/QUICK_INSTRUCTIONS.md) - Quick start commands
+
+### Backend
+- [BACKEND_TASKS.md](development/BACKEND_TASKS.md) - Backend development tasks
+- [BACKEND_IMPROVEMENTS.md](development/BACKEND_IMPROVEMENTS.md) - Backend enhancement tasks
+- [BACKGROUND_JOBS_COMPLETE_GUIDE.md](development/BACKGROUND_JOBS_COMPLETE_GUIDE.md) - Background jobs guide
+- [DATA_PIPELINE_SUMMARY.md](development/DATA_PIPELINE_SUMMARY.md) - Data flow documentation
+
+### Frontend
+- [ERRORBOUNDARY_IMPLEMENTATION.md](development/ERRORBOUNDARY_IMPLEMENTATION.md) - Error handling guide
+- [SCREENER_ENHANCEMENTS_SUMMARY.md](development/SCREENER_ENHANCEMENTS_SUMMARY.md) - Screener enhancements
+- [PAGE_ENHANCEMENT_PLAN.md](development/PAGE_ENHANCEMENT_PLAN.md) - Page enhancement plans
+
+### Implementation Guidelines
+- [IMPLEMENTATION_GUIDELINES_EXCHANGE_FIX.md](development/IMPLEMENTATION_GUIDELINES_EXCHANGE_FIX.md) - Exchange fix guidelines
+
+### Testing
+- [TESTING_README.md](TESTING_README.md) - Testing documentation
+
+---
+
+## 🔧 Operations
+
+DevOps, infrastructure, deployment, and cost analysis.
+
+### Infrastructure & DevOps
+- [INFRASTRUCTURE.md](INFRASTRUCTURE.md) - Infrastructure overview
+- [DEVOPS_STATUS.md](operations/DEVOPS_STATUS.md) - Current infrastructure status
+- [DEVOPS_README.md](operations/DEVOPS_README.md) - DevOps operations guide
+- [DEVOPS_SUMMARY.md](operations/DEVOPS_SUMMARY.md) - DevOps summary
+- [DEVOPS_ADVANCED.md](DEVOPS_ADVANCED.md) - Advanced DevOps topics
+
+### Deployment
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment documentation
+- [OPTIMIZATION_TASKS.md](operations/OPTIMIZATION_TASKS.md) - Optimization tasks
+- [OPTIMIZATION_COMPLETE.md](operations/OPTIMIZATION_COMPLETE.md) - Completed optimizations
+
+### Monitoring
+- [MONITORING.md](MONITORING.md) - Monitoring documentation
+
+### Cost Analysis
+- [COST_OPTIMIZATION_ANALYSIS.md](operations/COST_OPTIMIZATION_ANALYSIS.md) - Cost reduction strategies
+- [INFRASTRUCTURE_COST_BREAKDOWN.md](operations/INFRASTRUCTURE_COST_BREAKDOWN.md) - Cost breakdown
+- [INFRASTRUCTURE_COST_PLAN.md](operations/INFRASTRUCTURE_COST_PLAN.md) - Cost plan
+- [COST_INFRASTRUCTURE_CLARIFICATION.md](operations/COST_INFRASTRUCTURE_CLARIFICATION.md) - Cost clarifications
+
+---
+
+## 🔒 Security
+
+Security assessments, vulnerability reports, and security guidelines.
+
+### Security Overview
+- [SECURITY.md](security/SECURITY.md) - Security guidelines and best practices
+- [SECURITY_SCANNING.md](SECURITY_SCANNING.md) - Security scanning procedures
+
+### Vulnerability Management
+- [VULNERABILITY_REMEDIATION_PLAN.md](security/VULNERABILITY_REMEDIATION_PLAN.md) - Security fixes
+- [SECURITY_VULNERABILITIES_REMEDIATION.md](security/SECURITY_VULNERABILITIES_REMEDIATION.md) - Vulnerability remediation
+- [SECURITY_FIXES_COMPLETED.md](security/SECURITY_FIXES_COMPLETED.md) - Completed security fixes
+- [SECURITY_TODO.md](security/SECURITY_TODO.md) - Security todo list
+
+### Security Assessments
+- [XLSX_SECURITY_ASSESSMENT.md](security/XLSX_SECURITY_ASSESSMENT.md) - File upload security
+- [CRITICAL_SECURITY_STATUS.md](security/CRITICAL_SECURITY_STATUS.md) - Critical security status
+- [CRITICAL_EXCHANGE_TABLE_ISSUE.md](security/CRITICAL_EXCHANGE_TABLE_ISSUE.md) - Exchange table security issue
+
+---
+
+## 🤖 Agents
+
+Agent communication, instructions, and workflows.
+
+### Agent Overview
+- [AGENTS.md](agents/AGENTS.md) - Agent overview and roles
+- [AI_AGENT_COMMUNICATION.md](agents/AI_AGENT_COMMUNICATION.md) - Communication protocols
+- [README_AGENT_INSTRUCTIONS.md](agents/README_AGENT_INSTRUCTIONS.md) - Agent task guidelines
+
+### Task Management
+- [TASKS.md](references/TASKS.md) - Task management documentation
+
+---
+
+## 📋 References
+
+Reference guides, onboarding, and status documents.
+
+### Getting Started
+- [SETUP_COMPLETE.md](references/SETUP_COMPLETE.md) - Setup guide
+- [ONBOARDING.md](references/ONBOARDING.md) - Onboarding guide
+- [QUICK_INSTRUCTIONS.md](references/QUICK_INSTRUCTIONS.md) - Quick instructions
+
+### Project Status
+- [PROJECT_STATUS.md](references/PROJECT_STATUS.md) - Current project status
+- [WHERE_TO_START.md](references/WHERE_TO_START.md) - Starting points
+
+### Integrations
+- [FUTURE_PAID_SERVICES_INTEGRATION.md](references/FUTURE_PAID_SERVICES_INTEGRATION.md) - Paid services integration
+- [GAUDI_TASK_REQUEST.md](references/GAUDI_TASK_REQUEST.md) - Gaudi task request format
+
+---
+
+## 📁 Directory Structure
+
+```
+docs/
+├── agents/           # Agent communication, instructions, workflows
+├── architecture/     # System design, database schema, roadmaps
+├── development/      # Development guides, implementation docs
+├── migration/        # Migration records, progress summaries
+├── operations/       # DevOps, infrastructure, cost analysis
+├── references/       # Reference guides, onboarding, status docs
+├── security/         # Security assessments, vulnerability reports
+├── DEPLOYMENT.md     # Deployment documentation
+├── DEVOPS_ADVANCED.md # Advanced DevOps topics
+├── INFRASTRUCTURE.md # Infrastructure overview
+├── MONITORING.md     # Monitoring documentation
+├── SECURITY_SCANNING.md # Security scanning
+└── TESTING_README.md # Testing documentation
+```
+
+---
+
+## 🔗 External Resources
+
+### API Documentation
+- Backend API: `apps/backend/src/core/api/examples/`
+
+### Runbooks
+- [runbooks/](runbooks/) - Operational runbooks
+
+### OpenCode Plans
+- [.opencode/plans/](.opencode/plans/) - Planning documents
+
+---
+
+## 📊 Documentation Statistics
+
+| Category | Files |
+|----------|-------|
+| Architecture | 9 |
+| Development | 7 |
+| Operations | 9 |
+| Security | 8 |
+| Agents | 3 |
+| References | 6 |
+| Root Docs | 6 |
+| **Total** | **48+** |
+
+---
+
+## 🏷️ Document Tags
+
+Common tags used in documentation:
+
+| Tag | Meaning |
+|-----|---------|
+| 🟢 | Complete/Done |
+| 🟡 | In Progress |
+| 🔴 | Critical/Blocking |
+|/Task List |
+| 📋 | Todo 📝 | Documentation |
+
+---
+
+## Contributing to Documentation
+
+When adding new documentation:
+
+1. Place files in the appropriate `docs/` subdirectory
+2. Update this INDEX.md with the new file
+3. Use clear, descriptive filenames
+4. Include metadata (last updated, status)
+5. Add cross-references to related documents
+
+---
+
+*For questions about documentation, contact the Architect or refer to [AGENTS.md](agents/AGENTS.md)*

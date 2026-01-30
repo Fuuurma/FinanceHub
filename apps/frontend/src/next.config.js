@@ -4,6 +4,9 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
+  assetPrefix: process.env.NODE_ENV === 'production'
+    ? process.env.NEXT_PUBLIC_CDN_URL || 'https://assets.financehub.app'
+    : undefined,
 }
 
 module.exports = nextConfig

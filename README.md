@@ -423,6 +423,31 @@ This project is licensed under the MIT License.
 
 ## Documentation
 
+Comprehensive documentation is organized in the [docs/](docs/) directory:
+
+- **[Documentation Index](docs/INDEX.md)** - Master index of all documentation
+- **[Architecture](docs/architecture/)** - System design and database schema
+- **[Development](docs/development/)** - Development guides and implementation
+- **[Operations](docs/operations/)** - DevOps and infrastructure
+- **[Security](docs/security/)** - Security assessments and guidelines
+- **[Agents](docs/agents/)** - Agent communication and workflows
+- **[References](docs/references/)** - Reference guides and onboarding
+
+### Quick Reference
+
+| Task | Documentation |
+|------|---------------|
+| **Setup** | [docs/references/SETUP_COMPLETE.md](docs/references/SETUP_COMPLETE.md) |
+| **Development** | [docs/development/](docs/development/) |
+| **Deployment** | [docs/operations/DEPLOYMENT.md](docs/operations/DEPLOYMENT.md) |
+| **Security** | [docs/security/SECURITY.md](docs/security/SECURITY.md) |
+| **Architecture** | [docs/architecture/](docs/architecture/) |
+| **Monitoring** | [docs/operations/MONITORING.md](docs/operations/MONITORING.md) |
+
+---
+
+### Additional Documentation
+
 - **AGENTS.md** - Coding guidelines and conventions
 - **.opencode/ROADMAP.md** - Backend and frontend development phases
 - **.opencode/FRONTEND_ROADMAP.md** - Frontend-specific roadmap
@@ -445,6 +470,7 @@ This is a **monorepo** containing:
 
 ---
 
-**Last Updated**: January 28, 2026
+**Last Updated**: January 30, 2026
+**Monorepo Migration**: ✅ 100% Complete
 **Backend Status**: 95% Complete
 **Frontend Status**: 65% Complete

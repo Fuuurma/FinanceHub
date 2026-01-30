@@ -54,6 +54,34 @@ export interface Timezone {
   is_dst_observed: boolean
 }
 
+export type IPOStatus = 'pending' | 'filed' | 'priced' | 'withdrawn' | 'completed'
+
+export interface IPO {
+  id: string
+  company_name: string
+  ticker_symbol: string
+  sector: string
+  industry: string
+  ipo_date: string
+  price_range_low: number
+  price_range_high: number
+  shares_offered: number
+  offer_amount: number
+  status: IPOStatus
+  exchange: string
+  description?: string
+  website?: string
+}
+
+export interface IPOFilter {
+  status?: IPOStatus
+  sector?: string
+  date_from?: string
+  date_to?: string
+  min_shares?: number
+  max_shares?: number
+}
+
 export const marketOverviewApi = {
   getMarketOverview(): Promise<MarketOverview> {
     return apiClient.get<MarketOverview>('/market/overview')
@@ -141,5 +169,34 @@ export const marketOverviewApi = {
     const params: Record<string, string> = { q: query }
     if (sectorCode) params.sector_code = sectorCode
     return apiClient.get('/reference/industries/search', { params })
+  },
+
+  // ================= IPO ENDPOINTS =================
+
+  getIPOCalendar(filter?: IPOFilter): Promise<IPO[]> {
+    const params: Record<string, string | number> = {}
+    if (filter?.status) params.status = filter.status
+    if (filter?.sector) params.sector = filter.sector
+    if (filter?.date_from) params.date_from = filter.date_from
+    if (filter?.date_to) params.date_to = filter.date_to
+    if (filter?.min_shares) params.min_shares = filter.min_shares
+    if (filter?.max_shares) params.max_shares = filter.max_shares
+    return apiClient.get<IPO[]>('/reference/ipo-calendar', { params })
+  },
+
+  getIPO(ipoId: string): Promise<IPO> {
+    return apiClient.get<IPO>(`/reference/ipo/${ipoId}`)
+  },
+
+  getUpcomingIPOs(days: number = 30): Promise<IPO[]> {
+    return apiClient.get<IPO[]>('/reference/ipo/upcoming', {
+      params: { days },
+    })
+  },
+
+  getRecentIPOs(limit: number = 20): Promise<IPO[]> {
+    return apiClient.get<IPO[]>('/reference/ipo/recent', {
+      params: { limit },
+    })
   },
 }

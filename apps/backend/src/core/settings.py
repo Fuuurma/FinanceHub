@@ -89,6 +89,7 @@ MIDDLEWARE = [
     "utils.helpers.logger.middleware.RequestLoggingMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 ROOT_URLCONF = "core.urls"
 
@@ -140,23 +141,16 @@ CHANNELS_WS_PROTOCOLS = ["websocket", "wss"]
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-        "PORT": os.getenv("DB_PORT", "3306"),
-        "OPTIONS": {
-            "charset": "utf8mb4",
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-            "connect_timeout": 10,
-            "read_timeout": 30,
-            "write_timeout": 30,
-        },
-        "CONN_MAX_AGE": 600,  # Connection reuse (10 minutes) - reduces connection overhead
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME", "finance_hub"),
+        "USER": os.getenv("DB_USER", "postgres"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
+        "HOST": os.getenv("DB_HOST", "postgres"),
+        "PORT": os.getenv("DB_PORT", "5432"),
+        "CONN_MAX_AGE": 600,
     },
     "test": {
-        "ENGINE": "django.db.backends.mysql",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": "finance_hub_test",
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
@@ -206,6 +200,26 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# CDN Configuration (CloudFlare)
+# https://developers.cloudflare.com/
+CDN_ENABLED = os.getenv("CDN_ENABLED", "False").lower() in ("true", "1", "yes")
+CDN_URL = os.getenv("CDN_URL", "https://assets.financehub.app")
+
+if CDN_ENABLED:
+    STATIC_URL = f"{CDN_URL}/static/"
+    MEDIA_URL = f"{CDN_URL}/media/"
+else:
+    MEDIA_URL = "media/"
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_ROOT = BASE_DIR / "media"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -221,12 +235,11 @@ CACHES = {
 
 
 DRAMATIQ_BROKER = {
-    "BROKER": "dramatiq.brokers.rabbitmq.RabbitmqBroker",
+    "BROKER": "dramatiq.brokers.redis.RedisBroker",
     "OPTIONS": {
-        "url": "amqp://localhost:5672",
+        "url": "redis://127.0.0.1:6379/0",
     },
     "MIDDLEWARE": [
-        "dramatiq.middleware.Prometheus",
         "dramatiq.middleware.AgeLimit",
         "dramatiq.middleware.TimeLimit",
         "dramatiq.middleware.Callbacks",
