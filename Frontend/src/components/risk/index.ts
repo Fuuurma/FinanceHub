@@ -2,3 +2,5 @@ export { RiskDashboard, RiskDashboardSkeleton, type RiskMetrics, type RiskLevel,
 export { PositionRiskCard, type PositionRiskData, type RiskLevel as PositionRiskLevel } from './PositionRiskCard'
 export { GreeksCalculator, calculateGreeks, type GreeksInput, type GreeksResult, type OptionType } from './GreeksCalculator'
 export { StressTestPanel, type StressScenario as StressTestScenario, type StressTestResult } from './StressTestPanel'
+export { ExposureChart, type ExposureData } from './ExposureChart'
+export { ImpliedVolatilityChart, type IVData } from './ImpliedVolatilityChart'

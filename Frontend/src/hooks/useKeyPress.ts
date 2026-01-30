@@ -31,15 +31,16 @@ export function useKeyPress(
   }, [keyFilter])
 
   useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      const isMatch = matchesKey(event)
+    const handler = (event: Event) => {
+      const keyboardEvent = event as KeyboardEvent
+      const isMatch = matchesKey(keyboardEvent)
 
       if (isMatch) {
         if (preventDefault) {
-          event.preventDefault()
+          keyboardEvent.preventDefault()
         }
         setPressed(true)
-        callback(event)
+        callback(keyboardEvent)
       }
     }
 
@@ -62,14 +63,16 @@ export function useKeysPressed(): Record<string, boolean> {
   const [pressedKeys, setPressedKeys] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      setPressedKeys(prev => ({ ...prev, [event.key.toLowerCase()]: true }))
+    const handleKeyDown = (event: Event) => {
+      const keyboardEvent = event as KeyboardEvent
+      setPressedKeys(prev => ({ ...prev, [keyboardEvent.key.toLowerCase()]: true }))
     }
 
-    const handleKeyUp = (event: KeyboardEvent) => {
+    const handleKeyUp = (event: Event) => {
+      const keyboardEvent = event as KeyboardEvent
       setPressedKeys(prev => {
         const next = { ...prev }
-        delete next[event.key.toLowerCase()]
+        delete next[keyboardEvent.key.toLowerCase()]
         return next
       })
     }
