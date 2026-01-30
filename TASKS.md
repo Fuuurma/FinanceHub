@@ -920,22 +920,21 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 - `websocket.ts` → Missing: Auth token refresh, connection health checks
 
 ### ❌ Not Integrated (Create New Module)
-- `fixed_income_analytics.py` → Create `fixed-income.ts`
-- `options_pricing.py` → Create `options-pricing.ts`
-- `currency.py` → Create `currency.ts`
-- `reference.py` → Integrate into existing modules
-- `realtimedata.py` → Enhance `markets.ts`
+- `options_pricing.py` → Create `options-pricing.ts` ⏳
+- `currency.py` → Create `currency.ts` ⏳
+- `reference.py` → Integrate into existing modules ⏳
+- `realtimedata.py` → Enhance `markets.ts` ⏳
 
 ---
 
 ## Next Steps
 
-1. **Start with I1: Fixed Income Analytics API Module**
-   - Create `/Frontend/src/lib/api/fixed-income.ts`
-   - Integrate endpoints: `/fixed-income/price`, `/fixed-income/zero-coupon`, `/fixed-income/yield-curve`, `/fixed-income/duration-convexity`, `/fixed-income/oas`, `/fixed-income/z-spread`
-   - Create types in `/Frontend/src/lib/types/fixed-income.ts`
+1. **✅ COMPLETED: I1: Fixed Income Analytics API Module**
+   - Created `/Frontend/src/lib/api/fixed-income.ts`
+   - Integrated endpoints: `/fixed-income/price`, `/fixed-income/zero-coupon`, `/fixed-income/yield-curve`, `/fixed-income/duration-convexity`, `/fixed-income/oas`, `/fixed-income/z-spread`
+   - Created types in `/Frontend/src/lib/types/fixed-income.ts`
 
-2. **Continue with I2: Options Pricing API Module**
+2. **I2: Options Pricing API Module (In Progress)**
    - Create `/Frontend/src/lib/api/options-pricing.ts`
    - Integrate endpoints: `/options-pricing/batch`, implied volatility calculations
    - Enhance existing Options components to use real API data
