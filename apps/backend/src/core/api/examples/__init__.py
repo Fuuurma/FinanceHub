@@ -3,7 +3,7 @@
 #
 # IMPORTANT: REFERENCE only - do not modify existing code.
 #
-# Location: /Users/sergi/Desktop/Projects/FinanceHub/Backend/src/core/api/examples/
+# Location: /Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src/core/api/examples/
 #
 # Core:
 # - /Users/sergi/Desktop/Projects/core/errors/

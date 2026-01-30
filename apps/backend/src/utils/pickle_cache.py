@@ -53,7 +53,7 @@ class NewsPickleCache:
         """
         self.cache_dir = (
             cache_dir
-            or "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src/media/news_cache"
+            or "/Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src/media/news_cache"
         )
         self.ttl_days = ttl_days
         os.makedirs(self.cache_dir, exist_ok=True)

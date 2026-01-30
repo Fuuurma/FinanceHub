@@ -10,7 +10,7 @@ import django
 from datetime import datetime
 
 # Add src to Python path
-sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src")
+sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src")
 
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")

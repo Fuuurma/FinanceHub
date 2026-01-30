@@ -23,7 +23,7 @@ from typing import List, Dict, Any
 import time
 
 # Setup Django
-sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src")
+sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 django.setup()
 
@@ -803,7 +803,7 @@ if __name__ == "__main__":
         schedule_enhanced_tasks()
 
         print("\n✨ System is now running! Press Ctrl+C to stop.")
-        print("📊 Monitor with: cd Backend && ./manage_jobs.sh monitor")
+        print("📊 Monitor with: cd apps/backend && ./manage_jobs.sh monitor")
         print()
 
         # Run immediate tasks

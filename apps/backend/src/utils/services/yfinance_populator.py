@@ -3,7 +3,7 @@ Yahoo Finance Database Population Script - Complete Implementation
 Populates the entire database with financial data from Yahoo Finance.
 
 Usage:
-    cd Backend/src
+    cd apps/backend/src
     python manage.py shell
 
     >>> import asyncio
@@ -25,7 +25,7 @@ from django.utils import timezone
 
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
-sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src")
+sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src")
 
 import django
 

@@ -8,7 +8,7 @@ import os
 import sys
 
 # Setup Django
-sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src")
+sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
 import django

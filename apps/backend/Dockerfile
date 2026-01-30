@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements and install Python dependencies
-COPY Backend/requirements-testing.txt .
+COPY apps/backend/requirements-testing.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements-testing.txt
 
@@ -46,7 +46,7 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY Backend/src/ ./src/
+COPY apps/backend/src/ ./src/
 
 # Change ownership
 RUN chown -R appuser:appuser /app

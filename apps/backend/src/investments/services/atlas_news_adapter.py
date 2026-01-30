@@ -117,7 +117,7 @@ class ATLASNewsAdapter:
 
         # Ensure output directory exists for FinanceHub
         self.output_dir = (
-            "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src/media/news_cache"
+            "/Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src/media/news_cache"
         )
         os.makedirs(self.output_dir, exist_ok=True)
 

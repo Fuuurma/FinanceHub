@@ -11,7 +11,7 @@ import time
 from datetime import datetime, timedelta
 
 # Setup Django
-sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src")
+sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 django.setup()
 

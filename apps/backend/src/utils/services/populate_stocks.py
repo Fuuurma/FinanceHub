@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.db import transaction
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
-sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/Backend/src")
+sys.path.insert(0, "/Users/sergi/Desktop/Projects/FinanceHub/apps/backend/src")
 
 import django
 
