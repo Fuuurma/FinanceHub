@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-# Exception: Frontend/lib contains TypeScript API modules
-!Frontend/src/lib/
+# Exception: apps/frontend/src/lib contains TypeScript API modules
+!apps/frontend/src/lib/
 lib/
 lib64/
 parts/

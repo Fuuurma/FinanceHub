@@ -28,21 +28,21 @@ help: ## Display this help message
 ##@ Development Setup
 
 install: ## Install all dependencies (backend + frontend)
-	@echo "$(BLUE)Installing Backend dependencies...$(NC)"
-	cd Backend && $(PIP) install -r requirements-testing.txt
-	@echo "$(BLUE)Installing Frontend dependencies...$(NC)"
-	cd Frontend && $(NPM) install
+	@echo "$(BLUE)Installing apps/backend dependencies...$(NC)"
+	cd apps/backend && $(PIP) install -r requirements-testing.txt
+	@echo "$(BLUE)Installing apps/frontend dependencies...$(NC)"
+	cd apps/frontend && $(NPM) install
 	@echo "$(GREEN)✓ Installation complete$(NC)"
 
 install-backend: ## Install backend dependencies only
-	@echo "$(BLUE)Installing Backend dependencies...$(NC)"
-	cd Backend && $(PIP) install -r requirements-testing.txt
-	@echo "$(GREEN)✓ Backend installation complete$(NC)"
+	@echo "$(BLUE)Installing apps/backend dependencies...$(NC)"
+	cd apps/backend && $(PIP) install -r requirements-testing.txt
+	@echo "$(GREEN)✓ apps/backend installation complete$(NC)"
 
 install-frontend: ## Install frontend dependencies only
-	@echo "$(BLUE)Installing Frontend dependencies...$(NC)"
-	cd Frontend && $(NPM) install
-	@echo "$(GREEN)✓ Frontend installation complete$(NC)"
+	@echo "$(BLUE)Installing apps/frontend dependencies...$(NC)"
+	cd apps/frontend && $(NPM) install
+	@echo "$(GREEN)✓ apps/frontend installation complete$(NC)"
 
 ##@ Development
 
@@ -51,8 +51,8 @@ dev: ## Start all services in development mode
 	$(DOCKER_COMPOSE) up -d
 	@echo "$(GREEN)✓ Services started$(NC)"
 	@echo ""
-	@echo "Frontend: http://localhost:3000"
-	@echo "Backend API: http://localhost:8000"
+	@echo "apps/frontend: http://localhost:3000"
+	@echo "apps/backend API: http://localhost:8000"
 	@echo "Admin: http://localhost:8000/admin"
 
 dev-detach: ## Start services in detached mode
@@ -117,22 +117,22 @@ test: ## Run all tests (backend + frontend)
 
 test-backend: ## Run backend tests
 	@echo "$(BLUE)Running backend tests...$(NC)"
-	cd Backend/src && pytest --cov=. --cov-report=html --cov-report=term -v
-	@echo "$(GREEN)✓ Backend tests complete$(NC)"
+	cd apps/backend/src && pytest --cov=. --cov-report=html --cov-report=term -v
+	@echo "$(GREEN)✓ apps/backend tests complete$(NC)"
 
 test-frontend: ## Run frontend tests
 	@echo "$(BLUE)Running frontend tests...$(NC)"
-	cd Frontend && $(NPM) test -- --coverage --watchAll=false
-	@echo "$(GREEN)✓ Frontend tests complete$(NC)"
+	cd apps/frontend && $(NPM) test -- --coverage --watchAll=false
+	@echo "$(GREEN)✓ apps/frontend tests complete$(NC)"
 
 test-e2e: ## Run E2E tests
 	@echo "$(BLUE)Running E2E tests...$(NC)"
-	cd Frontend && npx playwright test
+	cd apps/frontend && npx playwright test
 	@echo "$(GREEN)✓ E2E tests complete$(NC)"
 
 test-watch: ## Run tests in watch mode
 	@echo "$(BLUE)Running tests in watch mode...$(NC)"
-	cd Frontend && $(NPM) test -- --watch
+	cd apps/frontend && $(NPM) test -- --watch
 
 ##@ Linting & Formatting
 
@@ -144,13 +144,13 @@ lint: ## Run all linters
 
 lint-backend: ## Lint backend code
 	@echo "$(BLUE)Linting backend...$(NC)"
-	cd Backend/src && black --check . && isort --check-only . && flake8 .
-	@echo "$(GREEN)✓ Backend linting complete$(NC)"
+	cd apps/backend/src && black --check . && isort --check-only . && flake8 .
+	@echo "$(GREEN)✓ apps/backend linting complete$(NC)"
 
 lint-frontend: ## Lint frontend code
 	@echo "$(BLUE)Linting frontend...$(NC)"
-	cd Frontend && $(NPM) run lint
-	@echo "$(GREEN)✓ Frontend linting complete$(NC)"
+	cd apps/frontend && $(NPM) run lint
+	@echo "$(GREEN)✓ apps/frontend linting complete$(NC)"
 
 format: ## Format all code
 	@echo "$(BLUE)Formatting all code...$(NC)"
@@ -160,13 +160,13 @@ format: ## Format all code
 
 format-backend: ## Format backend code
 	@echo "$(BLUE)Formatting backend...$(NC)"
-	cd Backend/src && black . && isort .
-	@echo "$(GREEN)✓ Backend formatting complete$(NC)"
+	cd apps/backend/src && black . && isort .
+	@echo "$(GREEN)✓ apps/backend formatting complete$(NC)"
 
 format-frontend: ## Format frontend code
 	@echo "$(BLUE)Formatting frontend...$(NC)"
-	cd Frontend && $(NPM) run lint -- --fix
-	@echo "$(GREEN)✓ Frontend formatting complete$(NC)"
+	cd apps/frontend && $(NPM) run lint -- --fix
+	@echo "$(GREEN)✓ apps/frontend formatting complete$(NC)"
 
 typecheck: ## Run type checking
 	@echo "$(BLUE)Running type checks...$(NC)"
@@ -176,13 +176,13 @@ typecheck: ## Run type checking
 
 typecheck-backend: ## Type check backend
 	@echo "$(BLUE)Type checking backend...$(NC)"
-	cd Backend/src && mypy . || true
-	@echo "$(GREEN)✓ Backend type check complete$(NC)"
+	cd apps/backend/src && mypy . || true
+	@echo "$(GREEN)✓ apps/backend type check complete$(NC)"
 
 typecheck-frontend: ## Type check frontend
 	@echo "$(BLUE)Type checking frontend...$(NC)"
-	cd Frontend && npx tsc --noEmit
-	@echo "$(GREEN)✓ Frontend type check complete$(NC)"
+	cd apps/frontend && npx tsc --noEmit
+	@echo "$(GREEN)✓ apps/frontend type check complete$(NC)"
 
 ##@ Security
 
@@ -193,14 +193,14 @@ security-scan: ## Run all security scans
 
 security-backend: ## Scan backend for vulnerabilities
 	@echo "$(BLUE)Scanning backend...$(NC)"
-	cd Backend && pip-audit --desc
-	cd Backend/src && bandit -r . || true
-	@echo "$(GREEN)✓ Backend security scan complete$(NC)"
+	cd apps/backend && pip-audit --desc
+	cd apps/backend/src && bandit -r . || true
+	@echo "$(GREEN)✓ apps/backend security scan complete$(NC)"
 
 security-frontend: ## Scan frontend for vulnerabilities
 	@echo "$(BLUE)Scanning frontend...$(NC)"
-	cd Frontend && $(NPM) audit --audit-level=moderate
-	@echo "$(GREEN)✓ Frontend security scan complete$(NC)"
+	cd apps/frontend && $(NPM) audit --audit-level=moderate
+	@echo "$(GREEN)✓ apps/frontend security scan complete$(NC)"
 
 ##@ Build
 
@@ -212,16 +212,16 @@ build: ## Build all Docker images
 build-backend: ## Build backend Docker image
 	@echo "$(BLUE)Building backend image...$(NC)"
 	docker build -f Dockerfile.backend -t financehub-backend:latest .
-	@echo "$(GREEN)✓ Backend image built$(NC)"
+	@echo "$(GREEN)✓ apps/backend image built$(NC)"
 
 build-frontend: ## Build frontend Docker image
 	@echo "$(BLUE)Building frontend image...$(NC)"
 	docker build -f Dockerfile.frontend -t financehub-frontend:latest .
-	@echo "$(GREEN)✓ Frontend image built$(NC)"
+	@echo "$(GREEN)✓ apps/frontend image built$(NC)"
 
 build-prod: ## Build production bundles
 	@echo "$(BLUE)Building production bundles...$(NC)"
-	cd Frontend && $(NPM) run build
+	cd apps/frontend && $(NPM) run build
 	@echo "$(GREEN)✓ Production build complete$(NC)"
 
 ##@ Deployment
@@ -263,10 +263,10 @@ docker-stats: ## Show container stats
 health: ## Check health of all services
 	@echo "$(BLUE)Checking service health...$(NC)"
 	@echo ""
-	@echo "$(GREEN)Frontend:$(NC)"
+	@echo "$(GREEN)apps/frontend:$(NC)"
 	@curl -s -o /dev/null -w "  Status: %{http_code}\n" http://localhost:3000/health || echo "  Status: DOWN"
 	@echo ""
-	@echo "$(GREEN)Backend:$(NC)"
+	@echo "$(GREEN)apps/backend:$(NC)"
 	@curl -s -o /dev/null -w "  Status: %{http_code}\n" http://localhost:8000/api/health || echo "  Status: DOWN"
 	@echo ""
 	@echo "$(GREEN)Database:$(NC)"
@@ -292,12 +292,12 @@ clean: ## Clean all generated files
 	find . -type f -name "*.pyc" -delete
 	find . -type f -name "*.pyo" -delete
 	find . -type f -name ".DS_Store" -delete
-	rm -rf Backend/src/.pytest_cache
-	rm -rf Backend/src/htmlcov
-	rm -rf Backend/src/.coverage
-	rm -rf Frontend/.next
-	rm -rf Frontend/node_modules/.cache
-	rm -rf Frontend/coverage
+	rm -rf apps/backend/src/.pytest_cache
+	rm -rf apps/backend/src/htmlcov
+	rm -rf apps/backend/src/.coverage
+	rm -rf apps/frontend/.next
+	rm -rf apps/frontend/node_modules/.cache
+	rm -rf apps/frontend/coverage
 	@echo "$(GREEN)✓ Clean complete$(NC)"
 
 shell-backend: ## Open backend shell

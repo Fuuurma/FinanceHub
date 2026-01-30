@@ -41,8 +41,8 @@ services:
   # Backend API
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ./apps/backend
+      dockerfile: Dockerfile
     container_name: financehub-backend
     environment:
       DATABASE_URL: postgres://financehub:financehub_dev_password@postgres:5432/finance_hub
@@ -58,7 +58,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./Backend/src:/app/src
+      - ./apps/backend/src:/app/src
       - backend_logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
@@ -72,8 +72,8 @@ services:
   # Frontend (Next.js)
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ./apps/frontend
+      dockerfile: Dockerfile
     container_name: financehub-frontend
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
@@ -84,7 +84,7 @@ services:
       backend:
         condition: service_healthy
     volumes:
-      - ./Frontend:/app
+      - ./apps/frontend:/app
       - /app/node_modules
       - /app/.next
     healthcheck:
@@ -99,8 +99,8 @@ services:
   # Dramatiq Worker (Background Jobs)
   worker:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ./apps/backend
+      dockerfile: Dockerfile
     container_name: financehub-worker
     command: python start_dramatiq_worker.py
     environment:
@@ -114,7 +114,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./Backend/src:/app/src
+      - ./apps/backend/src:/app/src
       - worker_logs:/app/logs
     networks:
       - financehub-network
