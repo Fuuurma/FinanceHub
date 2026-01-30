@@ -4,3 +4,6 @@ export { GreeksCalculator, calculateGreeks, type GreeksInput, type GreeksResult,
 export { StressTestPanel, type StressScenario as StressTestScenario, type StressTestResult } from './StressTestPanel'
 export { ExposureChart, type ExposureData } from './ExposureChart'
 export { ImpliedVolatilityChart, type IVData } from './ImpliedVolatilityChart'
+export { LeverageAnalysis, type LeverageData, type LeverageMetrics, type LeverageAnalysisProps } from './LeverageAnalysis'
+export { RiskLimitPanel, type RiskLimit, type RiskLimitSummary, type RiskLimitPanelProps } from './RiskLimitPanel'
+export { DrawdownChart, type DrawdownData, type DrawdownMetrics, type DrawdownChartProps } from './DrawdownChart'
