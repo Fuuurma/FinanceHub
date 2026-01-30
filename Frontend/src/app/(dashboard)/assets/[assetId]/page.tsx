@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { 
-  TrendingUp, TrendingDown, Activity, Globe, Info, 
+import {
+  TrendingUp, TrendingDown, Activity, Globe, Info,
   Zap, BarChart3, ShieldCheck, Calendar,
   DollarSign, PieChart, Newspaper, Star, Target,
-  ArrowUpRight, ArrowDownRight, Minus
+  ArrowUpRight, ArrowDownRight, Minus, ChevronDown, ChevronRight
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -34,6 +34,45 @@ const TIMEFRAME_MAP: Record<string, string> = {
 
 function getChartTimeframe(tf: TimeFrame): '1d' | '1w' | '1m' | '1h' | '5m' | '15m' | '4h' | undefined {
   return TIMEFRAME_MAP[tf] as '1d' | '1w' | '1m' | '1h' | '5m' | '15m' | '4h' | undefined
+}
+
+interface CollapsibleSectionProps {
+  section: {
+    id: string
+    title: string
+    items: Array<{ label: string; value: string; good?: boolean }>
+  }
+}
+
+function CollapsibleSection({ section }: CollapsibleSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  return (
+    <div className="border rounded-lg overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          <span className="text-sm font-semibold">{section.title}</span>
+        </div>
+        <span className="text-xs text-muted-foreground">{section.items.length} metrics</span>
+      </button>
+      {isExpanded && (
+        <div className="border-t p-3 grid grid-cols-2 md:grid-cols-4 gap-2">
+          {section.items.map((item, idx) => (
+            <div key={idx} className="space-y-1">
+              <p className="text-[10px] text-muted-foreground uppercase">{item.label}</p>
+              <p className={`text-sm font-semibold ${item.good ? 'text-green-600' : 'text-red-600'}`}>
+                {item.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 interface AssetData {
@@ -119,6 +158,14 @@ export default function AssetDetailPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [assetData, setAssetData] = useState<AssetData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }))
+  }
 
   useEffect(() => {
     fetchAssetData()
@@ -286,34 +333,195 @@ export default function AssetDetailPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
+      {/* Header - Symbol Prominent */}
       <Card>
-        <CardHeader>
+        <CardContent className="pt-6">
           <div className="flex items-start justify-between">
-            <div className="space-y-2">
+            <div className="flex-1">
+              <div className="flex items-baseline gap-4 mb-2">
+                <h1 className="text-6xl font-bold tracking-tight">{assetData.symbol}</h1>
+                <span className="text-2xl text-muted-foreground font-light">{assetData.name}</span>
+              </div>
               <div className="flex items-center gap-3">
-                <ConnectionStatus />
-                <div>
-                  <CardTitle className="text-3xl">{assetData.symbol}</CardTitle>
-                  <CardDescription className="text-base">{assetData.name}</CardDescription>
-                </div>
-                <Badge variant="outline">{assetData.type.toUpperCase()}</Badge>
+                <Badge variant="outline" className="text-sm px-3 py-1">
+                  {assetData.type.toUpperCase()}
+                </Badge>
+                {assetData.fundamentals?.sector && (
+                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                    {assetData.fundamentals.sector}
+                  </Badge>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {assetData.fundamentals?.industry}
+                </span>
               </div>
             </div>
             
-            <div className="text-right">
-              <div className="text-3xl font-bold">
+            <div className="text-right space-y-1">
+              <div className="text-5xl font-bold tracking-tight">
                 {currentPrice ? `$${currentPrice.price.toFixed(2)}` : `$${assetData.price.toFixed(2)}`}
               </div>
-              <div className={`flex items-center gap-1 justify-end ${assetData.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {assetData.change >= 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
+              <div className={`flex items-center gap-2 justify-end text-lg ${assetData.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {assetData.change >= 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
                 <span className="font-semibold">
-                  {assetData.change >= 0 ? '+' : ''}{assetData.changePercent.toFixed(2)}%
+                  {assetData.change >= 0 ? '+' : ''}{assetData.change.toFixed(2)} ({assetData.changePercent >= 0 ? '+' : ''}{assetData.changePercent.toFixed(2)}%)
                 </span>
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Comprehensive Data Collapsible */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Comprehensive Data
+            <Badge variant="outline" className="text-xs">12 Sections</Badge>
+          </CardTitle>
+          <CardDescription>Expand for detailed analysis</CardDescription>
         </CardHeader>
+        <CardContent className="space-y-4">
+          {[
+            {
+              id: 'realtime',
+              title: 'Real-Time Data',
+              items: [
+                { label: 'Last Trade', value: '$178.75', good: true },
+                { label: 'Trade Size', value: '2,500', good: true },
+                { label: 'Bid Size', value: '15,400', good: true },
+                { label: 'Ask Size', value: '12,800', good: true },
+                { label: 'Spread', value: '$0.01', good: true },
+                { label: 'Tick Volume', value: '45,230', good: true },
+                { label: 'Money Flow', value: '+$1.2B', good: true },
+                { label: 'Trades (1h)', value: '23,450', good: true },
+              ]
+            },
+            {
+              id: 'profitability',
+              title: 'Profitability Metrics',
+              items: [
+                { label: 'Gross Margin', value: '45.2%', good: true },
+                { label: 'Operating Margin', value: '30.5%', good: true },
+                { label: 'Net Margin', value: '25.3%', good: true },
+                { label: 'FCF Margin', value: '26.0%', good: true },
+              ]
+            },
+            {
+              id: 'efficiency',
+              title: 'Efficiency Ratios',
+              items: [
+                { label: 'Asset Turnover', value: '1.08', good: true },
+                { label: 'Inventory Turnover', value: '38.5', good: true },
+                { label: 'Receivables Turnover', value: '14.2', good: true },
+                { label: 'Days Sales Outstanding', value: '25.7', good: true },
+              ]
+            },
+            {
+              id: 'liquidity',
+              title: 'Liquidity & Solvency',
+              items: [
+                { label: 'Current Ratio', value: '0.98', good: false },
+                { label: 'Quick Ratio', value: '0.85', good: false },
+                { label: 'Debt/Equity', value: '1.87', good: false },
+                { label: 'Interest Coverage', value: '29.5', good: true },
+              ]
+            },
+            {
+              id: 'growth',
+              title: 'Growth Metrics',
+              items: [
+                { label: 'Revenue Growth (YoY)', value: '-2.8%', good: false },
+                { label: 'EPS Growth (YoY)', value: '-10.5%', good: false },
+                { label: '3Y Revenue CAGR', value: '7.2%', good: true },
+                { label: '3Y EPS CAGR', value: '9.8%', good: true },
+              ]
+            },
+            {
+              id: 'cashflow',
+              title: 'Cash Flow Analysis',
+              items: [
+                { label: 'Operating Cash Flow', value: '$110.5B', good: true },
+                { label: 'CapEx', value: '-$10.9B', good: false },
+                { label: 'Free Cash Flow', value: '$99.6B', good: true },
+                { label: 'FCF Conversion', value: '102.7%', good: true },
+              ]
+            },
+            {
+              id: 'per-share',
+              title: 'Per Share Data',
+              items: [
+                { label: 'Book Value', value: '$3.96', good: true },
+                { label: 'Tangible Book', value: '$0.42', good: true },
+                { label: 'Working Capital', value: '$25.8B', good: true },
+                { label: 'Cash Per Share', value: '$4.82', good: true },
+              ]
+            },
+            {
+              id: 'options',
+              title: 'Options Activity',
+              items: [
+                { label: 'Put/Call Ratio', value: '0.65', good: true },
+                { label: 'Implied Volatility', value: '22.5%', good: false },
+                { label: '30D Avg Volume', value: '845K', good: true },
+                { label: 'Open Interest', value: '4.2M', good: true },
+              ]
+            },
+            {
+              id: 'analyst',
+              title: 'Analyst Forecasts',
+              items: [
+                { label: 'Next Year EPS Est', value: '$6.85', good: true },
+                { label: 'Next Year Revenue Est', value: '$405.2B', good: true },
+                { label: 'Long-Term Growth Est', value: '11.5%', good: true },
+                { label: 'Number of Analysts', value: '38', good: true },
+              ]
+            },
+            {
+              id: 'esg',
+              title: 'ESG Metrics',
+              items: [
+                { label: 'ESG Score', value: '72/100', good: true },
+                { label: 'Environmental', value: '68/100', good: true },
+                { label: 'Social', value: '75/100', good: true },
+                { label: 'Governance', value: '78/100', good: true },
+              ]
+            },
+            {
+              id: 'products',
+              title: 'Product/Service Breakdown',
+              items: [
+                { label: 'iPhone Revenue', value: '52.3%', good: true },
+                { label: 'Services Revenue', value: '22.1%', good: true },
+                { label: 'Mac Revenue', value: '8.4%', good: true },
+                { label: 'iPad Revenue', value: '6.2%', good: true },
+              ]
+            },
+            {
+              id: 'geographic',
+              title: 'Geographic Revenue Mix',
+              items: [
+                { label: 'Americas', value: '42.5%', good: true },
+                { label: 'Europe', value: '24.8%', good: true },
+                { label: 'Greater China', value: '18.9%', good: true },
+                { label: 'Japan', value: '6.8%', good: true },
+              ]
+            },
+            {
+              id: 'recommendations',
+              title: 'Analyst Recommendations',
+              items: [
+                { label: 'Strong Buy', value: '18', good: true },
+                { label: 'Buy', value: '12', good: true },
+                { label: 'Hold', value: '7', good: false },
+                { label: 'Sell', value: '1', good: false },
+              ]
+            },
+          ].map((section) => (
+            <CollapsibleSection key={section.id} section={section} />
+          ))}
+        </CardContent>
       </Card>
 
       {/* Chart Section */}
@@ -350,12 +558,17 @@ export default function AssetDetailPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-12">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="fundamentals">Fundamentals</TabsTrigger>
           <TabsTrigger value="technicals">Technicals</TabsTrigger>
           <TabsTrigger value="financials">Financials</TabsTrigger>
+          <TabsTrigger value="valuation">Valuation</TabsTrigger>
+          <TabsTrigger value="ownership">Ownership</TabsTrigger>
+          <TabsTrigger value="earnings">Earnings</TabsTrigger>
           <TabsTrigger value="news">News</TabsTrigger>
+          <TabsTrigger value="filings">Filings</TabsTrigger>
           <TabsTrigger value="dividends">Dividends</TabsTrigger>
           <TabsTrigger value="analysts">Analysts</TabsTrigger>
         </TabsList>
@@ -657,6 +870,377 @@ export default function AssetDetailPage() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Key Statistics Tab */}
+        <TabsContent value="stats" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Key Statistics</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Valuation Metrics */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Valuation</h4>
+                <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Market Cap</p>
+                    <p className="text-sm font-bold">${(assetData.marketCap / 1000000000000).toFixed(2)}T</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Enterprise Value</p>
+                    <p className="text-sm font-semibold">${(assetData.marketCap * 1.05 / 1000000000000).toFixed(2)}T</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">P/E Ratio</p>
+                    <p className="text-sm font-bold">{assetData.peRatio?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Forward P/E</p>
+                    <p className="text-sm font-semibold">{(assetData.peRatio! * 0.9).toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">PEG Ratio</p>
+                    <p className="text-sm font-bold">2.45</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">P/S Ratio</p>
+                    <p className="text-sm font-semibold">7.32</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">P/B Ratio</p>
+                    <p className="text-sm font-bold">{assetData.pbRatio?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">EV/Revenue</p>
+                    <p className="text-sm font-semibold">7.68</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">EV/EBITDA</p>
+                    <p className="text-sm font-bold">22.45</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trading Metrics */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Trading Information</h4>
+                <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">52W High</p>
+                    <p className="text-sm font-bold text-green-600">${assetData.week52High?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">52W Low</p>
+                    <p className="text-sm font-bold text-red-600">${assetData.week52Low?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">50D Avg</p>
+                    <p className="text-sm font-semibold">$178.45</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">200D Avg</p>
+                    <p className="text-sm font-bold">$175.32</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Volume</p>
+                    <p className="text-sm font-semibold">{(assetData.volume / 1000000).toFixed(1)}M</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Avg Volume</p>
+                    <p className="text-sm font-bold">{(assetData.avgVolume / 1000000).toFixed(1)}M</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Shares Outstanding</p>
+                    <p className="text-sm font-semibold">15.67B</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Float</p>
+                    <p className="text-sm font-bold">15.55B</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Holdings %</p>
+                    <p className="text-sm font-semibold">61.2%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Short Float</p>
+                    <p className="text-sm font-bold">0.8%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dividends */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Dividend Information</h4>
+                <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Dividend Yield</p>
+                    <p className="text-sm font-bold">{assetData.dividend?.yield.toFixed(2)}%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Annual Dividend</p>
+                    <p className="text-sm font-semibold">${assetData.dividend?.amount?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Payout Ratio</p>
+                    <p className="text-sm font-bold">15.2%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Dividend Frequency</p>
+                    <p className="text-sm font-semibold">{assetData.dividend?.frequency}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Last Ex-Div</p>
+                    <p className="text-sm font-bold">{new Date(assetData.dividend?.lastExDate || '').toLocaleDateString()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Pay Date</p>
+                    <p className="text-sm font-semibold">Feb 15, 2024</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Valuation Tab */}
+        <TabsContent value="valuation" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Valuation Metrics</CardTitle>
+              <CardDescription>Comprehensive valuation analysis</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Price Multiples */}
+                <div>
+                  <h4 className="text-sm font-semibold mb-3">Price Multiples</h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="border rounded-lg p-3">
+                      <p className="text-[10px] text-muted-foreground uppercase">P/E</p>
+                      <p className="text-lg font-bold">{assetData.peRatio?.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">Industry: 28.1</p>
+                    </div>
+                    <div className="border rounded-lg p-3">
+                      <p className="text-[10px] text-muted-foreground uppercase">P/B</p>
+                      <p className="text-lg font-bold">{assetData.pbRatio?.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">Industry: 12.5</p>
+                    </div>
+                    <div className="border rounded-lg p-3">
+                      <p className="text-[10px] text-muted-foreground uppercase">P/S</p>
+                      <p className="text-lg font-bold">7.32</p>
+                      <p className="text-xs text-muted-foreground">Industry: 6.8</p>
+                    </div>
+                    <div className="border rounded-lg p-3">
+                      <p className="text-[10px] text-muted-foreground uppercase">EV/EBITDA</p>
+                      <p className="text-lg font-bold">22.45</p>
+                      <p className="text-xs text-muted-foreground">Industry: 18.2</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Intrinsic Value */}
+                <div>
+                  <h4 className="text-sm font-semibold mb-3">Intrinsic Value Estimates</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="border rounded-lg p-3">
+                      <p className="text-[10px] text-muted-foreground uppercase">DCF Value</p>
+                      <p className="text-lg font-bold text-green-600">$195.40</p>
+                      <p className="text-xs text-green-600">+9.3% upside</p>
+                    </div>
+                    <div className="border rounded-lg p-3">
+                      <p className="text-[10px] text-muted-foreground uppercase">Graham Number</p>
+                      <p className="text-lg font-bold text-blue-600">$142.30</p>
+                      <p className="text-xs text-blue-600">Fair value</p>
+                    </div>
+                    <div className="border rounded-lg p-3">
+                      <p className="text-[10px] text-muted-foreground uppercase">Peter Lynch Value</p>
+                      <p className="text-lg font-bold text-purple-600">$188.75</p>
+                      <p className="text-xs text-purple-600">+5.6% upside</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Ownership Tab */}
+        <TabsContent value="ownership" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Ownership Structure</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Major Holders */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Major Shareholders</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-2 border rounded">
+                    <span className="text-sm font-medium">Vanguard Group Inc</span>
+                    <span className="text-sm font-bold">8.12%</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 border rounded">
+                    <span className="text-sm font-medium">BlackRock Inc</span>
+                    <span className="text-sm font-bold">4.56%</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 border rounded">
+                    <span className="text-sm font-medium">State Street Corp</span>
+                    <span className="text-sm font-bold">3.89%</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 border rounded">
+                    <span className="text-sm font-medium">Berkshire Hathaway</span>
+                    <span className="text-sm font-bold">5.92%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ownership Breakdown */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Ownership Breakdown</h4>
+                <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Institutions</p>
+                    <p className="text-sm font-bold">61.2%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Insiders</p>
+                    <p className="text-sm font-semibold">0.08%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Retail</p>
+                    <p className="text-sm font-bold">38.72%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Short Interest</p>
+                    <p className="text-sm font-semibold">0.8%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Insider Trading */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Recent Insider Activity</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-2 border rounded bg-green-50">
+                    <div>
+                      <p className="text-sm font-medium">Buy - Tim Cook</p>
+                      <p className="text-xs text-muted-foreground">Jan 15, 2024</p>
+                    </div>
+                    <span className="text-sm font-bold text-green-600">+50,000 shares</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 border rounded bg-red-50">
+                    <div>
+                      <p className="text-sm font-medium">Sell - Craig Federighi</p>
+                      <p className="text-xs text-muted-foreground">Jan 10, 2024</p>
+                    </div>
+                    <span className="text-sm font-bold text-red-600">-12,500 shares</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Earnings Tab */}
+        <TabsContent value="earnings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Earnings & Estimates</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Most Recent Quarter */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Q4 2023 Earnings</h4>
+                <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">EPS</p>
+                    <p className="text-sm font-bold">$2.18</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Estimate</p>
+                    <p className="text-sm font-semibold">$2.10</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Surprise</p>
+                    <p className="text-sm font-bold text-green-600">+3.81%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Revenue</p>
+                    <p className="text-sm font-semibold">$119.58B</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Estimate</p>
+                    <p className="text-sm font-bold">$117.85B</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Surprise</p>
+                    <p className="text-sm font-bold text-green-600">+1.47%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upcoming Earnings */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Earnings Calendar</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-semibold">Q1 2024 Earnings</p>
+                      <p className="text-xs text-muted-foreground">Expected: May 2024</p>
+                    </div>
+                    <Badge variant="outline">Upcoming</Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Earnings History */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Earnings History (Last 4 Quarters)</h4>
+                <div className="space-y-2">
+                  {['Q4 2023', 'Q3 2023', 'Q2 2023', 'Q1 2023'].map((quarter, idx) => (
+                    <div key={quarter} className="flex items-center justify-between p-2 border rounded">
+                      <span className="text-sm font-medium">{quarter}</span>
+                      <span className="text-sm font-semibold text-green-600">Beat</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* SEC Filings Tab */}
+        <TabsContent value="filings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">SEC Filings</CardTitle>
+              <CardDescription>Recent company filings with the SEC</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {[
+                  { type: '10-K', date: '2024-01-25', desc: 'Annual Report' },
+                  { type: '10-Q', date: '2024-02-02', desc: 'Quarterly Report' },
+                  { type: '8-K', date: '2024-01-18', desc: 'Material Agreement' },
+                  { type: 'DEF 14A', date: '2024-01-10', desc: 'Proxy Statement' },
+                  { type: '4', date: '2024-01-15', desc: 'Insider Trading' },
+                  { type: '8-K', date: '2024-01-08', desc: 'Earnings Release' },
+                ].map((filing, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{filing.type}</Badge>
+                        <span className="text-sm font-medium">{filing.desc}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{filing.date}</p>
+                    </div>
+                    <Button variant="ghost" size="sm">View</Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="analysts">

@@ -1,67 +1,32 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, User, LogOut, ShieldAlert, Settings, Moon, Sun, PanelLeft } from 'lucide-react'
+import { Search, User, LogOut, ShieldAlert, Settings, Moon, Sun, PanelLeft, Menu } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { CommandPalette } from '../search/command-palette'
 import { SignalCenter } from './navbar/signal-center'
-import { PanelLeftIcon } from 'lucide-react'
-
-function SidebarToggle() {
-  const [mounted, setMounted] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(true)
-
-  useEffect(() => {
-    setMounted(true)
-    const sidebar = document.querySelector('[data-slot="sidebar-wrapper"]')
-    if (sidebar) {
-      setIsExpanded(sidebar.getAttribute('data-state') !== 'collapsed')
-    }
-  }, [])
-
-  const toggleSidebar = () => {
-    const sidebar = document.querySelector('[data-slot="sidebar-wrapper"]')
-    if (sidebar) {
-      const newState = !isExpanded
-      sidebar.setAttribute('data-state', newState ? 'expanded' : 'collapsed')
-      setIsExpanded(newState)
-      document.cookie = `sidebar_state=${!newState}; path=/; max-age=${60 * 60 * 24 * 7}`
-    }
-  }
-
-  if (!mounted) {
-    return <div className="h-10 w-10 border-2 border-foreground" />
-  }
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="h-10 w-10 border-2 border-foreground rounded-none hover:bg-foreground hover:text-background transition-colors shadow-[2px_2px_0px_0px_var(--foreground)]"
-      onClick={toggleSidebar}
-    >
-      <PanelLeftIcon className="h-4 w-4" />
-    </Button>
-  )
-}
+import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar'
 
 export function Navbar() {
   const { setTheme, theme } = useTheme()
   const [commandOpen, setCommandOpen] = useState(false)
-  const [showSidebar, setShowSidebar] = useState(false)
-
-  useEffect(() => {
-    const hasSidebar = document.querySelector('[data-slot="sidebar-wrapper"]')
-    setShowSidebar(!!hasSidebar)
-  }, [])
+  const { isMobile } = useSidebar()
 
   return (
     <>
       <header className="sticky top-0 z-50 w-full h-16 border-b-4 border-foreground bg-background/95 backdrop-blur-md flex items-center px-6">
         <div className="flex items-center gap-4 flex-1">
-          {showSidebar && <SidebarToggle />}
+          <SidebarTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 border-2 border-foreground rounded-none hover:bg-foreground hover:text-background transition-colors shadow-[2px_2px_0px_0px_var(--foreground)]"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          </SidebarTrigger>
           <div className="hidden lg:flex flex-col">
             <span className="text-[9px] font-black uppercase tracking-[0.2em] leading-none opacity-50">Network_Health</span>
             <div className="flex items-center gap-2">
