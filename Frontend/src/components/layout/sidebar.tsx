@@ -16,8 +16,6 @@ import {
   SidebarGroup, SidebarGroupLabel,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton,
   SidebarMenuBadge, SidebarSeparator, SidebarRail,
-  SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton,
-  useSidebar,
 } from '@/components/ui/sidebar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuGroup } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
@@ -127,8 +125,6 @@ const toolItems: NavItem[] = [
 
 function SidebarNavGroup({ items, title, shortcutHint }: { items: NavItem[]; title: string; shortcutHint?: string }) {
   const pathname = usePathname()
-  const { state } = useSidebar()
-  const isCollapsed = state === 'collapsed'
 
   return (
     <SidebarGroup>
@@ -142,25 +138,22 @@ function SidebarNavGroup({ items, title, shortcutHint }: { items: NavItem[]; tit
             {item.submenu && item.submenu.length > 0 ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
-                      className={cn(
-                        "rounded-none border-2 border-transparent data-[active=true]:border-foreground data-[active=true]:bg-primary/10 hover:bg-muted h-10 px-3 transition-all cursor-pointer",
-                        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
-                      )}
-                      tooltip={item.description}
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      <span className="font-black uppercase text-[11px] tracking-tight group-data-[collapsible=icon]:hidden">{item.title}</span>
-                      <ChevronUp className="ml-auto h-3 w-3 rotate-180 transition-transform group-data-[collapsible=icon]:hidden" />
-                      {item.badge && (
-                        <Badge className="absolute top-1 right-1 h-4 min-w-4 p-0 flex items-center justify-center rounded-none bg-primary text-[8px] group-data-[collapsible=icon]:hidden">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <button
+                    className={cn(
+                      "w-full rounded-none border-2 border-transparent data-[active=true]:border-foreground data-[active=true]:bg-primary/10 hover:bg-muted h-10 px-3 transition-all cursor-pointer flex items-center gap-3",
+                      "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
+                      pathname === item.href || pathname.startsWith(item.href + '/') ? "border-foreground bg-primary/10" : ""
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="font-black uppercase text-[11px] tracking-tight group-data-[collapsible=icon]:hidden">{item.title}</span>
+                    <ChevronUp className="ml-auto h-3 w-3 rotate-180 transition-transform group-data-[collapsible=icon]:hidden" />
+                    {item.badge && (
+                      <Badge className="absolute top-1 right-1 h-4 min-w-4 p-0 flex items-center justify-center rounded-none bg-primary text-[8px] group-data-[collapsible=icon]:hidden">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   side="right"
@@ -224,8 +217,6 @@ function SidebarNavGroup({ items, title, shortcutHint }: { items: NavItem[]; tit
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const { state } = useSidebar()
-  const isCollapsed = state === 'collapsed'
 
   return (
     <>

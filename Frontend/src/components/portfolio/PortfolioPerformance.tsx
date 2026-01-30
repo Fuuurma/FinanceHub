@@ -2,9 +2,13 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
 import { cn, formatCurrency, formatPercent } from '@/lib/utils'
 import type { PortfolioHistory, PortfolioMetrics } from '@/lib/types'
-import { TrendingUp, TrendingDown, Activity, Percent } from 'lucide-react'
+import type { PnLHistoryPoint } from '@/lib/types/holdings'
+import { TrendingUp, TrendingDown, Activity, Percent, RefreshCw } from 'lucide-react'
+import { HoldingsPnLChart } from '@/components/charts/HoldingsPnLChart'
+import { useMemo } from 'react'
 
 interface PortfolioPerformanceProps {
   history: PortfolioHistory[]
@@ -21,6 +25,18 @@ export default function PortfolioPerformance({ history, metrics, period, onPerio
     { value: '1y', label: '1Y' },
     { value: 'all', label: 'All' },
   ] as const
+
+  const pnlHistoryData: PnLHistoryPoint[] = useMemo(() => {
+    if (history.length === 0) return []
+
+    const firstValue = history[0]?.value || 0
+    return history.map((point) => ({
+      date: point.date,
+      value: point.value,
+      pnl: point.value - firstValue,
+      pnl_percent: firstValue > 0 ? ((point.value - firstValue) / firstValue) * 100 : 0,
+    }))
+  }, [history])
 
   const maxValue = Math.max(...history.map((h) => h.value))
   const minValue = Math.min(...history.map((h) => h.value))
@@ -69,34 +85,9 @@ export default function PortfolioPerformance({ history, metrics, period, onPerio
         </div>
       </CardHeader>
       <CardContent>
-        {/* Performance Chart (Simple SVG) */}
-        <div className="h-64 relative">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="performanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <path
-              d={`M ${history.map((h, i) => {
-                const x = (i / (history.length - 1)) * 100
-                const y = 100 - ((h.value - minValue) / range) * 100
-                return `${x},${y}`
-              }).join(' L ')}`}
-              fill="none"
-              stroke="var(--primary)"
-              strokeWidth="0.5"
-            />
-            <path
-              d={`M ${history.map((h, i) => {
-                const x = (i / (history.length - 1)) * 100
-                const y = 100 - ((h.value - minValue) / range) * 100
-                return `${x},${y}`
-              }).join(' L ')} L 100,100 L 0,100 Z`}
-              fill="url(#performanceGradient)"
-            />
-          </svg>
+        {/* P&L Chart */}
+        <div className="h-80">
+          <HoldingsPnLChart data={pnlHistoryData} loading={false} />
         </div>
 
         {/* Metrics Grid */}
