@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -12,36 +12,70 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TrendingUp, TrendingDown, PieChart, BarChart3, Layers, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import {
+  TrendingUp, TrendingDown, PieChart, BarChart3, Layers, ArrowUpRight, ArrowDownRight,
+  Settings2, Target, Activity, Zap
+} from 'lucide-react'
 import type { Holding, AttributionPeriod } from '@/lib/types/holdings'
+import type { BenchmarkType } from '@/lib/types/attribution'
 import {
   calculateAttributionSummary,
   calculateHoldingAttribution,
   calculateSectorAttribution,
   calculateAssetClassAttribution,
+  calculateBenchmarkComparison,
   DEFAULT_ATTRIBUTION_PERIODS,
+  BENCHMARK_CONFIGS,
+  BENCHMARK_CATEGORIES,
+  type BenchmarkConfig,
 } from '@/lib/utils/attribution-calculations'
 import { SECTOR_COLORS } from '@/lib/types/attribution'
 import { cn } from '@/lib/utils'
 import { SectorAttributionChart } from './SectorAttributionChart'
 import { HoldingAttributionTable } from './HoldingAttributionTable'
 import { AttributionSummary } from './AttributionSummary'
+import { useMemo as useReactMemo } from 'react'
 
 interface AttributionDashboardProps {
   holdings: Holding[]
   loading?: boolean
   onPeriodChange?: (period: AttributionPeriod) => void
+  benchmark?: BenchmarkType
 }
 
 export function AttributionDashboard({
   holdings,
   loading = false,
   onPeriodChange,
+  initialBenchmark = 'sp500',
 }: AttributionDashboardProps) {
   const [period, setPeriod] = useState<AttributionPeriod>('1m')
   const [activeTab, setActiveTab] = useState('summary')
+  const [benchmark, setBenchmark] = useState<BenchmarkType>(initialBenchmark)
+  const [showBenchmarkSettings, setShowBenchmarkSettings] = useState(false)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['us_indices', 'etf'])
 
-  const summary = useMemo(() => calculateAttributionSummary(holdings), [holdings])
+  const filteredBenchmarks = useMemo(() => {
+    return BENCHMARK_CONFIGS.filter(b => selectedCategories.includes(b.category))
+  }, [selectedCategories])
+
+  const summary = useMemo(() => {
+    const baseSummary = calculateAttributionSummary(holdings)
+    const benchmarkConfig = BENCHMARK_CONFIGS.find(b => b.type === benchmark)
+    if (benchmarkConfig) {
+      return calculateBenchmarkComparison(baseSummary, holdings, benchmarkConfig, period)
+    }
+    return baseSummary
+  }, [holdings, benchmark, period])
+
   const holdingAttribution = useMemo(() => calculateHoldingAttribution(holdings), [holdings])
   const sectorAttribution = useMemo(() => calculateSectorAttribution(holdings), [holdings])
   const assetClassAttribution = useMemo(() => calculateAssetClassAttribution(holdings), [holdings])
@@ -57,12 +91,15 @@ export function AttributionDashboard({
       maximumFractionDigits: 0,
     }).format(value)
 
+  const benchmarkConfig = BENCHMARK_CONFIGS.find(b => b.type === benchmark)
+  const excessReturn = summary.benchmark_comparison?.excess_return ?? 0
+
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-64" />
         </div>
         <div className="grid gap-4 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
@@ -77,32 +114,165 @@ export function AttributionDashboard({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">Performance Attribution</h2>
           <p className="text-muted-foreground">
             Analyze how each holding, sector, and asset class contributed to your returns
           </p>
         </div>
-        <Select
-          value={period}
-          onValueChange={(value) => {
-            setPeriod(value as AttributionPeriod)
-            onPeriodChange?.(value as AttributionPeriod)
-          }}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Select period" />
-          </SelectTrigger>
-          <SelectContent>
-            {DEFAULT_ATTRIBUTION_PERIODS.map((p) => (
-              <SelectItem key={p.value} value={p.value}>
-                {p.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-3">
+          {/* Benchmark Selector */}
+          <Popover open={showBenchmarkSettings} onOpenChange={setShowBenchmarkSettings}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="min-w-[180px]">
+                <Target className="w-4 h-4 mr-2" />
+                <span className="truncate">
+                  {benchmarkConfig?.name || 'Select Benchmark'}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80" align="end">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Benchmark Settings</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Compare your portfolio performance against market indices, ETFs, or custom benchmarks.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Categories</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {BENCHMARK_CATEGORIES.map(cat => (
+                      <Badge
+                        key={cat.value}
+                        variant={selectedCategories.includes(cat.value) ? 'default' : 'outline'}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (selectedCategories.includes(cat.value)) {
+                            setSelectedCategories(prev => prev.filter(c => c !== cat.value))
+                          } else {
+                            setSelectedCategories(prev => [...prev, cat.value])
+                          }
+                        }}
+                      >
+                        {cat.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  <Label className="text-xs">Select Benchmark</Label>
+                  {filteredBenchmarks.map(b => (
+                    <div
+                      key={b.type}
+                      className={cn(
+                        'flex items-center gap-2 p-2 rounded cursor-pointer transition-colors',
+                        benchmark === b.type ? 'bg-primary/10' : 'hover:bg-muted'
+                      )}
+                      onClick={() => {
+                        setBenchmark(b.type)
+                        setShowBenchmarkSettings(false)
+                      }}
+                    >
+                      <div className={cn(
+                        'w-3 h-3 rounded-full',
+                        benchmark === b.type ? 'bg-primary' : 'border border-muted-foreground'
+                      )} />
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{b.name}</div>
+                        <div className="text-xs text-muted-foreground">{b.description}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Period Selector */}
+          <Select
+            value={period}
+            onValueChange={(value) => {
+              setPeriod(value as AttributionPeriod)
+              onPeriodChange?.(value as AttributionPeriod)
+            }}
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Period" />
+            </SelectTrigger>
+            <SelectContent>
+              {DEFAULT_ATTRIBUTION_PERIODS.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+
+      {/* Benchmark Comparison Header */}
+      {summary.benchmark_comparison && (
+        <Card className="bg-muted/50">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">vs</span>
+                  <span className="font-semibold">{benchmarkConfig?.name}</span>
+                </div>
+                <div className="h-8 w-px bg-border" />
+                <div className="flex items-center gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Portfolio: </span>
+                    <span className={cn(
+                      'font-semibold',
+                      summary.total_return >= 0 ? 'text-green-600' : 'text-red-600'
+                    )}>
+                      {formatPercent(summary.total_return)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">{benchmarkConfig?.name}: </span>
+                    <span className={cn(
+                      'font-semibold',
+                      summary.benchmark_comparison.benchmark_return >= 0 ? 'text-green-600' : 'text-red-600'
+                    )}>
+                      {formatPercent(summary.benchmark_comparison.benchmark_return)}
+                    </span>
+                  </div>
+                  <div className="h-4 w-px bg-border" />
+                  <div>
+                    <span className="text-muted-foreground">Excess Return: </span>
+                    <span className={cn(
+                      'font-semibold',
+                      excessReturn >= 0 ? 'text-green-600' : 'text-red-600'
+                    )}>
+                      {formatPercent(excessReturn)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                {summary.benchmark_comparison.information_ratio !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <Activity className="w-3 h-3" />
+                    <span>IR: {summary.benchmark_comparison.information_ratio.toFixed(2)}</span>
+                  </div>
+                )}
+                {summary.benchmark_comparison.beta !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <Zap className="w-3 h-3" />
+                    <span>β: {summary.benchmark_comparison.beta.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -237,6 +407,8 @@ export function AttributionDashboard({
               <SectorAttributionChart
                 data={sectorAttribution}
                 type="bar"
+                showBenchmark={!!summary.benchmark_comparison}
+                benchmarkReturn={summary.benchmark_comparison?.benchmark_return}
               />
             </TabsContent>
 

@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TrendingUp, TrendingDown, Plus, Trash2, Edit2, DollarSign, BarChart3 } from 'lucide-react'
-// import { AttributionDashboard } from '@/components/attribution/AttributionDashboard'
+import { AttributionDashboard } from '@/components/attribution/AttributionDashboard'
 
 export default function HoldingsPage() {
   const [portfolioId] = useState('default')
@@ -107,267 +107,268 @@ export default function HoldingsPage() {
 
   return (
     <Tabs defaultValue="holdings" className="w-full">
-       <TabsList className="grid w-full grid-cols-2 mb-6">
-         <TabsTrigger value="holdings">Holdings</TabsTrigger>
-         <TabsTrigger value="attribution">
-           <BarChart3 className="w-4 h-4 mr-2" />
-           Attribution
-         </TabsTrigger>
-       </TabsList>
+      <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsTrigger value="holdings">Holdings</TabsTrigger>
+        <TabsTrigger value="attribution">
+          <BarChart3 className="w-4 h-4 mr-2" />
+          Attribution
+        </TabsTrigger>
+      </TabsList>
 
-       <TabsContent value="holdings" className="space-y-6">
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{portfolioName}</h1>
-          <p className="text-muted-foreground">Portfolio Holdings</p>
-        </div>
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Holding
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Holding</DialogTitle>
-              <DialogDescription>Add a new asset to your portfolio</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddHolding} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="symbol">Symbol</Label>
-                <Input
-                  id="symbol"
-                  value={newSymbol}
-                  onChange={(e) => setNewSymbol(e.target.value)}
-                  placeholder="AAPL"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Apple Inc."
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="assetClass">Asset Class</Label>
-                <select
-                  id="assetClass"
-                  value={newAssetClass}
-                  onChange={(e) => setNewAssetClass(e.target.value as any)}
-                  className="w-full px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="stocks">Stocks</option>
-                  <option value="crypto">Cryptocurrency</option>
-                  <option value="bonds">Bonds</option>
-                  <option value="etf">ETFs</option>
-                  <option value="options">Options</option>
-                  <option value="cash">Cash</option>
-                  <option value="commodities">Commodities</option>
-                  <option value="real_estate">Real Estate</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  step="any"
-                  value={newQuantity}
-                  onChange={(e) => setNewQuantity(e.target.value)}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="avgPrice">Average Cost</Label>
-                <Input
-                  id="avgPrice"
-                  type="number"
-                  step="any"
-                  value={newAvgPrice}
-                  onChange={(e) => setNewAvgPrice(e.target.value)}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
-                  Cancel
+      <TabsContent value="holdings" className="space-y-6">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">{portfolioName}</h1>
+              <p className="text-muted-foreground">Portfolio Holdings</p>
+            </div>
+            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Holding
                 </Button>
-                <Button type="submit">Add</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Holding</DialogTitle>
+                  <DialogDescription>Add a new asset to your portfolio</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddHolding} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="symbol">Symbol</Label>
+                    <Input
+                      id="symbol"
+                      value={newSymbol}
+                      onChange={(e) => setNewSymbol(e.target.value)}
+                      placeholder="AAPL"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      placeholder="Apple Inc."
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="assetClass">Asset Class</Label>
+                    <select
+                      id="assetClass"
+                      value={newAssetClass}
+                      onChange={(e) => setNewAssetClass(e.target.value as any)}
+                      className="w-full px-3 py-2 border rounded-md bg-background"
+                    >
+                      <option value="stocks">Stocks</option>
+                      <option value="crypto">Cryptocurrency</option>
+                      <option value="bonds">Bonds</option>
+                      <option value="etf">ETFs</option>
+                      <option value="options">Options</option>
+                      <option value="cash">Cash</option>
+                      <option value="commodities">Commodities</option>
+                      <option value="real_estate">Real Estate</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity">Quantity</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      step="any"
+                      value={newQuantity}
+                      onChange={(e) => setNewQuantity(e.target.value)}
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="avgPrice">Average Cost</Label>
+                    <Input
+                      id="avgPrice"
+                      type="number"
+                      step="any"
+                      value={newAvgPrice}
+                      onChange={(e) => setNewAvgPrice(e.target.value)}
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">Add</Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-      {error && (
-        <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
-          <p>{error}</p>
-        </div>
-      )}
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+              <p>{error}</p>
+            </div>
+          )}
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardDescription>Total Value</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Total Holdings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{holdings.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Unrealized P&L</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className={`text-3xl font-bold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardContent className="pt-6">
-                <Skeleton className="h-20 w-full" />
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardDescription>Total Value</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : holdings.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <DollarSign className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-4">No holdings in this portfolio</p>
-            <Button onClick={() => setShowAddDialog(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Your First Holding
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {holdings.map((holding) => (
-            <Card key={holding.id}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-xl font-bold">{holding.symbol}</h3>
-                      <Badge variant="outline">{holding.asset_class}</Badge>
+            <Card>
+              <CardHeader>
+                <CardDescription>Total Holdings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">{holdings.length}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Unrealized P&L</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className={`text-3xl font-bold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Card key={i}>
+                  <CardContent className="pt-6">
+                    <Skeleton className="h-20 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : holdings.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <DollarSign className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">No holdings in this portfolio</p>
+                <Button onClick={() => setShowAddDialog(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Your First Holding
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {holdings.map((holding) => (
+                <Card key={holding.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-xl font-bold">{holding.symbol}</h3>
+                          <Badge variant="outline">{holding.asset_class}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">{holding.name}</p>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Quantity</p>
+                            <p className="font-semibold">{holding.quantity.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Avg. Buy Price</p>
+                            <p className="font-semibold">${holding.average_cost.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Current Price</p>
+                            <p className="font-semibold">${holding.current_price.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Current Value</p>
+                            <p className="font-semibold">${holding.current_value.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">P&L</p>
+                            <p className={`font-semibold flex items-center ${holding.unrealized_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {holding.unrealized_pnl >= 0 ? (
+                                <TrendingUp className="w-4 h-4 mr-1" />
+                              ) : (
+                                <TrendingDown className="w-4 h-4 mr-1" />
+                              )}
+                              ${Math.abs(holding.unrealized_pnl).toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(holding)}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteHolding(holding.id)}>
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">{holding.name}</p>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Quantity</p>
-                        <p className="font-semibold">{holding.quantity.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Avg. Buy Price</p>
-                        <p className="font-semibold">${holding.average_cost.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Current Price</p>
-                        <p className="font-semibold">${holding.current_price.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Current Value</p>
-                        <p className="font-semibold">${holding.current_value.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">P&L</p>
-                        <p className={`font-semibold flex items-center ${holding.unrealized_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {holding.unrealized_pnl >= 0 ? (
-                            <TrendingUp className="w-4 h-4 mr-1" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 mr-1" />
-                          )}
-                          ${Math.abs(holding.unrealized_pnl).toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(holding)}>
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteHolding(holding.id)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Holding</DialogTitle>
+                <DialogDescription>Update holding quantity and average buy price</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleUpdateHolding} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Asset</Label>
+                  <Input value={selectedHolding?.symbol || ''} disabled />
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <div className="space-y-2">
+                  <Label htmlFor="editQuantity">Quantity</Label>
+                  <Input
+                    id="editQuantity"
+                    type="number"
+                    step="any"
+                    value={editQuantity}
+                    onChange={(e) => setEditQuantity(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editAvgPrice">Average Buy Price</Label>
+                  <Input
+                    id="editAvgPrice"
+                    type="number"
+                    step="any"
+                    value={editAvgPrice}
+                    onChange={(e) => setEditAvgPrice(e.target.value)}
+                    placeholder="Optional"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Save</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-      )}
-
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Holding</DialogTitle>
-            <DialogDescription>Update holding quantity and average buy price</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleUpdateHolding} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Asset</Label>
-              <Input value={selectedHolding?.symbol || ''} disabled />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editQuantity">Quantity</Label>
-              <Input
-                id="editQuantity"
-                type="number"
-                step="any"
-                value={editQuantity}
-                onChange={(e) => setEditQuantity(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editAvgPrice">Average Buy Price</Label>
-              <Input
-                id="editAvgPrice"
-                type="number"
-                step="any"
-                value={editAvgPrice}
-                onChange={(e) => setEditAvgPrice(e.target.value)}
-                placeholder="Optional"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">Save</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
       </TabsContent>
 
       <TabsContent value="attribution" className="space-y-6">
-        <AttributionDashboard period="1m" />
+        <AttributionDashboard holdings={holdings} initialBenchmark="sp500" />
       </TabsContent>
     </Tabs>
   )

@@ -316,7 +316,7 @@ export default function AnalyticsPage() {
             </ChartCard>
            </TabsContent>
 
-           <TabsContent value="attribution" className="space-y-6">
+            <TabsContent value="attribution" className="space-y-6">
               <AttributionDashboard
                 holdings={mockHoldingsData.map(h => ({
                   id: h.symbol,
@@ -340,6 +340,7 @@ export default function AnalyticsPage() {
                   updated_at: new Date().toISOString(),
                 }))}
                 loading={loading}
+                initialBenchmark="sp500"
               />
             </TabsContent>
 
