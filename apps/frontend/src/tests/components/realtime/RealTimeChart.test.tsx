@@ -4,6 +4,20 @@ import '@testing-library/jest-dom'
 import RealTimeChart from '@/components/realtime/RealTimeChart'
 import { useRealtimeStore } from '@/stores/realtimeStore'
 
+jest.mock('lightweight-charts', () => ({
+  createChart: jest.fn(() => ({
+    addSeries: jest.fn(() => ({
+      setData: jest.fn(),
+      update: jest.fn(),
+    })),
+    timeScale: jest.fn(() => ({
+      fitContent: jest.fn(),
+      setVisibleRange: jest.fn(),
+    })),
+    remove: jest.fn(),
+  })),
+}))
+
 jest.mock('@/stores/realtimeStore', () => ({
   useRealtimeStore: jest.fn(),
 }))
@@ -20,6 +34,7 @@ describe('RealTimeChart', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseRealtimeStore.mockReset()
   })
 
   afterEach(() => {

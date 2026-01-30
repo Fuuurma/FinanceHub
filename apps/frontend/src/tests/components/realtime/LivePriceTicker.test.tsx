@@ -13,6 +13,7 @@ describe('LivePriceTicker', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseRealtimeStore.mockReset()
   })
 
   afterEach(() => {

@@ -20,6 +20,7 @@ describe('OrderBook', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseRealtimeStore.mockReset()
   })
 
   afterEach(() => {

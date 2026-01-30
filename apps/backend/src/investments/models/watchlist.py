@@ -10,7 +10,9 @@ class Watchlist(UUIDModel, TimestampedModel):
     )
     name = models.CharField(max_length=100)
     assets = models.ManyToManyField("assets.Asset", blank=True)
-    is_public = models.BooleanField(default=False, help_text="Make this watchlist visible to others")
+    is_public = models.BooleanField(
+        default=False, help_text="Make this watchlist visible to others"
+    )
 
     class Meta:
         db_table = "watchlists"
@@ -27,4 +29,4 @@ class Watchlist(UUIDModel, TimestampedModel):
 
     @property
     def asset_symbols(self):
-        return [asset.symbol for asset in self.assets.all()]
+        return list(self.assets.values_list("symbol", flat=True))

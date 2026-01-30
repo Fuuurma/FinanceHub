@@ -15,6 +15,7 @@ describe('SentimentPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetSentiment.mockReset()
   })
 
   it('renders page title and description', () => {

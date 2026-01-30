@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Search, Filter, Download, RefreshCw, Plus, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +21,7 @@ import {
 import type { AssetClass, HoldingsFilter } from '@/lib/types/holdings'
 import { ASSET_CLASS_LABELS } from '@/lib/types/holdings'
 import { cn } from '@/lib/utils'
+import { useDebouncedCallback } from '@/hooks/use-debounce'
 
 interface HoldingsToolbarProps {
   onSearch: (search: string) => void
@@ -43,9 +44,13 @@ export function HoldingsToolbar({
 }: HoldingsToolbarProps) {
   const [searchInput, setSearchInput] = useState('')
 
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    onSearch(value)
+  }, 300)
+
   const handleSearchChange = (value: string) => {
     setSearchInput(value)
-    onSearch(value)
+    debouncedSearch(value)
   }
 
   const handleAssetClassFilter = (value: string) => {

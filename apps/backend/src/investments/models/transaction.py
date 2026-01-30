@@ -25,9 +25,15 @@ class Transaction(UUIDModel, TimestampedModel, SoftDeleteModel):
         blank=True,
         related_name="transactions",
     )
-    transaction_type = models.ForeignKey(TransactionType, on_delete=models.PROTECT)
+    transaction_type = models.ForeignKey(
+        TransactionType, on_delete=models.PROTECT, related_name="transactions"
+    )
     asset = models.ForeignKey(
-        "assets.Asset", on_delete=models.PROTECT, null=True, blank=True
+        "assets.Asset",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="transactions",
     )
     date = models.DateTimeField(db_index=True)
     quantity = models.DecimalField(

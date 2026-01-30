@@ -19,8 +19,9 @@ class PortfolioService:
     @staticmethod
     def calculate_portfolio_value(portfolio: Portfolio) -> Decimal:
         value = Decimal("0")
-        for holding in portfolio.holdings.all():
-            latest_price = holding.asset.prices.order_by("-date").first()
-            if latest_price:
-                value += latest_price.close * holding.quantity
+        holdings = portfolio.holdings.select_related("asset").filter(is_deleted=False)
+        for holding in holdings:
+            price = holding.asset.last_price
+            if price:
+                value += price * holding.quantity
         return value.quantize(Decimal("0.01"))

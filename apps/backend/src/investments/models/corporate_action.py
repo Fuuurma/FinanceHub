@@ -5,7 +5,9 @@ from utils.helpers.timestamped_model import TimestampedModel
 
 
 class CorporateAction(UUIDModel, TimestampedModel):
-    asset = models.ForeignKey("assets.Asset", on_delete=models.CASCADE)
+    asset = models.ForeignKey(
+        "assets.Asset", on_delete=models.CASCADE, related_name="corporate_actions"
+    )
     action_type = models.CharField(max_length=50)  # Split, Merger, Spin-off, etc.
     date = models.DateField()
     ratio = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)

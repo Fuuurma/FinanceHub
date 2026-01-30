@@ -18,9 +18,16 @@ jest.mock('@/lib/api/websocket', () => ({
 
 describe('ConnectionStatus', () => {
   const mockUseRealtimeStore = useRealtimeStore as jest.Mock
+  const mockGetWebSocketClient = (getWebSocketClient as jest.Mock)
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseRealtimeStore.mockReset()
+    mockGetWebSocketClient.mockReturnValue({
+      getPingMs: () => 45,
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    })
   })
 
   afterEach(() => {
