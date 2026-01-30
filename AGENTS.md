@@ -10,16 +10,23 @@
 
 **BEFORE YOU START ANY TASK ON FinanceHub, YOU MUST:**
 
-### 0. SECURITY CHECK (NEW - CRITICAL)
+### 0. SECURITY CHECK (🚨 CRITICAL - READ FIRST)
 ```bash
-# READ THIS FIRST - Security is our top priority
+# 🚨 READ THIS FIRST - Security is our top priority
+cat ~/Desktop/Projects/FinanceHub/CRITICAL_SECURITY_STATUS.md
 cat ~/Desktop/Projects/FinanceHub/SECURITY_TODO.md
 
-# Verify you understand:
-# - 22 active vulnerabilities (2 Critical, 10 High)
+# 🚨 CRITICAL: Verify you understand:
+# - 30 ACTIVE frontend vulnerabilities (2 CRITICAL, 11 HIGH, 15 MODERATE, 2 LOW)
+# - Backend: 0 vulnerabilities (all fixed) ✅
 # - DO NOT introduce new vulnerable dependencies
+# - ALL non-critical work PAUSED until fixes complete
 # - All PRs subject to security review by CHARO
 # - Report security concerns immediately
+
+# 🚨 IF WORKING ON FRONTEND:
+# You must fix CRITICAL vulnerabilities first:
+# cd Frontend && npm install next@15.2.3 jspdf@4.0.0 react@19.0.3 glob@11.1.0 dompurify@3.2.4
 ```
 
 ### 1. Read This File First
