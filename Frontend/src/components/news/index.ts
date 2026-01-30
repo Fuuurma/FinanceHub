@@ -1,3 +1,6 @@
 export { NewsCard } from './NewsCard'
 export { NewsFilters } from './NewsFilters'
+export { NewsSearch } from './NewsSearch'
 export { NewsSentimentPanel } from './NewsSentimentPanel'
+export { TrendingTopics } from './TrendingTopics'
+export { NewsFeed } from './NewsFeed'

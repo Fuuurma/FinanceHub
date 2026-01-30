@@ -29,20 +29,25 @@ import {
   Target,
   Clock,
   Zap,
+  Calendar,
+  DollarSign,
+  Percent,
+  Activity,
+  TrendingUpIcon,
 } from 'lucide-react'
 import { createChart, ColorType, CrosshairMode } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
-import type { BacktestResult, StrategyComparisonResult } from '@/lib/types/analytics'
+import type { BacktestResult, StrategyComparisonResult, BacktestResultEnhanced, Trade, MonthlyReturn, RiskMetricsDetail } from '@/lib/types/analytics'
 import { cn, formatCurrency, formatPercent } from '@/lib/utils'
 
 interface BacktestResultsProps {
-  result?: BacktestResult | null
+  result?: BacktestResultEnhanced | null
   comparison?: StrategyComparisonResult | null
   loading?: boolean
   className?: string
 }
 
-const MOCK_BACKTEST_RESULT: BacktestResult = {
+const MOCK_BACKTEST_RESULT: BacktestResultEnhanced = {
   success: true,
   data: {
     strategy_name: 'Equal Weight S&P 500',
@@ -53,6 +58,51 @@ const MOCK_BACKTEST_RESULT: BacktestResult = {
     win_rate: 0.58,
     equity_curve: [100000, 102500, 101000, 104000, 103500, 106000, 108500, 107000, 110000, 112500, 115000, 113000, 116000],
     interpretation: 'Strategy showed positive returns with moderate volatility. Sharpe ratio indicates reasonable risk-adjusted performance.',
+    trades: [
+      { id: '1', symbol: 'AAPL', entry_date: '2023-01-15', exit_date: '2023-03-20', entry_price: 135.50, exit_price: 155.30, quantity: 100, pnl: 1980, pnl_percent: 14.61, side: 'long', status: 'closed' },
+      { id: '2', symbol: 'MSFT', entry_date: '2023-02-01', exit_date: '2023-04-15', entry_price: 240.00, exit_price: 285.40, quantity: 50, pnl: 2270, pnl_percent: 18.92, side: 'long', status: 'closed' },
+      { id: '3', symbol: 'GOOGL', entry_date: '2023-03-10', exit_date: '2023-05-20', entry_price: 95.20, exit_date: '2023-05-20', entry_price: 95.20, exit_price: 118.50, quantity: 120, pnl: 2796, pnl_percent: 24.47, side: 'long', status: 'closed' },
+      { id: '4', symbol: 'NVDA', entry_date: '2023-04-01', exit_date: '2023-06-15', entry_price: 275.00, exit_price: 380.50, quantity: 40, pnl: 4220, pnl_percent: 38.36, side: 'long', status: 'closed' },
+      { id: '5', symbol: 'TSLA', entry_date: '2023-05-15', exit_date: '2023-07-01', entry_price: 165.00, exit_price: 210.00, quantity: 60, pnl: 2700, pnl_percent: 27.27, side: 'long', status: 'closed' },
+    ],
+    monthly_returns: [
+      { month: 'Jan', year: 2023, return: 0.025, benchmark_return: 0.018 },
+      { month: 'Feb', year: 2023, return: -0.012, benchmark_return: -0.008 },
+      { month: 'Mar', year: 2023, return: 0.038, benchmark_return: 0.032 },
+      { month: 'Apr', year: 2023, return: 0.052, benchmark_return: 0.045 },
+      { month: 'May', year: 2023, return: 0.018, benchmark_return: 0.015 },
+      { month: 'Jun', year: 2023, return: -0.022, benchmark_return: -0.018 },
+      { month: 'Jul', year: 2023, return: 0.041, benchmark_return: 0.035 },
+      { month: 'Aug', year: 2023, return: -0.008, benchmark_return: -0.005 },
+      { month: 'Sep', year: 2023, return: 0.029, benchmark_return: 0.022 },
+      { month: 'Oct', year: 2023, return: -0.015, benchmark_return: -0.012 },
+      { month: 'Nov', year: 2023, return: 0.062, benchmark_return: 0.055 },
+      { month: 'Dec', year: 2023, return: 0.024, benchmark_return: 0.020 },
+    ],
+    risk_metrics: {
+      volatility: 0.156,
+      beta: 1.05,
+      alpha: 0.028,
+      sortino_ratio: 1.12,
+      calmar_ratio: 1.03,
+      var_95: -0.025,
+      cvar_95: -0.038,
+      recovery_time: 45,
+    },
+    benchmark_comparison: {
+      benchmark_return: 0.125,
+      alpha: 0.031,
+      beta: 1.05,
+      tracking_error: 0.045,
+    },
+    total_trades: 156,
+    profitable_trades: 91,
+    losing_trades: 65,
+    avg_win: 2845,
+    avg_loss: -1520,
+    profit_factor: 1.87,
+    consecutive_wins: 8,
+    consecutive_losses: 4,
   },
   fetched_at: '2024-01-15T10:30:00Z',
 }
