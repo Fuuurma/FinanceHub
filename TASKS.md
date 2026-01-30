@@ -884,7 +884,7 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 
 | Int# | Backend Module | Frontend Module | Status | Missing Endpoints |
 |------|---------------|-----------------|--------|-------------------|
-| I5 | `realtimedata.py` | `markets.ts` (enhance) | `PENDING` | tick data, market depth, time & sales |
+| I5 | `realtimedata.py` | `markets.ts` (enhance) | `COMPLETED` ✅ | tick data, market depth, time & sales |
 | I6 | `websocket_auth.py` | `websocket.ts` (enhance) | `PENDING` | auth token refresh, connection health |
 | I7 | `reference.py` | `market-overview.ts` | `PENDING` | exchange rates, country codes, sectors |
 | I8 | `currency.py` | `NEW: currency.ts` | `PENDING` | crypto rates, currency conversion |
