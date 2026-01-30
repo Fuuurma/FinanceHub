@@ -517,7 +517,7 @@ All affected files now use the `useDownloadFile` hook (N2 - Completed):
 |------|-----------|------|-------|----------|--------|-------------|
 | N47 | EconomicIndicatorChart | `components/economics/EconomicIndicatorChart.tsx` | 150 | P2 | `COMPLETED` ✅ | Economic indicators, trend analysis |
 | N48 | FinancialStatements | `components/fundamentals/FinancialStatements.tsx` | 200 | P2 | `COMPLETED` ✅ | Income statement, balance sheet, cash flow with period comparison |
-| N49 | CompanyProfile | `components/fundamentals/CompanyProfile.tsx` | 150 | P2 | `PENDING` |
+| N49 | CompanyProfile | `components/fundamentals/CompanyProfile.tsx` | 150 | P2 | `COMPLETED` ✅ | Company overview, leadership, metrics, ownership structure |
 
 ### Options Components
 | Task | Component | Path | Lines |
