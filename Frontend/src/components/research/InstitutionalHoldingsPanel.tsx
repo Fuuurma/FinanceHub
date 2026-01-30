@@ -58,7 +58,8 @@ const OWNER_COLORS: Record<string, string> = {
 }
 
 function OwnerRow({ owner, rank, showValue }: { owner: InstitutionalOwner | FundOwner; rank: number; showValue?: boolean }) {
-  const isPositive = (owner as InstitutionalOwner).shares !== undefined && (owner as InstitutionalOwner).shares > 0
+  const institutional = owner as InstitutionalOwner
+  const fund = owner as FundOwner
   
   return (
     <div className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-muted/50 transition-colors">
@@ -67,7 +68,7 @@ function OwnerRow({ owner, rank, showValue }: { owner: InstitutionalOwner | Fund
           {rank}
         </div>
         <div>
-          <p className="font-medium text-sm">{owner.ownerName || (owner as FundOwner).fundName}</p>
+          <p className="font-medium text-sm">{institutional.ownerName || fund.fundName}</p>
           <p className="text-xs text-muted-foreground">
             {owner.positionPct ? formatPercent(owner.positionPct / 100) : 'N/A'} of company
           </p>
@@ -88,11 +89,15 @@ function OwnershipChart({ data, type }: { data: InstitutionalHoldingData; type: 
     const owners = type === 'institutional' ? data.institutionalOwners : data.fundOwners
     const totalShares = type === 'institutional' ? data.summary.totalInstitutionalShares : data.summary.totalFundShares
     
-    return owners.slice(0, 10).map(owner => ({
-      name: owner.ownerName || (owner as FundOwner).fundName,
-      value: owner.shares,
-      pct: (owner.shares / totalShares) * 100,
-    }))
+    return owners.slice(0, 10).map(owner => {
+      const inst = owner as InstitutionalOwner
+      const fund = owner as FundOwner
+      return {
+        name: inst.ownerName || fund.fundName,
+        value: owner.shares,
+        pct: (owner.shares / totalShares) * 100,
+      }
+    })
   }, [data, type])
 
   if (chartData.length === 0) {
@@ -300,12 +305,12 @@ export function InstitutionalHoldingsPanel({ data, isLoading = false, onRefresh,
         <OwnershipSummaryCards summary={data.summary} />
 
         <div className="mt-6">
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs defaultValue="all" className="w-full" onValueChange={(v) => setHolderType(v as HolderType)}>
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all" onClick={() => setHolderType('all')}>All Holders</TabsTrigger>
-              <TabsTrigger value="institutional" onClick={() => setHolderType('institutional')}>Institutions</TabsTrigger>
-              <TabsTrigger value="funds" onClick={() => setHolderType('fund')}>Funds</TabsTrigger>
-              <TabsTrigger value="chart" onClick={() => setHolderType('chart')}>Charts</TabsTrigger>
+              <TabsTrigger value="all">All Holders</TabsTrigger>
+              <TabsTrigger value="institutional">Institutions</TabsTrigger>
+              <TabsTrigger value="fund">Funds</TabsTrigger>
+              <TabsTrigger value="chart">Charts</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="mt-4">
@@ -319,7 +324,7 @@ export function InstitutionalHoldingsPanel({ data, isLoading = false, onRefresh,
               <HoldersList holders={sortedInstitutional} title="All Institutional Holders" showValue />
             </TabsContent>
 
-            <TabsContent value="funds" className="mt-4">
+            <TabsContent value="fund" className="mt-4">
               <HoldersList holders={sortedFunds} title="All Fund Holders" showValue />
             </TabsContent>
 
