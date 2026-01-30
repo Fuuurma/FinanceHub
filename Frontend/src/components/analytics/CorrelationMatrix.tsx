@@ -206,7 +206,7 @@ export function CorrelationMatrix({
             <div
               className="inline-block min-w-full"
               style={{
-                gridTemplateColumns: `auto.length}, minmax(60 repeat(${data.labelspx, 1fr))`,
+                gridTemplateColumns: `auto ${data.labels.length} repeat(${data.labels.length}, minmax(60px, 1fr))`,
               }}
             >
               <div className="flex items-center justify-center p-2 font-medium text-sm text-muted-foreground">
