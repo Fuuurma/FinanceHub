@@ -62,7 +62,7 @@ const getCorrelationLabel = (value: number): string => {
 }
 
 const formatCorrelation = (value: number): string => {
-  return value.toFixed(2)
+  return value >= 0 ? `+${value.toFixed(2)}` : value.toFixed(2)
 }
 
 export function CorrelationMatrix({
@@ -145,8 +145,6 @@ export function CorrelationMatrix({
     )
   }
 
-  const maxValue = Math.max(...data.matrix.flat().map(Math.abs))
-
   return (
     <Card className={cn('w-full', isFullscreen && 'fixed inset-0 z-50 overflow-auto bg-background p-6', className)}>
       <CardHeader>
@@ -203,75 +201,65 @@ export function CorrelationMatrix({
       <CardContent>
         <TooltipProvider>
           <div className="overflow-auto">
-            <div
-              className="inline-block min-w-full"
-              style={{
-                gridTemplateColumns: `auto ${data.labels.length} repeat(${data.labels.length}, minmax(60px, 1fr))`,
-              }}
-            >
-              <div className="flex items-center justify-center p-2 font-medium text-sm text-muted-foreground">
-                -
-              </div>
-              {data.labels.map((label, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-center p-2 font-medium text-sm truncate"
-                  style={{ minWidth: '60px' }}
-                  title={label}
-                >
-                  {label.length > 6 ? label.substring(0, 6) + '...' : label}
-                </div>
-              ))}
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="p-2 border bg-muted/30" />
+                  {data.labels.map((label, i) => (
+                    <th
+                      key={i}
+                      className="p-2 text-center text-sm font-medium truncate min-w-[60px]"
+                      title={label}
+                    >
+                      {label.length > 8 ? label.substring(0, 8) + '...' : label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.labels.map((rowLabel, i) => (
+                  <tr key={i}>
+                    <td
+                      className="p-2 text-right text-sm font-medium truncate max-w-[100px]"
+                      title={rowLabel}
+                    >
+                      {rowLabel.length > 8 ? rowLabel.substring(0, 8) + '...' : rowLabel}
+                    </td>
+                    {data.labels.map((colLabel, j) => {
+                      const value = data.matrix[i][j]
+                      const colors = getCorrelationColor(value)
 
-              {data.labels.map((rowLabel, i) => (
-                <>
-                  <div
-                    key={`row-${i}`}
-                    className="flex items-center justify-end pr-3 py-2 font-medium text-sm truncate"
-                    title={rowLabel}
-                  >
-                    {rowLabel.length > 6 ? rowLabel.substring(0, 6) + '...' : rowLabel}
-                  </div>
-                  {data.labels.map((colLabel, j) => {
-                    const value = data.matrix[i][j]
-                    const colorIntensity = Math.abs(value) / maxValue
-                    const bgOpacity = colorIntensity * 0.8 + 0.1
-                    const isPositive = value >= 0
-                    const bgColor = isPositive
-                      ? `rgba(34, 197, 94, ${bgOpacity})`
-                      : `rgba(239, 68, 68, ${bgOpacity})`
-                    const textColor = colorIntensity > 0.5 ? 'white' : 'inherit'
-
-                    return (
-                      <Tooltip key={`${i}-${j}`}>
-                        <TooltipTrigger asChild>
-                          <div
-                            className="flex items-center justify-center p-2 text-sm font-medium cursor-help transition-all hover:scale-105"
-                            style={{
-                              backgroundColor: bgColor,
-                              color: textColor,
-                              minWidth: '60px',
-                              minHeight: '40px',
-                            }}
-                          >
-                            {formatCorrelation(value)}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="text-center">
-                            <p className="font-medium">{rowLabel} / {colLabel}</p>
-                            <p className="text-lg font-bold">{formatCorrelation(value)}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {getCorrelationLabel(value)}
-                            </p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    )
-                  })}
-                </>
-              ))}
-            </div>
+                      return (
+                        <td key={j} className="p-0">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div
+                                className={cn(
+                                  'flex items-center justify-center p-2 text-sm font-medium cursor-help transition-all hover:scale-105',
+                                  colors,
+                                  'min-w-[60px] min-h-[40px]'
+                                )}
+                              >
+                                {formatCorrelation(value)}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="text-center">
+                                <p className="font-medium">{rowLabel} / {colLabel}</p>
+                                <p className="text-lg font-bold">{formatCorrelation(value)}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {getCorrelationLabel(value)}
+                                </p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           <div className="mt-4 flex items-center justify-center gap-4">

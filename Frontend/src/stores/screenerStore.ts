@@ -34,6 +34,8 @@ interface ScreenerState {
   removeFilter: (index: number) => void
   updateFilter: (index: number, updates: Partial<ScreenerFilter>) => void
   setSearchTerm: (term: string) => void
+  setSortBy: (sortBy: string) => void
+  setSortOrder: (sortOrder: 'asc' | 'desc') => void
   setSort: (sortBy: string, sortOrder: 'asc' | 'desc') => void
   setLimit: (limit: number) => void
   setCurrentPage: (page: number) => void
@@ -137,6 +139,20 @@ export const useScreenerStore = create<ScreenerState>()(
 
       setSearchTerm: (term: string) => {
         set({ searchTerm: term, currentPage: 1 })
+      },
+
+      setSortBy: (sortBy: string) => {
+        set((state) => ({ sortBy }))
+        if (get().autoRefresh) {
+          get().runScreener()
+        }
+      },
+
+      setSortOrder: (sortOrder: 'asc' | 'desc') => {
+        set((state) => ({ sortOrder }))
+        if (get().autoRefresh) {
+          get().runScreener()
+        }
       },
 
       setSort: (sortBy: string, sortOrder: 'asc' | 'desc') => {

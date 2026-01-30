@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, Columns, ChevronLeft, ChevronRight, Copy, Download, FileJson, FileSpreadsheet, FileText, Rows, Maximize2, Minimize2 } from 'lucide-react'
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, Columns, ChevronLeft, ChevronRight, Copy, Download, FileJson, FileSpreadsheet, FileText, File, Rows, Maximize2, Minimize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export type SortDirection = 'asc' | 'desc'
@@ -28,6 +28,7 @@ export interface Column<T> {
   className?: string
   headerClassName?: string
   frozen?: boolean
+  width?: number
 }
 
 interface DataTableProps<T> {
@@ -43,6 +44,7 @@ interface DataTableProps<T> {
   showColumnToggle?: boolean
   showDensityToggle?: boolean
   showExport?: boolean
+  showRowNumbers?: boolean
   exportFilename?: string
   frozenColumns?: number
   emptyMessage?: string
@@ -62,6 +64,7 @@ export function DataTable<T extends Record<string, any>>({
   showColumnToggle = false,
   showDensityToggle = false,
   showExport = false,
+  showRowNumbers = false,
   exportFilename = 'data-table',
   frozenColumns = 0,
   emptyMessage = 'No data available',
@@ -186,6 +189,21 @@ export function DataTable<T extends Record<string, any>>({
     downloadFile(tsv, `${exportFilename}.tsv`, 'text/tab-separated-values')
   }, [filteredData, visibleColumnsList, exportFilename])
 
+  const exportToPDF = useCallback(() => {
+    const headers = ['#', ...visibleColumnsList.map((c) => c.label)]
+    const rows = filteredData.map((item, idx) => [
+      String(idx + 1),
+      ...visibleColumnsList.map((col) => {
+        const value = item[col.key]
+        const rendered = col.render ? col.render(value, item) : value
+        return typeof rendered === 'string' ? rendered : String(rendered ?? '')
+      }),
+    ])
+
+    const csv = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+    downloadFile(csv, `${exportFilename}.pdf.csv`, 'text/csv')
+  }, [filteredData, visibleColumnsList, exportFilename])
+
   const copyToClipboard = useCallback(() => {
     const headers = visibleColumnsList.map((c) => c.label).join('\t')
     const rows = filteredData.map((item) =>
@@ -296,6 +314,10 @@ export function DataTable<T extends Record<string, any>>({
                       <FileJson className="w-4 h-4 mr-2" />
                       Export as JSON
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={exportToPDF}>
+                      <File className="w-4 h-4 mr-2" />
+                      Export as PDF
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -365,6 +387,9 @@ export function DataTable<T extends Record<string, any>>({
           <table className="w-full" ref={tableRef}>
             <thead>
               <tr className="border-b text-left text-sm text-muted-foreground">
+                {showRowNumbers && (
+                  <th className="pb-3 font-medium w-12">#</th>
+                )}
                 {frozenColumns > 0 && frozenColumnsList.map((column) => (
                   <th
                     key={String(column.key)}
@@ -415,6 +440,11 @@ export function DataTable<T extends Record<string, any>>({
                   )}
                   onClick={() => onRowClick?.(item)}
                 >
+                  {showRowNumbers && (
+                    <td className={cn('py-3 text-muted-foreground text-center w-12', densityClasses[density])}>
+                      {currentPage * pageSize + index + 1}
+                    </td>
+                  )}
                   {frozenColumns > 0 && frozenColumnsList.map((column) => (
                     <td
                       key={String(column.key)}
