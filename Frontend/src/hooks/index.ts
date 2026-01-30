@@ -24,3 +24,7 @@ export { useWatchlists, useWatchlist } from './useWatchlists'
 export { usePortfolios, usePortfolioHoldings } from './usePortfolios'
 
 export { useDownload, useDownloadFile } from './useDownload'
+
+export { useLocalStorage, useLocalStorageJSON, useLocalStorageNumber, useLocalStorageBoolean, useLocalStorageString } from './useLocalStorage'
+
+export { useMediaQuery, useBreakpoint, useMinWidth, useMaxWidth, useWidthRange, useOrientation, usePrefersColorScheme, useReducedMotion, useHover, usePointer, useMediaQuerySync } from './useMediaQuery'
