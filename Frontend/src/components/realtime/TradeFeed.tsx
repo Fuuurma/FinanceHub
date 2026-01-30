@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useRealtimeStore } from '@/stores/realtimeStore'
 import { WS_CONFIG } from '@/lib/constants/realtime'
 import type { TradeFilter } from '@/lib/constants/realtime'
-import type { Trade as TradeType } from '@/lib/types/realtime'
+import type { RealTimeTrade as TradeType } from '@/lib/types/realtime'
 
 interface TradeFeedProps {
   symbol: string

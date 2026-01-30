@@ -1,7 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createChart, ColorType, CrosshairMode } from 'lightweight-charts'
+import {
+  createChart,
+  IChartApi,
+  ISeriesApi,
+  ColorType,
+  CrosshairMode,
+  Time,
+} from 'lightweight-charts'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -141,13 +148,14 @@ export function RealTimeChart({
     })
 
     chartRef.current = chart as unknown as any
+    const chartAny = chart as unknown as any
 
     let series: ISeriesApi<'Candlestick' | 'Line' | 'Area'> | null = null
     let volumeSeries: ISeriesApi<'Histogram'> | null = null
 
     switch (chartType) {
       case 'candlestick':
-        series = chart.addCandlestickSeries({
+        series = chartAny.addCandlestickSeries({
           upColor: '#22C55E',
           downColor: '#EF4444',
           borderDownColor: '#EF4444',
@@ -157,13 +165,13 @@ export function RealTimeChart({
         })
         break
       case 'line':
-        series = chart.addLineSeries({
+        series = chartAny.addLineSeries({
           color: '#3B82F6',
           lineWidth: 2,
         })
         break
       case 'area':
-        series = chart.addAreaSeries({
+        series = chartAny.addAreaSeries({
           topColor: 'rgba(59, 130, 246, 0.4)',
           bottomColor: 'rgba(59, 130, 246, 0.0)',
           lineColor: '#3B82F6',
@@ -171,7 +179,7 @@ export function RealTimeChart({
         })
         break
       case 'bar':
-        series = chart.addHistogramSeries({
+        series = chartAny.addHistogramSeries({
           color: '#6B7280',
         })
         break
@@ -180,19 +188,21 @@ export function RealTimeChart({
     seriesRef.current = series
 
     if (showVolume) {
-      volumeSeries = chart.addHistogramSeries({
+      volumeSeries = chartAny.addHistogramSeries({
         color: 'rgba(148, 163, 184, 0.3)',
         priceFormat: {
           type: 'volume',
         },
         priceScaleId: '',
       })
-      volumeSeries.priceScale().applyOptions({
-        scaleMargins: {
-          top: 0.8,
-          bottom: 0,
-        },
-      })
+      if (volumeSeries) {
+        volumeSeries.priceScale().applyOptions({
+          scaleMargins: {
+            top: 0.8,
+            bottom: 0,
+          },
+        })
+      }
       volumeSeriesRef.current = volumeSeries
     }
 

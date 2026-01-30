@@ -468,6 +468,5 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Table } from '@/components/ui/table'
 
 export default DepthChart
