@@ -26,6 +26,7 @@ import {
   Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useDownloadFile } from '@/hooks/useDownload'
 
 export function PositionTracker() {
   const { positions, loading, closePosition, fetchPositions } = useTradingStore()
@@ -33,6 +34,7 @@ export function PositionTracker() {
   const [sortField, setSortField] = useState<keyof Position>('unrealized_pnl')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
+  const { downloadCSV } = useDownloadFile()
 
   useEffect(() => {
     fetchPositions()
@@ -88,15 +90,8 @@ export function PositionTracker() {
       ...rows.map(row => row.join(',')),
     ].join('\n')
 
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `positions-${new Date().toISOString().split('T')[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    const filename = `positions-${new Date().toISOString().split('T')[0]}.csv`
+    downloadCSV(csvContent, filename)
   }
 
   if (loading.positions) {

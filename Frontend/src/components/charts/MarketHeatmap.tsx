@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useDownloadFile } from '@/hooks/useDownload'
 
 export type Timeframe = '1D' | '1W' | '1M' | '3M' | 'YTD' | '1Y' | 'ALL'
 
@@ -317,6 +318,7 @@ export function MarketHeatmap({
   const [currentLevel, setCurrentLevel] = useState(0)
   const [selectedSector, setSelectedSector] = useState<MarketSector | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const { downloadCSV, downloadText } = useDownloadFile()
 
   const handleNavigate = useCallback((node: MarketSector | MarketSymbol, level: number) => {
     if ('children' in node && node.children && node.children.length > 0) {
@@ -343,17 +345,16 @@ export function MarketHeatmap({
           logging: false,
         })
         
-        const link = document.createElement('a')
-        link.download = `market-heatmap-${timeframe}-${new Date().toISOString().slice(0, 10)}.png`
-        link.href = canvas.toDataURL('image/png')
-        link.click()
+        const filename = `market-heatmap-${timeframe}-${new Date().toISOString().slice(0, 10)}.png`
+        const dataUrl = canvas.toDataURL('image/png')
+        downloadText(dataUrl, filename, 'image/png')
       }
     } catch (err) {
       console.error('Failed to export PNG:', err)
     } finally {
       setIsExporting(false)
     }
-  }, [timeframe])
+  }, [timeframe, downloadText])
 
   const handleExportCSV = useCallback(() => {
     if (!data) return
@@ -383,14 +384,9 @@ export function MarketHeatmap({
       )
     ].join('\n')
     
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.download = `market-heatmap-${timeframe}-${new Date().toISOString().slice(0, 10)}.csv`
-    link.href = url
-    link.click()
-    URL.revokeObjectURL(url)
-  }, [data, timeframe, currentLevel, selectedSector])
+    const filename = `market-heatmap-${timeframe}-${new Date().toISOString().slice(0, 10)}.csv`
+    downloadCSV(csv, filename)
+  }, [data, timeframe, currentLevel, selectedSector, downloadCSV])
 
   const displayData = useMemo(() => {
     if (!data) return null

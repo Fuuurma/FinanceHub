@@ -269,10 +269,10 @@ useEffect(() => {
 | N2 | useDownload | `hooks/useDownload.ts` | 243 | P0 | `COMPLETED` ✅ |
 
 ### Trading Infrastructure
-| Task | Component | Path | Lines | Priority |
-|------|-----------|------|-------|----------|
-| N3 | TradeHistory | `components/trading/TradeHistory.tsx` | 200 | P0 |
-| N4 | OrderList | `components/trading/OrderList.tsx` | 150 | P0 |
+| Task | Component | Path | Lines | Priority | Status |
+|------|-----------|------|-------|----------|--------|
+| N3 | TradeHistory | `components/trading/TradeHistory.tsx` | 440 | P0 | `COMPLETED` ✅ |
+| N4 | OrderList | `components/trading/OrderList.tsx` | 150 | P0 | `PENDING` |
 
 ### Charts Missing (Critical)
 | Task | Component | Path | Lines | Priority |
@@ -473,15 +473,18 @@ Frontend/src/components/trading/
 ├── OrderEntryForm.tsx        # Order form
 ├── OrderConfirmationDialog.tsx # Order confirmation
 ├── PositionTracker.tsx       # Position tracking
-└── AccountSummary.tsx        # Account overview
+├── AccountSummary.tsx        # Account overview
+├── TradeHistory.tsx          # N3 - COMPLETED ✅ (440 lines)
+│   ├── Features: filtering, sorting, export, pagination
+│   ├── API: /trading/trades endpoint integration
+│   └── Dependencies: @/lib/api/trading, @/lib/types/trading
+└── index.ts                  # Create exports
 
 # MISSING:
-├── TradeHistory.tsx          # N3 - P0 - Critical!
 ├── OrderList.tsx             # N4 - P0 - Critical!
 ├── OrderStatus.tsx           # N39 - P2
 ├── TradeConfirmation.tsx     # N40 - P2
-├── TradingPanel.tsx          # N41 - P2
-└── index.ts                  # Create exports
+└── TradingPanel.tsx          # N41 - P2
 ```
 
 ## Risk Components (1 existing + 9 missing = 10 total)
@@ -528,81 +531,65 @@ Frontend/src/hooks/
 
 # 🎯 CURRENT PRIORITY
 
-## Next Task: Task N1 - ErrorBoundary (P0)
+## Next Task: Task N4 - OrderList (P0)
 
-**Location:** `Frontend/src/components/ui/ErrorBoundary.tsx`
+**Location:** `Frontend/src/components/trading/OrderList.tsx`
 
 **Reference Components:**
-- `Frontend/src/components/ui/card.tsx` - Card pattern
-- `Frontend/src/components/ui/button.tsx` - Button pattern
+- `Frontend/src/components/trading/TradeHistory.tsx` - Just completed, use as pattern
+- `Frontend/src/components/trading/PositionTracker.tsx` - Table pattern
+- `Frontend/src/lib/api/trading.ts` - API integration (trades section)
 
 **Implementation Pattern:**
 ```typescript
-'use client'
-
-import { Component, ErrorInfo, ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
-import { AlertCircle, RefreshCw } from 'lucide-react'
-
-interface ErrorBoundaryProps {
-  children: ReactNode
-  fallback?: ReactNode
+interface OrderListProps {
+  portfolioId?: string
+  status?: 'pending' | 'filled' | 'cancelled'
+  onOrderClick?: (order: Order) => void
 }
 
-interface ErrorBoundaryState {
-  hasError: boolean
-  error?: Error
-}
-
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
-  }
-
-  handleRetry = () => {
-    this.setState({ hasError: false, error: undefined })
-  }
-
-  render() {
-    if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback
-      }
-
-      return (
-        <div className="flex flex-col items-center justify-center p-8 text-center">
-          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-          <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
-          <p className="text-muted-foreground mb-4">
-            {this.state.error?.message || 'An unexpected error occurred'}
-          </p>
-          <Button onClick={this.handleRetry}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
-          </Button>
-        </div>
-      )
-    }
-
-    return this.props.children
-  }
+export function OrderList({ portfolioId, status, onOrderClick }: OrderListProps) {
+  // Fetch orders from API
+  // Display in table with filtering
+  // Allow cancel/modify actions
 }
 ```
 
-**Usage:**
-```typescript
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+**Features Required:**
+- [ ] List active/pending orders
+- [ ] Filter by status (pending, filled, cancelled)
+- [ ] Cancel order action
+- [ ] Modify order action
+- [ ] Real-time updates (WebSocket)
+- [ ] Export to CSV
 
-<ErrorBoundary>
-  <TradingViewChart symbol="AAPL" />
-</ErrorBoundary>
-```
+**API Endpoint:**
+- `GET /api/v1/trading/orders/list/` - List orders (exists in BACKEND_TASKS.md B5)
+
+---
+
+## Completed: Task N3 - TradeHistory ✅
+
+**Files Created:**
+1. `Frontend/src/components/trading/TradeHistory.tsx` (440 lines)
+2. `Frontend/src/components/trading/index.ts` (exports)
+3. `Frontend/src/lib/types/trading.ts` - Added Trade, TradeFilters, TradeStats interfaces
+4. `Frontend/src/lib/api/trading.ts` - Added trades API section
+
+**Features Implemented:**
+- ✅ Full trade history display with pagination
+- ✅ Filtering by timeframe (1D, 1W, 1M, 3M, 1Y, All)
+- ✅ Filtering by side (Buy/Sell/All)
+- ✅ Search by symbol or trade ID
+- ✅ Sortable columns (Date, Symbol, Side, Quantity, Price, Value, P&L)
+- ✅ Export to CSV and JSON
+- ✅ Trade statistics summary
+- ✅ Loading skeletons
+- ✅ Error handling with retry
+- ✅ Responsive design
+- ✅ Dark mode support
+
+**Reference:** See `/Frontend/src/components/trading/TradeHistory.tsx` for full implementation
 
 ---
 
@@ -620,8 +607,8 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 | # | Task | Component | Priority | Status | Path |
 |---|------|-----------|----------|--------|------|
 | N1 | ErrorBoundary | components/ui/ErrorBoundary.tsx | P0 | `PENDING` | Create new |
-| N2 | useDownload | hooks/useDownload.ts | P0 | `PENDING` | Create new |
-| N3 | TradeHistory | components/trading/TradeHistory.tsx | P0 | `PENDING` | Create new |
+| N2 | useDownload | hooks/useDownload.ts | P0 | `EXISTS - ENHANCE` | Use in 6 files |
+| N3 | TradeHistory | components/trading/TradeHistory.tsx | P0 | `COMPLETED` ✅ | `/Frontend/src/components/trading/TradeHistory.tsx` (440 lines) |
 | N4 | OrderList | components/trading/OrderList.tsx | P0 | `PENDING` | Create new |
 | N5 | VolumeProfileChart | components/charts/VolumeProfileChart.tsx | P0 | `PENDING` | Create new |
 | N6 | DepthChart | components/charts/DepthChart.tsx | P0 | `PENDING` | Create new |

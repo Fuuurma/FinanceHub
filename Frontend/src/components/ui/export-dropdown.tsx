@@ -13,6 +13,7 @@ import { Download, FileJson, FileSpreadsheet, FileText, Copy, Check, Loader2, Fi
 import * as XLSX from 'xlsx'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { useDownloadFile } from '@/hooks/useDownload'
 
 export type ExportFormat = 'csv' | 'json' | 'xlsx' | 'pdf' | 'clipboard'
 
@@ -52,6 +53,8 @@ export function ExportDropdown({
     sheetName = 'Data',
     title,
   } = options
+
+  const { downloadCSV, downloadJSON, downloadExcel, downloadText } = useDownloadFile()
 
   const getFilename = useCallback((format: ExportFormat, ext: string) => {
     const date = new Date().toISOString().split('T')[0]
@@ -94,15 +97,11 @@ export function ExportDropdown({
       const exportFilename = getFilename('csv', 'csv')
       onExport?.('csv', blob, exportFilename)
 
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = exportFilename
-      link.click()
-      URL.revokeObjectURL(link.href)
+      downloadCSV(csvContent, exportFilename)
     } finally {
       setExporting(null)
     }
-  }, [data, getHeaders, getFilename, onExport])
+  }, [data, getHeaders, getFilename, onExport, downloadCSV])
 
   const exportToJSON = useCallback(() => {
     setExporting('json')
@@ -119,19 +118,15 @@ export function ExportDropdown({
         : data
 
       const jsonContent = JSON.stringify(exportData, null, 2)
-      const blob = new Blob([jsonContent], { type: 'application/json' })
       const exportFilename = getFilename('json', 'json')
+      const blob = new Blob([jsonContent], { type: 'application/json' })
       onExport?.('json', blob, exportFilename)
 
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = exportFilename
-      link.click()
-      URL.revokeObjectURL(link.href)
+      downloadJSON(exportData, exportFilename)
     } finally {
       setExporting(null)
     }
-  }, [data, getHeaders, includeMetadata, getFilename, onExport])
+  }, [data, getHeaders, includeMetadata, getFilename, onExport, downloadJSON])
 
   const exportToExcel = useCallback(() => {
     setExporting('xlsx')
@@ -156,15 +151,11 @@ export function ExportDropdown({
       const exportFilename = getFilename('xlsx', 'xlsx')
       onExport?.('xlsx', blob, exportFilename)
 
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = exportFilename
-      link.click()
-      URL.revokeObjectURL(link.href)
+      downloadExcel(blob, exportFilename)
     } finally {
       setExporting(null)
     }
-  }, [data, getHeaders, getFilename, sheetName, title, formatCellValue, onExport])
+  }, [data, getHeaders, getFilename, sheetName, title, formatCellValue, onExport, downloadExcel])
 
   const exportToPDF = useCallback(() => {
     setExporting('pdf')
@@ -288,6 +279,8 @@ export function ExportDropdown({
 }
 
 export function useExport<T extends Record<string, any>>() {
+  const { downloadCSV, downloadJSON, downloadExcel, downloadText } = useDownloadFile()
+
   const formatCellValue = useCallback((value: any): string => {
     if (value === null || value === undefined) return ''
     if (typeof value === 'object') {
@@ -315,13 +308,9 @@ export function useExport<T extends Record<string, any>>() {
       ),
     ].join('\n')
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`
-    link.click()
-    URL.revokeObjectURL(link.href)
-  }, [])
+    const exportFilename = `${filename}-${new Date().toISOString().split('T')[0]}.csv`
+    downloadCSV(csvContent, exportFilename)
+  }, [downloadCSV])
 
   const exportToJSON = useCallback((data: T[], filename: string, includeMetadata = false) => {
     if (data.length === 0) return
@@ -336,14 +325,9 @@ export function useExport<T extends Record<string, any>>() {
         }
       : data
 
-    const jsonContent = JSON.stringify(exportData, null, 2)
-    const blob = new Blob([jsonContent], { type: 'application/json' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `${filename}-${new Date().toISOString().split('T')[0]}.json`
-    link.click()
-    URL.revokeObjectURL(link.href)
-  }, [])
+    const exportFilename = `${filename}-${new Date().toISOString().split('T')[0]}.json`
+    downloadJSON(exportData, exportFilename)
+  }, [downloadJSON])
 
   const exportToExcel = useCallback((data: T[], filename: string, sheetName = 'Data') => {
     if (data.length === 0) return
@@ -360,12 +344,9 @@ export function useExport<T extends Record<string, any>>() {
 
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
     const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `${filename}-${new Date().toISOString().split('T')[0]}.xlsx`
-    link.click()
-    URL.revokeObjectURL(link.href)
-  }, [formatCellValue])
+    const exportFilename = `${filename}-${new Date().toISOString().split('T')[0]}.xlsx`
+    downloadExcel(blob, exportFilename)
+  }, [formatCellValue, downloadExcel])
 
   const exportToPDF = useCallback((data: T[], filename: string, title?: string) => {
     if (data.length === 0) return

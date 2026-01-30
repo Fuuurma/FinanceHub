@@ -5,6 +5,9 @@ import type {
   Position,
   AccountSummary,
   PositionSummary,
+  Trade,
+  TradeFilters,
+  TradeStats,
 } from '../types/trading'
 
 export const tradingApi = {
@@ -80,6 +83,37 @@ export const tradingApi = {
       if (params?.portfolio_id) queryParams.append('portfolio_id', params.portfolio_id)
 
       return apiClient.get<PositionSummary>(`/trading/positions/summary?${queryParams.toString()}`)
+    },
+  },
+
+  trades: {
+    list: async (params?: TradeFilters & { limit?: number; offset?: number }) => {
+      const queryParams = new URLSearchParams()
+      if (params?.portfolio_id) queryParams.append('portfolio_id', params.portfolio_id)
+      if (params?.asset_id) queryParams.append('asset_id', params.asset_id)
+      if (params?.asset_symbol) queryParams.append('asset_symbol', params.asset_symbol)
+      if (params?.side) queryParams.append('side', params.side)
+      if (params?.start_date) queryParams.append('start_date', params.start_date)
+      if (params?.end_date) queryParams.append('end_date', params.end_date)
+      if (params?.min_value) queryParams.append('min_value', params.min_value.toString())
+      if (params?.max_value) queryParams.append('max_value', params.max_value.toString())
+      if (params?.limit) queryParams.append('limit', params.limit.toString())
+      if (params?.offset) queryParams.append('offset', params.offset.toString())
+
+      return apiClient.get<Trade[]>(`/trading/trades?${queryParams.toString()}`)
+    },
+
+    get: async (tradeId: string) => {
+      return apiClient.get<Trade>(`/trading/trades/${tradeId}`)
+    },
+
+    getStats: async (params?: { portfolio_id?: string; start_date?: string; end_date?: string }) => {
+      const queryParams = new URLSearchParams()
+      if (params?.portfolio_id) queryParams.append('portfolio_id', params.portfolio_id)
+      if (params?.start_date) queryParams.append('start_date', params.start_date)
+      if (params?.end_date) queryParams.append('end_date', params.end_date)
+
+      return apiClient.get<TradeStats>(`/trading/trades/stats?${queryParams.toString()}`)
     },
   },
 }

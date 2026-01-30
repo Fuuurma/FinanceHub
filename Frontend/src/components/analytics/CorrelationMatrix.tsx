@@ -19,6 +19,7 @@ import {
 import { Copy, Download, FileJson, FileSpreadsheet, Maximize2, Minimize2, RefreshCw } from 'lucide-react'
 import type { CorrelationMatrix } from '@/lib/types/portfolio-analytics'
 import { cn } from '@/lib/utils'
+import { useDownloadFile } from '@/hooks/useDownload'
 
 interface CorrelationMatrixProps {
   data?: CorrelationMatrix | null
@@ -73,6 +74,7 @@ export function CorrelationMatrix({
 }: CorrelationMatrixProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [selectedTimeframe, setSelectedTimeframe] = useState('1m')
+  const { downloadCSV, downloadJSON } = useDownloadFile()
 
   const handleCopy = useCallback(() => {
     if (!data) return
@@ -89,8 +91,8 @@ export function CorrelationMatrix({
       [label, ...data.matrix[i].map(formatCorrelation)].join(',')
     ).join('\n')
     const csv = `${headers}\n${rows}`
-    downloadFile(csv, 'correlation-matrix.csv', 'text/csv')
-  }, [data])
+    downloadCSV(csv, 'correlation-matrix.csv')
+  }, [data, downloadCSV])
 
   const exportToJSON = useCallback(() => {
     if (!data) return
@@ -100,20 +102,8 @@ export function CorrelationMatrix({
       timeframe: selectedTimeframe,
       exportedAt: new Date().toISOString(),
     }
-    downloadFile(JSON.stringify(jsonData, null, 2), 'correlation-matrix.json', 'application/json')
-  }, [data, selectedTimeframe])
-
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
+    downloadJSON(jsonData, 'correlation-matrix.json')
+  }, [data, selectedTimeframe, downloadJSON])
 
   if (loading) {
     return (

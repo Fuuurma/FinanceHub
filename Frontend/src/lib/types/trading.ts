@@ -100,3 +100,45 @@ export interface PositionSize {
   fees: number
   total_cost: number
 }
+
+export interface Trade {
+  id: string
+  order_id: string
+  user_id: string
+  portfolio_id: string
+  asset_id: string
+  asset_symbol: string
+  asset_name: string
+  side: 'buy' | 'sell'
+  quantity: number
+  price: number
+  fees: number
+  total_value: number
+  realized_pnl: number
+  status: 'filled' | 'partial' | 'cancelled'
+  exchange: string
+  execution_time: string
+  created_at: string
+}
+
+export interface TradeFilters {
+  portfolio_id?: string
+  asset_id?: string
+  asset_symbol?: string
+  side?: 'buy' | 'sell'
+  start_date?: string
+  end_date?: string
+  min_value?: number
+  max_value?: number
+}
+
+export interface TradeStats {
+  total_trades: number
+  buy_trades: number
+  sell_trades: number
+  total_volume: number
+  total_fees: number
+  total_realized_pnl: number
+  average_trade_size: number
+  average_price: number
+}
