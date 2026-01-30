@@ -192,9 +192,9 @@ function generateMockEvents(startDate: Date, days: number): EconomicEvent[] {
     const numEvents = Math.floor(Math.random() * 3) + 1
 
     for (let j = 0; j < numEvents; j++) {
-      const eventType = eventTypes[Math.floor(Math.random() * eventType.length)]
+      const eventInfo = eventTypes[Math.floor(Math.random() * eventTypes.length)]
       const dateStr = date.toISOString().split('T')[0]
-      const timeKey = `${dateStr}-${eventType.title}`
+      const timeKey = `${dateStr}-${eventInfo.title}`
 
       if (usedDates.has(timeKey)) continue
       usedDates.add(timeKey)
@@ -202,8 +202,8 @@ function generateMockEvents(startDate: Date, days: number): EconomicEvent[] {
       const hour = 8 + Math.floor(Math.random() * 10)
       const minute = Math.floor(Math.random() * 60)
 
-      const actual = eventType.unit === '%' ? (Math.random() * 5 - 1).toFixed(1) :
-                     eventType.unit === 'K' ? (Math.random() * 300 + 50).toFixed(0) :
+      const actual = eventInfo.unit === '%' ? (Math.random() * 5 - 1).toFixed(1) :
+                     eventInfo.unit === 'K' ? (Math.random() * 300 + 50).toFixed(0) :
                      (Math.random() * 100 + 50).toFixed(0)
       const forecast = (parseFloat(actual) + (Math.random() - 0.5) * 2).toFixed(1)
       const previous = (parseFloat(actual) + (Math.random() - 0.5) * 3).toFixed(1)
@@ -213,18 +213,18 @@ function generateMockEvents(startDate: Date, days: number): EconomicEvent[] {
 
       events.push({
         id: `evt-${dateStr}-${j}`,
-        title: eventType.title,
+        title: eventInfo.title,
         country: 'US',
-        category: eventType.category,
-        importance: eventType.importance,
+        category: eventInfo.category,
+        importance: eventInfo.importance,
         date: dateStr,
         time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
         actual: parseFloat(actual),
         forecast: parseFloat(forecast),
         previous: parseFloat(previous),
-        unit: eventType.unit,
+        unit: eventInfo.unit,
         impact,
-        description: `${eventType.title} for ${date.toLocaleDateString()}`,
+        description: `${eventInfo.title} for ${date.toLocaleDateString()}`,
       })
     }
   }

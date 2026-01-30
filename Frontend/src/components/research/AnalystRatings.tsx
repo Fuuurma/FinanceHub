@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -581,7 +581,7 @@ export function AnalystRatings({ symbol, assetType = 'stock', className }: Analy
 
   const [summary, setSummary] = useState<RatingSummary | null>(null)
 
-  useState(() => {
+  useEffect(() => {
     const fetchRatings = async () => {
       setLoading(true)
       try {

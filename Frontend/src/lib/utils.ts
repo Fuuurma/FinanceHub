@@ -36,3 +36,12 @@ export function formatDateTime(date: string | Date): string {
     minute: '2-digit',
   })
 }
+
+export function formatNumber(value: number | string | undefined | null): string {
+  if (value === undefined || value === null) return '--'
+  const numValue = typeof value === 'string' ? parseFloat(value) : value
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numValue)
+}
