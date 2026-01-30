@@ -15,6 +15,9 @@ import {
   ZoomOut,
   ArrowLeft,
   X,
+  Download,
+  FileImage,
+  FileText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -313,6 +316,7 @@ export function MarketHeatmap({
 }: MarketHeatmapProps) {
   const [currentLevel, setCurrentLevel] = useState(0)
   const [selectedSector, setSelectedSector] = useState<MarketSector | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
 
   const handleNavigate = useCallback((node: MarketSector | MarketSymbol, level: number) => {
     if ('children' in node && node.children && node.children.length > 0) {
@@ -325,6 +329,73 @@ export function MarketHeatmap({
     setCurrentLevel(0)
     setSelectedSector(null)
   }, [])
+
+  const handleExportPNG = useCallback(async () => {
+    setIsExporting(true)
+    try {
+      const element = document.querySelector('.border-2.border-foreground.overflow-hidden')
+      if (element) {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        const rect = element.getBoundingClientRect()
+        canvas.width = rect.width * 2
+        canvas.height = rect.height * 2
+        ctx?.scale(2, 2)
+        
+        const dataUrl = await import('html2canvas').then(mod => mod.default(element, {
+          canvas,
+          scale: 2,
+          backgroundColor: null,
+        }))
+        
+        const link = document.createElement('a')
+        link.download = `market-heatmap-${timeframe}-${new Date().toISOString().slice(0, 10)}.png`
+        link.href = dataUrl
+        link.click()
+      }
+    } catch (err) {
+      console.error('Failed to export PNG:', err)
+    } finally {
+      setIsExporting(false)
+    }
+  }, [timeframe])
+
+  const handleExportCSV = useCallback(() => {
+    if (!data) return
+    
+    const flattenData = (items: (MarketSector | MarketSymbol)[], level = 0): Record<string, any>[] => {
+      return items.flatMap(item => {
+        const base: Record<string, any> = {
+          name: item.name,
+          change: item.change,
+          changePercent: item.changePercent,
+          marketCap: item.marketCap,
+          volume: item.volume,
+          type: 'children' in item ? 'sector' : 'symbol',
+          level,
+        }
+        if ('children' in item && item.children) {
+          return [base, ...flattenData(item.children, level + 1)]
+        }
+        return [base]
+      })
+    }
+    
+    const csv = [
+      ['Name', 'Type', 'Change', 'Change %', 'Market Cap', 'Volume', 'Level'].join(','),
+      ...flattenData(currentLevel === 0 ? data.sectors : (selectedSector?.children || [])).map(row =>
+        [row.name, row.type, row.change, row.changePercent, row.marketCap, row.volume, row.level].join(',')
+      )
+    ].join('\n')
+    
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.download = `market-heatmap-${timeframe}-${new Date().toISOString().slice(0, 10)}.csv`
+    link.href = url
+    link.click()
+    URL.revokeObjectURL(url)
+  }, [data, timeframe, currentLevel, selectedSector])
 
   const displayData = useMemo(() => {
     if (!data) return null

@@ -290,7 +290,7 @@ export function calculateCorrelation(asset1: number[], asset2: number[]): number
 | 10 | Backtest Results UI | components/backtest/*.tsx | P2 | `BLOCKED` | No backend exists - requires complete implementation |
 | 11 | AI PricePrediction | components/ai/PricePrediction.tsx | P2 | `PENDING` | No backend/ML models |
 | 12 | News Feed Expansion | components/news/*.tsx | P2 | `PENDING` | Check existing news components |
-| 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `PENDING` | No backend/data source |
+| 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `COMPLETED` ✅ | `/components/economics/EconomicCalendar.tsx` |
 | 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `PENDING` | No backend/data source |
 | 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `COMPLETED` ✅ | `/components/ui/KeyboardShortcuts.tsx` |
 
