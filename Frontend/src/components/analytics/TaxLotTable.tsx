@@ -25,8 +25,14 @@ export interface TaxLot {
   purchaseDate: string
   shares: number
   costBasis: number
+  costPerShare?: number
   currentValue: number
+  currentPrice?: number
   status: TaxLotStatus
+  term?: 'short' | 'long'
+  unrealizedGain?: number
+  unrealizedGainPercent?: number
+  washSale?: boolean
   realizedGain?: number
   realizedDate?: string
 }

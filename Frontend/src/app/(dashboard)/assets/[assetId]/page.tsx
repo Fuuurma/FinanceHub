@@ -24,8 +24,6 @@ import type { ChartType, Timeframe } from '@/components/charts'
 type TimeFrame = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'
 type IndicatorType = 'SMA' | 'EMA' | 'RSI' | 'MACD' | 'BB'
 
-function AssetPageContent() {
-
 const TIMEFRAME_MAP: Record<string, string> = {
   '1D': '1d',
   '1W': '1w',

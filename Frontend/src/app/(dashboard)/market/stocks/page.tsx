@@ -11,9 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
 import { StatsGrid } from '@/components/ui/stats-grid';
 import { PageTabs, TabContent } from '@/components/ui/page-tabs';
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary';
 import { Search, RefreshCw, TrendingUp, TrendingDown, BarChart3, Star, Activity } from 'lucide-react';
 
-export default function MarketStocksPage() {
+function MarketStocksPageContent() {
   const { marketData, isLoading, error, fetchMarketData, setSelectedAsset } = useMarketStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -261,4 +262,16 @@ export default function MarketStocksPage() {
       </PageTabs>
     </div>
   );
+}
+
+export default function MarketStocksPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Market Stocks page error:', error, errorInfo)
+      }}
+    >
+      <MarketStocksPageContent />
+    </PageErrorBoundary>
+  )
 }

@@ -26,8 +26,9 @@ interface Portfolio {
   owner: string
 }
 
-export default function PortfoliosPage({ params }: { params: { username: string } }) {
-  const username = params.username
+export default async function PortfoliosPage({ params }: { params: Promise<{ username: string }> }) {
+  const resolvedParams = await params
+  const username = resolvedParams.username
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')

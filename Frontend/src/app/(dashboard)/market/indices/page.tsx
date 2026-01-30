@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/ui/page-header'
 import { StatsGrid } from '@/components/ui/stats-grid'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import {
   TrendingUp,
   TrendingDown,
@@ -29,7 +30,7 @@ const INDICES = [
   { symbol: 'TSX', name: 'S&P/TSX', price: 19876.34, change: 0.34, volume: 0.8, region: 'US' },
 ]
 
-export default function MarketIndicesPage() {
+function MarketIndicesPageContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -173,5 +174,17 @@ export default function MarketIndicesPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function MarketIndicesPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Market Indices page error:', error, errorInfo)
+      }}
+    >
+      <MarketIndicesPageContent />
+    </PageErrorBoundary>
   )
 }

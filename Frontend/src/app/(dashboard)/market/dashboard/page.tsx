@@ -12,6 +12,7 @@ import { StatsGrid } from '@/components/ui/stats-grid'
 import { PageTabs, TabContent } from '@/components/ui/page-tabs'
 import { ConnectionStatus } from '@/components/realtime/ConnectionStatus'
 import { LivePriceTicker } from '@/components/realtime/LivePriceTicker'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import {
   TrendingUp,
   TrendingDown,
@@ -76,7 +77,7 @@ const MOCK_TOP_MOVERS = {
   ],
 }
 
-export default function MarketDashboardPage() {
+function MarketDashboardPageContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [indices, setIndices] = useState<MarketIndex[]>([])
@@ -360,5 +361,17 @@ export default function MarketDashboardPage() {
         </TabContent>
       </PageTabs>
     </div>
+  )
+}
+
+export default function MarketDashboardPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Market Dashboard page error:', error, errorInfo)
+      }}
+    >
+      <MarketDashboardPageContent />
+    </PageErrorBoundary>
   )
 }

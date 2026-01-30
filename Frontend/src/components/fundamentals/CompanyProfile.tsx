@@ -8,7 +8,53 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ExternalLink, MapPin, Building2, Users, TrendingUp } from 'lucide-react'
-import type { CompanyProfileData, CompanyOfficer, CompanyPeer } from '@/lib/types/fundamentals'
+
+export interface CompanyOfficer {
+  name: string
+  title: string
+  pay?: number
+  exercised?: number
+  born?: number
+}
+
+export interface CompanyPeer {
+  symbol: string
+  companyName: string
+  marketCap?: number
+}
+
+export interface CompanyMarket {
+  marketCap: number
+  sharesOutstanding: number
+  eps: number
+}
+
+export interface CompanyProfileData {
+  symbol: string
+  companyName: string
+  exchange: string
+  sector?: string
+  industry?: string
+  description?: string
+  ceo?: string
+  employees?: number
+  city?: string
+  state?: string
+  country?: string
+  url?: string
+  image?: string
+  officers?: CompanyOfficer[]
+  peers?: CompanyPeer[]
+  targets?: Array<{
+    analystName: string
+    targetLow?: number
+    targetHigh?: number
+    targetMedian?: number
+    rating?: string
+    updatedDate?: string
+  }>
+  market?: CompanyMarket
+}
 
 interface CompanyProfileProps {
   data?: CompanyProfileData | null

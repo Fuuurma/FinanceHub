@@ -49,7 +49,15 @@
    - ✅ **app/(dashboard)/charts/advanced/page.tsx** - Applied PageErrorBoundary pattern
    - ✅ **ERRORBOUNDARY_IMPLEMENTATION.md** (152 lines) - Complete documentation
 
-### 3. Bonus: EarningsEstimatesPanel
+3. **PageErrorBoundary Applied to Market Pages** (NEW)
+   - ✅ **market/dashboard/page.tsx** - Refactored with PageErrorBoundary
+   - ✅ **market/overview/page.tsx** - Refactored with PageErrorBoundary
+   - ✅ **market/stocks/page.tsx** - Refactored with PageErrorBoundary
+   - ✅ **market/indices/page.tsx** - Refactored with PageErrorBoundary
+   - ✅ **market/movers/page.tsx** - Refactored with PageErrorBoundary
+   - **Result:** All 5 market pages now protected with error boundaries
+
+### 4. Bonus: EarningsEstimatesPanel
    - ✅ **EarningsEstimatesPanel.tsx** (304 lines) - Research component created
    - ✅ **research/index.ts** - Export added
 
@@ -63,28 +71,36 @@
 
 **Files Modified:**
 - Frontend/src/app/(dashboard)/charts/advanced/page.tsx (wrapped with PageErrorBoundary)
+- Frontend/src/app/(dashboard)/market/dashboard/page.tsx (wrapped with PageErrorBoundary)
+- Frontend/src/app/(dashboard)/market/overview/page.tsx (wrapped with PageErrorBoundary)
+- Frontend/src/app/(dashboard)/market/stocks/page.tsx (wrapped with PageErrorBoundary)
+- Frontend/src/app/(dashboard)/market/indices/page.tsx (wrapped with PageErrorBoundary)
+- Frontend/src/app/(dashboard)/market/movers/page.tsx (wrapped with PageErrorBoundary)
 - Frontend/src/components/charts/index.ts (added ChartWrapper export)
 - Frontend/src/components/research/index.ts (added EarningsEstimatesPanel export)
-- TASKS.md (updated Phase 1 sections)
+- TASKS.md (updated Phase 1 sections, completed tasks)
 
 **Total Lines Added:** ~540 lines
+**Pages Protected with Error Boundaries:** 10 critical pages
 
 ## 🎯 NEXT PRIORITIES
 
-### Current Task: Apply PageErrorBoundary to Market Pages (IN PROGRESS)
+### ✅ COMPLETED: Apply PageErrorBoundary to Market Pages
 
-**Status:** IN PROGRESS
+**Status:** COMPLETED ✅
 **Priority:** P0 - Critical Error Handling
-**Deadline:** 2026-02-05
+**Date Completed:** 2026-01-30
 
-**Pages to Update:**
-- [ ] `market/dashboard/page.tsx` (364 lines)
-- [ ] `market/overview/page.tsx`
-- [ ] `market/stocks/page.tsx`
-- [ ] `market/indices/page.tsx`
-- [ ] `market/movers/page.tsx`
+**Pages Updated:**
+- ✅ `market/dashboard/page.tsx` (367 lines) - Refactored with PageErrorBoundary
+- ✅ `market/overview/page.tsx` (210 lines) - Refactored with PageErrorBoundary
+- ✅ `market/stocks/page.tsx` (267 lines) - Refactored with PageErrorBoundary
+- ✅ `market/indices/page.tsx` (182 lines) - Refactored with PageErrorBoundary
+- ✅ `market/movers/page.tsx` (277 lines) - Refactored with PageErrorBoundary
 
-**Pattern to Follow:**
+**Total:** All 5 market pages now wrapped with PageErrorBoundary
+
+**Pattern Applied:**
 ```typescript
 export default function PageName() {
   return (
@@ -99,12 +115,14 @@ export default function PageName() {
 }
 ```
 
-**Files Already Updated:**
+**Files Previously Updated (Phase 1):**
 - ✅ `charts/advanced/page.tsx`
 - ✅ `assets/[assetId]/page.tsx`
 - ✅ `economics/page.tsx`
 - ✅ `analytics/page.tsx`
 - ✅ `holdings/page.tsx`
+
+**Total Pages Protected:** 10/10 critical pages with PageErrorBoundary
 
 ---
 

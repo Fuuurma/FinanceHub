@@ -8,12 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn, formatPercent } from '@/lib/utils'
 import { TrendingUp, TrendingDown, Activity, Calendar } from 'lucide-react'
 
-interface RollingCorrelationData {
+export interface RollingCorrelationData {
   date: Date
   correlation: number
 }
 
-interface RollingCorrelationChartProps {
+export interface RollingCorrelationChartProps {
   symbol1: string
   symbol2: string
   data?: RollingCorrelationData[]

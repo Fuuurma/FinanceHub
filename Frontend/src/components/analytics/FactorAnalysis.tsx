@@ -148,10 +148,12 @@ function ReturnsChart({ factors, selectedFactor }: { factors: FactorData[]; sele
         <Tooltip
           content={({ active, payload }) => {
             if (active && payload && payload.length) {
+              const value = payload[0].value
+              const formattedValue = typeof value === 'number' ? value.toFixed(2) : String(value)
               return (
                 <div className="bg-background border rounded-lg p-3 shadow-lg">
                   <p className="font-medium">{payload[0].payload.date}</p>
-                  <p className="text-lg font-bold">{payload[0].value?.toFixed(2)}%</p>
+                  <p className="text-lg font-bold">{formattedValue}%</p>
                 </div>
               )
             }
@@ -213,10 +215,12 @@ function FactorReturnsBar({ factors }: { factors: FactorData[] }) {
         <Tooltip
           content={({ active, payload }) => {
             if (active && payload && payload.length) {
+              const value = payload[0].value
+              const formattedValue = typeof value === 'number' ? value.toFixed(1) : String(value)
               return (
                 <div className="bg-background border rounded-lg p-3 shadow-lg">
                   <p className="font-medium">{payload[0].payload.name}</p>
-                  <p className="text-lg font-bold">{payload[0].value?.toFixed(1)}%</p>
+                  <p className="text-lg font-bold">{formattedValue}%</p>
                 </div>
               )
             }

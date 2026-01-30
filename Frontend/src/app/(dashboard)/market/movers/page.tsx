@@ -15,12 +15,13 @@ import {
 } from '@/components/ui/table'
 import { iexCloudApi } from '@/lib/api/iex-cloud'
 import type { IEXMarketMover as MarketMover } from '@/lib/types/iex-cloud'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import { TrendingUp, TrendingDown, Activity, RefreshCw, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 
 type MoverType = 'gainers' | 'losers' | 'mostactive'
 
-export default function MarketMoversPage() {
+function MarketMoversPageContent() {
   const [gainers, setGainers] = useState<MarketMover[]>([])
   const [losers, setLosers] = useState<MarketMover[]>([])
   const [mostActive, setMostActive] = useState<MarketMover[]>([])
@@ -268,5 +269,17 @@ export default function MarketMoversPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function MarketMoversPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Market Movers page error:', error, errorInfo)
+      }}
+    >
+      <MarketMoversPageContent />
+    </PageErrorBoundary>
   )
 }

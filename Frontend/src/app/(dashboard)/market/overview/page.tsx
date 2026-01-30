@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/ui/page-header'
 import { StatsGrid } from '@/components/ui/stats-grid'
 import { PageTabs, TabContent } from '@/components/ui/page-tabs'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import {
   Search,
   TrendingUp,
@@ -42,7 +43,7 @@ const MOCK_NEWS = [
   { title: 'Oil prices stabilize amid supply concerns', time: '6 hours ago', sentiment: 'Neutral' },
 ]
 
-export default function MarketOverviewPage() {
+function MarketOverviewPageContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -198,5 +199,17 @@ export default function MarketOverviewPage() {
         </TabContent>
       </PageTabs>
     </div>
+  )
+}
+
+export default function MarketOverviewPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Market Overview page error:', error, errorInfo)
+      }}
+    >
+      <MarketOverviewPageContent />
+    </PageErrorBoundary>
   )
 }
