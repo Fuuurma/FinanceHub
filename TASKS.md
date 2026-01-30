@@ -6,6 +6,57 @@
 
 ---
 
+## 📋 AGENT WORKFLOW - MUST READ FIRST
+
+### Step 1: Context Setup (REQUIRED)
+```bash
+# Always run these commands at the start of every session
+cd /Users/sergi/Desktop/Projects/FinanceHub
+
+# Read current task status
+cat tasks.md | grep -A 5 "IN PROGRESS\|Current In-Progress"
+
+# Check if component exists
+find Frontend/src/components -name "*ComponentName*"
+
+# Read existing component if found
+cat Frontend/src/components/path/to/component.tsx
+```
+
+### Step 2: Understanding Requirements
+1. Read the task description in this file
+2. Check FEATURES_SPECIFICATION.md for feature requirements
+3. Look at similar existing components for patterns
+4. Review CODE_STANDARDS.md in development-guides
+
+### Step 3: Implementation
+1. **NEVER create duplicate components** - always enhance existing ones
+2. Follow the Component Structure from code standards
+3. Use TypeScript strict mode - no `any` types
+4. Use shadcn/ui components from `@/components/ui/*`
+5. Use `cn()` from `@/lib/utils` for class merging
+
+### Step 4: Verification
+```bash
+# Run TypeScript check
+cd Frontend/src && npx tsc --noEmit --skipLibCheck 2>&1 | grep -E "error|Error" | head -20
+
+# Build the project
+cd Frontend/src && npm run build 2>&1 | tail -30
+```
+
+### Step 5: Commit & Update
+```bash
+# Update this file with new status
+git add tasks.md && git commit -m "docs: update task status"
+
+# Commit your changes
+git add -A && git commit -m "feat: [description]"
+git push
+```
+
+---
+
 ## 📋 TASK MANAGEMENT RULES
 
 ### 1. BEFORE STARTING ANY TASK
@@ -41,7 +92,6 @@
 
 ### 4. EXISTING COMPONENT CHECKLIST
 Before creating any component, verify:
-
 ```bash
 # Check if component exists
 glob(path, "**/component-name*.tsx")
@@ -63,8 +113,6 @@ If a task says "Create component XYZ" but XYZ already exists:
 
 ## Executive Summary
 
-Based on comprehensive analysis of all documentation files:
-
 | Metric | Count |
 |--------|-------|
 | Total Features Specified | 351 |
@@ -76,193 +124,159 @@ Based on comprehensive analysis of all documentation files:
 
 ---
 
-## 🚨 CRITICAL PRIORITY TASKS
-
-### Phase 1: Foundation Components (Week 1-2)
-
-#### 1.1 Advanced Charting Suite ⭐ CRITICAL
-
-**Task:** Create `components/charts/AdvancedChart.tsx`  
-**Status:** `EXISTS - ENHANCE`  
-**Existing Components Found:**
-- `/components/realtime/RealTimeChart.tsx` (319 lines, Chart.js based)
-- `/components/charts/ChartControls.tsx` (401 lines, full controls)
-- `/components/charts/TradingViewChart.tsx`
-- `/components/charts/DrawingTools.tsx`
-- `/components/charts/ComparisonChart.tsx`
-- `/components/charts/IndicatorConfigModal.tsx`
-- `/components/charts/TechnicalIndicatorsPanel.tsx`
-
-**Action:** Read all existing chart components, then enhance `RealTimeChart.tsx` or create `AdvancedChart.tsx` that consolidates features. Add candlestick support, more indicators, drawing tools.
-
-**Reference:** See `FEATURE_IMPLEMENTATION_GUIDES.md` lines 784-1091 for detailed implementation
-
----
-
-#### 1.2 Universal DataTable Component ⭐ CRITICAL
-
-**Task:** Create `components/ui/data-table.tsx`  
-**Status:** `EXISTS - ENHANCE` ✅ ALREADY COMPLETE
-
-**Existing Component Found:**
-- `/components/ui/data-table.tsx` (296 lines)
-
-**Features Already Implemented:**
-- ✅ Column sorting (asc/desc)
-- ✅ Search/filter functionality
-- ✅ Pagination
-- ✅ Column visibility toggle
-- ✅ Row selection
-- ✅ Loading skeletons
-- ✅ Custom cell rendering
-
-**Missing Features (to enhance):**
-- [ ] Export to CSV
-- [ ] Export to Excel
-- [ ] Export to JSON
-- [ ] Export to PDF
-- [ ] Copy to clipboard
-- [ ] Density toggle (compact/normal/spacious)
-- [ ] Frozen columns
-- [ ] Row numbers
-
-**Action:** Enhance existing `data-table.tsx` with export functionality.
-
----
-
-#### 1.3 Market Heatmap ⭐ CRITICAL
-
-**Task:** Create `components/charts/MarketHeatmap.tsx`  
-**Status:** `PENDING` - Need to verify if exists  
-**Estimated Effort:** 1-2 weeks
-
-**Components to Create:**
-| File | Description | Status |
-|------|-------------|--------|
-| `components/charts/MarketHeatmap.tsx` | Treemap visualization of market sectors | PENDING |
-| `components/charts/TreemapNode.tsx` | Individual treemap node component | PENDING |
-
-**Features Required:**
-- [ ] Sector-level treemap
-- [ ] Color-coded by performance (green/red)
-- [ ] Size by market cap
-- [ ] Click to drill down
-- [ ] Timeframe selector (1D, 1W, 1M, 3M, YTD, 1Y)
-- [ ] Hover tooltips with details
-- [ ] Legend with performance scale
-- [ ] Animation on data load
-
----
-
-## Current In-Progress Tasks
-
-| # | Task | Status | Notes |
-|---|------|--------|-------|
-| 1 | Create data-table.tsx | `EXISTS - ENHANCE` | Exists at `/components/ui/data-table.tsx`, need to add export features |
-| 8 | Create CorrelationMatrix.tsx | `PENDING` | New component likely needed |
-
----
-
 ## 📁 EXISTING COMPONENTS INVENTORY
 
-### Charts Components (FOUND)
+### Charts Components
 ```
-components/charts/
-├── AdvancedChart.tsx         # Task #3 - COMPLETED ✅ - New consolidated chart with indicators, drawing tools, export
-├── ChartControls.tsx         # Controls exist
-├── ChartToolbar.tsx          # Toolbar exists
-├── IndicatorPanel.tsx        # Panel exists
-├── DrawingTools.tsx          # Drawing tools exist
-├── ChartExport.tsx           # Export features exist
-├── ComparisonChart.tsx       # Exists
+Frontend/src/components/charts/
+├── AdvancedChart.tsx         # Task #3 - COMPLETED ✅ (680 lines)
+│   ├── ChartType: 'candlestick' | 'line' | 'area' | 'bar' | 'histogram'
+│   ├── Timeframe: '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w' | '1M'
+│   ├── Indicators: SMA, EMA, RSI, MACD, Bollinger Bands
+│   ├── Drawing: HorizontalLine, TrendLine, Fibonacci, Rectangle, Text
+│   ├── Export: PNG screenshot, CSV data
+│   └── Dependencies: lightweight-charts, @/lib/utils/technical-indicators
+│
+├── ChartControls.tsx         # 401 lines - Controls (timeframe, type, indicators)
+├── TradingViewChart.tsx      # 681 lines - Base trading chart (reference for patterns)
+├── TechnicalIndicatorsPanel.tsx # RSI/MACD sub-panel
+├── IndicatorConfigModal.tsx  # Indicator configuration modal
+├── DrawingTools.tsx          # 259 lines - Drawing tools UI (NOT integrated)
+├── ComparisonChart.tsx       # Multi-asset comparison
 ├── MarketHeatmap.tsx         # Task #4 - COMPLETED ✅
-├── TreemapNode.tsx           # Task #4 sub-component
-├── TradingViewChart.tsx      # TradingView integration exists
-├── TechnicalIndicators.tsx   # Indicators exist
-├── TechnicalIndicatorsPanel.tsx # Panel exists
-├── IndicatorConfigModal.tsx  # Modal exists
-├── VolumeProfile.tsx         # Check if exists
-├── TopHoldingsChart.tsx      # Exists
-├── HoldingsAllocationChart.tsx # Exists
-├── HoldingsPnLChart.tsx      # Exists
-└── fundamentals-charts.tsx   # Exists
+├── TopHoldingsChart.tsx      # Holdings pie chart
+├── HoldingsAllocationChart.tsx # Allocation breakdown
+├── HoldingsPnLChart.tsx      # P&L visualization
+└── fundamentals-charts.tsx   # Fundamental data charts
 ```
 
-### UI Components (FOUND)
+### UI Components
 ```
-components/ui/
-├── data-table.tsx            # Task #1 - EXISTS, need to enhance export
-├── export-dropdown.tsx       # Task #2 - NEEDS VERIFICATION
-├── KeyboardShortcuts.tsx     # Task #15 - NEEDS VERIFICATION
-├── CommandPalette.tsx        # Check if exists
-├── QuickSearch.tsx           # Check if exists
-└── WidgetGrid.tsx            # Check if exists
-```
-
-### Realtime Components (FOUND)
-```
-components/realtime/
-├── RealTimeChart.tsx         # 319 lines - EXISTS, base for Task #3
-├── ConnectionStatus.tsx      # Exists
-├── LivePriceTicker.tsx       # Exists
-├── OrderBook.tsx             # Exists
-└── TradeFeed.tsx             # Exists
+Frontend/src/components/ui/
+├── data-table.tsx            # Task #1 - EXISTS, needs export features
+│   ├── Props: Column<T>[], data: T[], pageSize, searchable, showExport
+│   ├── Features: sorting, pagination, search, column toggle
+│   ├── Missing: density toggle, frozen columns, row numbers
+│   └── Export: CSV, Excel, JSON already implemented (check!)
+│
+├── export-dropdown.tsx       # Task #2 - COMPLETED ✅
+├── button.tsx                # shadcn button (use this!)
+├── select.tsx                # shadcn select (use this!)
+├── dropdown-menu.tsx         # shadcn dropdown (use this!)
+├── card.tsx                  # shadcn card (use this!)
+├── tabs.tsx                  # shadcn tabs (use this!)
+└── [60+ other components]    # Full shadcn/ui library available
 ```
 
-### Risk Components (FOUND)
+### Analytics Components
 ```
-components/risk/
-├── RiskDashboard.tsx         # Task #6 - COMPLETED ✅ - Complete risk analysis dashboard
-└── index.ts                  # Export file
+Frontend/src/components/analytics/
+├── PerformanceMetrics.tsx    # Task #5 - COMPLETED ✅
+├── PerformanceChart.tsx      # Return chart
+├── RollingReturnsChart.tsx   # Rolling period returns
+├── BenchmarkComparisonChart.tsx # vs SPY, etc.
+├── RiskMetricsHistoryChart.tsx # Risk over time
+├── CorrelationMatrix.tsx     # Task #8 - PENDING ⏳
+└── KPICards/                 # Metric cards (Return, Value, Risk, Drawdown)
 ```
 
-### Analytics Components (FOUND)
+### Risk Components
 ```
-components/analytics/
-├── PerformanceChart.tsx       # Exists
-├── PerformanceBreakdown.tsx   # Exists
-├── RollingReturnsChart.tsx    # Exists
-├── PortfolioComparison.tsx    # Exists
-├── PerformanceAttributionChart.tsx # Exists
-├── RiskMetricsHistoryChart.tsx # Exists
-├── BenchmarkComparisonChart.tsx # Exists
-├── SectorBreakdownChart.tsx   # Exists
-├── ChartCard.tsx              # Exists
-├── PortfolioSelector.tsx      # Exists
-├── PerformanceMetrics.tsx     # Task #5 - COMPLETED ✅
-└── KPICards/
-    ├── ReturnCard.tsx         # Exists
-    ├── ValueCard.tsx          # Exists
-    ├── RiskCard.tsx           # Exists
-    ├── DrawdownCard.tsx       # Exists
-    └── CAGRCard.tsx           # Exists
+Frontend/src/components/risk/
+├── RiskDashboard.tsx         # Task #6 - COMPLETED ✅
+│   ├── VaR: Value at Risk (parametric, historical)
+│   ├── CVaR: Expected Shortfall
+│   ├── Beta: Portfolio beta calculation
+│   ├── Stress Testing: Historical scenarios
+│   └── Risk Limits: Alert configuration
+└── index.ts                  # Exports
 ```
 
 ---
 
-## 🎯 QUICK START - CURRENT PRIORITY
+## 🎯 CURRENT PRIORITY
 
-### Task #3: Advanced Chart Suite (COMPLETED) ✅
+### Next Task: Task #8 - Correlation Matrix
+
+**Location:** `Frontend/src/components/analytics/CorrelationMatrix.tsx`
+
+**Reference Components:**
+- `Frontend/src/components/analytics/PerformanceMetrics.tsx` - Analytics pattern
+- `Frontend/src/components/charts/ComparisonChart.tsx` - Chart pattern
+- `Frontend/src/components/ui/data-table.tsx` - Table pattern
+
+**Implementation Pattern:**
+```typescript
+interface CorrelationMatrixProps {
+  assets: string[]                  // List of symbols to correlate
+  portfolioId?: string              // Optional: fetch from portfolio
+  timeframe?: Timeframe             // '1M' | '3M' | '6M' | '1Y' | '3Y' | '5Y'
+  method?: 'pearson' | 'spearman'   // Correlation method
+  height?: number
+  onAssetClick?: (asset: string) => void
+}
+
+interface CorrelationData {
+  matrix: number[][]                // NxN correlation matrix
+  assets: string[]                  // Row/column labels
+  clustering?: {                    // Optional hierarchical clustering
+    dendrogram?: any
+    orderedAssets?: string[]
+  }
+}
+```
+
+**Features Required:**
+- [ ] NxN correlation matrix visualization (heatmap)
+- [ ] Color scale: -1 (red) to +1 (green)
+- [ ] Interactive cells with correlation values on hover
+- [ ] Asset click to filter/remove
+- [ ] Timeframe selector
+- [ ] Clustering/dendrogram view (optional)
+- [ ] Export correlation matrix as CSV/PNG
+- [ ] Responsive design for mobile
+
+**Dependencies:**
+- `d3-hierarchy` or similar for clustering (optional)
+- `recharts` or `lightweight-charts` for heatmap
+- `lib/api/portfolio.ts` - fetch holdings for auto-population
+
+**Helper Function - WHERE TO ADD:**
+```typescript
+// lib/utils/analytics.ts
+export function calculateCorrelation(asset1: number[], asset2: number[]): number {
+  // Pearson correlation coefficient
+  const n = asset1.length
+  const sum1 = asset1.reduce((a, b) => a + b, 0)
+  const sum2 = asset2.reduce((a, b) => a + b, 0)
+  const sum1Sq = asset1.reduce((a, b) => a + b * b, 0)
+  const sum2Sq = asset2.reduce((a, b) => a + b * b, 0)
+  const pSum = asset1.reduce((sum, x, i) => sum + x * asset2[i], 0)
+  
+  const num = pSum - (sum1 * sum2 / n)
+  const den = Math.sqrt((sum1Sq - sum1 * sum1 / n) * (sum2Sq - sum2 * sum2 / n))
+  
+  return den === 0 ? 0 : num / den
+}
+```
+
+**Reference Documentation:**
+- `FEATURE_IMPLEMENTATION_GUIDES.md` lines 450-520
+- `FEATURES_SPECIFICATION.md` section 3.4 - Correlation matrix
+
+---
+
+### Completed: Task #3 - Advanced Chart Suite ✅
 
 **Files Created:**
-1. `/Frontend/src/components/charts/AdvancedChart.tsx` (680+ lines) - New consolidated advanced chart
+1. `Frontend/src/components/charts/AdvancedChart.tsx` (680+ lines)
 
-**Features Implemented:**
-- ✅ Candlestick, line, area, bar, histogram chart types
-- ✅ Full technical indicators (SMA, EMA, RSI, MACD, Bollinger Bands)
-- ✅ Drawing tools integration (horizontal line, trend line, Fibonacci, rectangle, text)
-- ✅ Chart export (PNG, CSV)
-- ✅ Crosshair data display with OHLCV values
-- ✅ Dark/light mode support
-- ✅ RSI/MACD indicator panels
-- ✅ Keyboard shortcuts for timeframes and chart types
-- ✅ Real-time data integration ready
-
-**Reference:** See `/Frontend/src/components/charts/AdvancedChart.tsx` for full implementation
-
----
-
-### Next Priority: Task #1 - DataTable Export Features
+**Key Implementation Details:**
+- Uses `lightweight-charts` from TradingView
+- Integrates technical indicators from `lib/utils/technical-indicators.ts`
+- Drawing tools framework ready (needs full integration)
+- Export: PNG via `takeScreenshot()`, CSV via manual generation
+- Theme-aware colors stored in `chartColors` object
 
 ---
 
@@ -270,34 +284,98 @@ components/analytics/
 
 | # | Task | Component | Priority | Status | Existing Path |
 |---|------|-----------|----------|--------|---------------|
-| 1 | Enhance data-table.tsx | components/ui/data-table.tsx | P0 | `COMPLETED` ✅ | `/components/ui/data-table.tsx` |
-| 2 | Create export-dropdown.tsx | components/ui/export-dropdown.tsx | P0 | `COMPLETED` ✅ | `/components/ui/export-dropdown.tsx` |
-| 3 | Create AdvancedChart.tsx | components/charts/AdvancedChart.tsx | P0 | `COMPLETED` ✅ | `/Frontend/src/components/charts/AdvancedChart.tsx` |
-| 4 | Create MarketHeatmap.tsx | components/charts/MarketHeatmap.tsx | P0 | `COMPLETED` ✅ | `/components/charts/MarketHeatmap.tsx` |
-| 5 | Create PerformanceMetrics.tsx | components/analytics/PerformanceMetrics.tsx | P0 | `COMPLETED` ✅ | `/components/analytics/PerformanceMetrics.tsx` |
-| 6 | Create RiskDashboard.tsx | components/risk/RiskDashboard.tsx | P0 | `COMPLETED` ✅ | `/components/risk/RiskDashboard.tsx` |
-| 7 | Expand Screener FilterPanel.tsx | components/screener/FilterPanel.tsx | P0 | `COMPLETED` ✅ | `/components/screener/FilterPanel.tsx` |
-| 8 | Create CorrelationMatrix.tsx | components/analytics/CorrelationMatrix.tsx | P0 | `COMPLETED` ✅ | `/components/analytics/CorrelationMatrix.tsx` |
-| 9 | Create OptionsChain.tsx | components/options/OptionsChain.tsx | P1 | `PENDING` | - |
-| 10 | Create Backtest Results UI | components/backtest/*.tsx | P2 | `PENDING` | - |
-| 11 | Create AI PricePrediction.tsx | components/ai/PricePrediction.tsx | P2 | `PENDING` | - |
-| 12 | Expand News Feed | components/news/*.tsx | P2 | `PENDING` | - |
-| 13 | Create Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `PENDING` | - |
-| 14 | Create Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `PENDING` | - |
-| 15 | Implement Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `PENDING` | - |
+| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `COMPLETED` ✅ | Already has CSV/JSON/Excel |
+| 8 | CorrelationMatrix | components/analytics/CorrelationMatrix.tsx | P0 | `COMPLETED` ✅ | `/components/analytics/CorrelationMatrix.tsx` |
+| 9 | OptionsChain | components/options/OptionsChain.tsx | P1 | `COMPLETED` ✅ | `/components/options/OptionsChain.tsx` |
+| 10 | Backtest Results UI | components/backtest/*.tsx | P2 | `BLOCKED` | No backend exists - requires complete implementation |
+| 11 | AI PricePrediction | components/ai/PricePrediction.tsx | P2 | `PENDING` | No backend/ML models |
+| 12 | News Feed Expansion | components/news/*.tsx | P2 | `PENDING` | Check existing news components |
+| 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `PENDING` | No backend/data source |
+| 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `PENDING` | No backend/data source |
+| 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `PENDING` | UI feature only |
 
 ---
 
-## How to Use This File
+## 🛠️ HELPER FUNCTIONS FOR AGENTS
 
-1. **Before starting any work:** Check this file for task status
-2. **If component exists:** Read it first, then enhance (don't recreate)
-3. **When starting task:** Update status to `IN PROGRESS`
-4. **When finding existing component:** Update status to `EXISTS - ENHANCE`
-5. **After completing task:** Update status to `COMPLETED`
+### File Search
+```bash
+# Find component by name
+find Frontend/src/components -name "*Name*"
+
+# Check if component exists
+ls -la Frontend/src/components/ui/data-table.tsx 2>/dev/null && echo "EXISTS" || echo "NOT FOUND"
+```
+
+### Common Imports
+```typescript
+// shadcn/ui components
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+
+// Charts
+import { createChart, ColorType, CrosshairMode } from 'lightweight-charts'
+
+// Utilities
+import { cn } from '@/lib/utils'
+```
+
+### Testing Pattern
+```typescript
+describe('ComponentName', () => {
+  it('renders without crashing', () => {
+    render(<ComponentName prop={value} />)
+    expect(screen.getByText('Expected Text')).toBeInTheDocument()
+  })
+})
+```
+
+### Common Issues & Solutions
+
+| Issue | Solution |
+|-------|----------|
+| ESLint module not found | Check `eslint.config.mjs` and reinstall deps |
+| TypeScript "cannot find module" | Check `tsconfig.json` paths |
+| Next.js not hot reloading | Restart dev server: `npm run dev` |
+| Chart not rendering | Check `useRef` initialization and cleanup |
 
 ---
 
-**Document Version:** 1.1  
-**Last Updated:** January 30, 2026  
-**Next Review:** After Task #3 completion
+## 📚 REFERENCE DOCUMENTATION
+
+### Must Read Before Starting
+1. `AGENTS.md` - Agent instructions and workflow
+2. `tasks.md` - This file, current task status
+3. `FEATURES_SPECIFICATION.md` - Feature requirements
+4. `development-guides/06-CODE-STANDARDS.md` - Code style
+
+### Implementation Guides
+- `FEATURE_IMPLEMENTATION_GUIDES.md` - Detailed implementation steps
+
+### Component Patterns
+- `Frontend/src/components/charts/AdvancedChart.tsx` - Complex chart pattern
+- `Frontend/src/components/ui/data-table.tsx` - Data table pattern
+- `Frontend/src/components/analytics/PerformanceMetrics.tsx` - Analytics card pattern
+
+---
+
+## ✅ COMPLETION CHECKLIST
+
+Before marking a task COMPLETED:
+- [ ] Component created/enhanced at correct path
+- [ ] Types properly exported from `index.ts`
+- [ ] TypeScript errors fixed (`npx tsc --noEmit --skipLibCheck`)
+- [ ] Build succeeds (`npm run build`)
+- [ ] Component responsive (mobile support)
+- [ ] Dark mode support (if applicable)
+- [ ] Accessibility (keyboard nav, aria labels)
+- [ ] This TASKS.md file updated
+- [ ] Changes committed and pushed
+
+---
+
+**Document Version:** 2.0
+**Last Updated:** January 30, 2026
+**Next Review:** After Task #8 (CorrelationMatrix) completion

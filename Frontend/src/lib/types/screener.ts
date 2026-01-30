@@ -2,6 +2,7 @@ export interface ScreenerFilter {
   key: string
   value: any
   operator?: string
+  label?: string
 }
 
 export interface ScreenerFilterOut {

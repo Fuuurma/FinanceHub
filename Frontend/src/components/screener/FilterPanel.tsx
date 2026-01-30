@@ -45,6 +45,12 @@ import {
   Cpu,
   TrendingUpIcon,
   ArrowUpDown,
+  Share2,
+  LineChart,
+  Leaf,
+  Search,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 import { FilterRow } from './FilterRow'
 import { useScreenerStore } from '@/stores/screenerStore'
@@ -200,13 +206,20 @@ export function FilterPanel() {
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="w-full border-2 border-foreground bg-background grid grid-cols-3">
+        <TabsList className="w-full border-2 border-foreground bg-background grid grid-cols-4">
           <TabsTrigger
             value="filters"
             className="data-[state=active]:bg-foreground data-[state=active]:text-background font-black uppercase text-xs"
           >
             <Filter className="h-4 w-4 mr-1" />
             Filters
+          </TabsTrigger>
+          <TabsTrigger
+            value="browse"
+            className="data-[state=active]:bg-foreground data-[state=active]:text-background font-black uppercase text-xs"
+          >
+            <Search className="h-4 w-4 mr-1" />
+            Browse
           </TabsTrigger>
           <TabsTrigger
             value="presets"
@@ -463,6 +476,75 @@ export function FilterPanel() {
                   Import Filters
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="browse" className="space-y-4">
+          <Card className="border-2 border-foreground">
+            <CardHeader className="pb-3 border-b-2 border-foreground bg-muted/30">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Browse All Filters
+              </CardTitle>
+              <CardDescription>Click to add filters from any category</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <ScrollArea className="h-[500px] pr-3">
+                <div className="space-y-4">
+                  {SCREENER_CATEGORIES.map((category) => {
+                    const categoryFilters = SCREENER_CATEGORIES.find(c => c.id === category.id)?.filters || []
+                    return (
+                      <div key={category.id} className="border-2 border-foreground/20 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="outline" className="border-foreground">
+                            {category.name}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {categoryFilters.length} filter{categoryFilters.length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {categoryFilters.map((filter) => {
+                            const isActive = selectedFilters.some(f => f.key === filter.key)
+                            return (
+                              <Button
+                                key={filter.key}
+                                variant={isActive ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => {
+                                  if (isActive) {
+                                    const idx = selectedFilters.findIndex(f => f.key === filter.key)
+                                    if (idx >= 0) {
+                                      const { removeFilter } = useScreenerStore.getState()
+                                      removeFilter(idx)
+                                    }
+                                  } else {
+                                    addFilter({
+                                      key: filter.key,
+                                      value: '',
+                                      operator: filter.operators[0] || '=',
+                                      label: filter.label
+                                    })
+                                  }
+                                }}
+                                className={cn(
+                                  'justify-start h-auto py-2 px-3 text-xs',
+                                  isActive && 'bg-foreground text-background'
+                                )}
+                              >
+                                <Filter className="h-3 w-3 mr-2" />
+                                {filter.label}
+                                {isActive && <Check className="h-3 w-3 ml-auto" />}
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
         </TabsContent>
