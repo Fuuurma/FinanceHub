@@ -22,12 +22,12 @@ import {
   SectorAnalysisResponse,
   RiskCommentaryResponse,
   VolatilityOutlookResponse,
-  BondMarketResponse,
+  BondMarketAnalysisResponse,
   AITemplateListResponse,
 } from '@/lib/types/ai-advisor'
 import { apiClient, ApiError } from './client'
 
-const AI_API_BASE = '/ai'
+const AI_API_BASE = '/ai/v2/enhanced'
 
 async function handleAIResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -217,8 +217,8 @@ export async function getVolatilityOutlook(
   })
 }
 
-export async function getBondMarketAnalysis(): Promise<BondMarketResponse> {
-  return apiClient.get<BondMarketResponse>(`${AI_API_BASE}/bond-market`)
+export async function getBondMarketAnalysis(): Promise<BondMarketAnalysisResponse> {
+  return apiClient.get<BondMarketAnalysisResponse>(`${AI_API_BASE}/bond-market`)
 }
 
 export async function getAITemplates(
