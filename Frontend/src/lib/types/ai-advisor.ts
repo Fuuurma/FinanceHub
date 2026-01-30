@@ -253,7 +253,74 @@ export interface BatchAnalysisResponse {
   generated_at: string;
 }
 
-// ================= TEMPLATE TYPES =================
+// ================= ENHANCED AI ANALYSIS (I4) =================
+
+export interface FullMarketAnalysisRequest {
+  symbol: string;
+}
+
+export interface FullMarketAnalysisResponse {
+  symbol: string;
+  title: string;
+  content: string;
+  summary: string;
+  last_updated: string;
+  version: number;
+  next_refresh: string;
+  is_premium_content: boolean;
+}
+
+export interface SectorAnalysisRequest {
+  sector_name: string;
+}
+
+export interface SectorAnalysisResponse {
+  sector: string;
+  title: string;
+  content: string;
+  summary: string;
+  last_updated: string;
+}
+
+export interface RiskCommentaryResponse {
+  title: string;
+  content: string;
+  summary: string;
+  last_updated: string;
+}
+
+export interface VolatilityOutlookRequest {
+  symbol?: string;
+}
+
+export interface VolatilityOutlookResponse {
+  symbol: string;
+  title: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+  last_updated: string;
+}
+
+export interface BondMarketAnalysisResponse {
+  title: string;
+  content: string;
+  summary: string;
+  last_updated: string;
+  yield_data?: {
+    treasury_10y: number;
+    treasury_2y: number;
+    corporate_ig: number;
+    corporate_hy: number;
+  };
+}
+
+// ================= ERROR TYPES =================
+
+export interface AIAdvisorError {
+  error: string;
+  code?: string;
+  details?: Record<string, unknown>;
+}
 
 export interface AnalysisTemplate {
   id: string;
@@ -324,4 +391,71 @@ export function getRiskBgColor(risk: 'low' | 'medium' | 'high'): string {
     default:
       return 'bg-gray-500/10 border-gray-500';
   }
+}
+
+// ================= ENHANCED AI ENDPOINTS (I4) =================
+
+export interface FullMarketAnalysisRequest {
+  symbol: string;
+}
+
+export interface FullMarketAnalysisResponse {
+  symbol: string;
+  title: string;
+  content: string;
+  summary: string;
+  last_updated: string;
+  version: number;
+  next_refresh: string;
+  is_premium_content: boolean;
+}
+
+export interface SectorAnalysisRequest {
+  sector: string;
+}
+
+export interface SectorAnalysisResponse {
+  sector: string;
+  title: string;
+  content: string;
+  summary: string;
+  last_updated: string;
+}
+
+export interface RiskCommentaryResponse {
+  title: string;
+  content: string;
+  summary: string;
+  last_updated: string;
+}
+
+export interface VolatilityOutlookRequest {
+  symbol?: string;
+}
+
+export interface VolatilityOutlookResponse {
+  symbol: string;
+  title: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+  last_updated: string;
+}
+
+export interface BondMarketResponse {
+  title: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+  last_updated: string;
+}
+
+export interface AITemplateListResponse {
+  types: string[];
+  templates: Record<string, Array<{
+    symbol: string;
+    sector: string;
+    title: string;
+    last_updated: string;
+    next_refresh: string;
+  }>>;
+  total_count: number;
 }

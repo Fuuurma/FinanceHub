@@ -18,6 +18,12 @@ import {
   MarketAnalysisRequest,
   MarketAnalysisResponse,
   AIAdvisorError,
+  FullMarketAnalysisResponse,
+  SectorAnalysisResponse,
+  RiskCommentaryResponse,
+  VolatilityOutlookResponse,
+  BondMarketResponse,
+  AITemplateListResponse,
 } from '@/lib/types/ai-advisor'
 import { apiClient, ApiError } from './client'
 
@@ -185,6 +191,47 @@ export async function analyzeMarket(
   return apiClient.get<MarketAnalysisResponse>(`${AI_API_BASE}/market-analysis`, { params })
 }
 
+// ================= ENHANCED AI ENDPOINTS (I4) =================
+
+export async function getFullMarketAnalysis(
+  symbol: string
+): Promise<FullMarketAnalysisResponse> {
+  return apiClient.get<FullMarketAnalysisResponse>(`${AI_API_BASE}/market/${symbol}/full`)
+}
+
+export async function getSectorAnalysis(
+  sector: string
+): Promise<SectorAnalysisResponse> {
+  return apiClient.get<SectorAnalysisResponse>(`${AI_API_BASE}/sector/${encodeURIComponent(sector)}`)
+}
+
+export async function getRiskCommentary(): Promise<RiskCommentaryResponse> {
+  return apiClient.get<RiskCommentaryResponse>(`${AI_API_BASE}/risk-commentary`)
+}
+
+export async function getVolatilityOutlook(
+  symbol: string = 'SPY'
+): Promise<VolatilityOutlookResponse> {
+  return apiClient.get<VolatilityOutlookResponse>(`${AI_API_BASE}/volatility-outlook`, {
+    params: { symbol }
+  })
+}
+
+export async function getBondMarketAnalysis(): Promise<BondMarketResponse> {
+  return apiClient.get<BondMarketResponse>(`${AI_API_BASE}/bond-market`)
+}
+
+export async function getAITemplates(
+  templateType?: string,
+  assetClass?: string
+): Promise<AITemplateListResponse> {
+  const params: Record<string, string> = {}
+  if (templateType) params.template_type = templateType
+  if (assetClass) params.asset_class = assetClass
+
+  return apiClient.get<AITemplateListResponse>(`${AI_API_BASE}/templates`, { params })
+}
+
 // ================= AI ADVISOR API EXPORTS =================
 
 export const aiAdvisorApi = {
@@ -198,6 +245,13 @@ export const aiAdvisorApi = {
   streamChatMessage,
   analyzePortfolio,
   analyzeMarket,
+  // Enhanced AI endpoints (I4)
+  getFullMarketAnalysis,
+  getSectorAnalysis,
+  getRiskCommentary,
+  getVolatilityOutlook,
+  getBondMarketAnalysis,
+  getAITemplates,
 }
 
 export default aiAdvisorApi
