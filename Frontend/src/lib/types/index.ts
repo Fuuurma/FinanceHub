@@ -27,21 +27,7 @@ export * from './alerts'
 export * from './news-sentiment'
 export * from './screener'
 export * from './ai-advisor'
-export {
-  Order,
-  Position,
-  AccountSummary,
-  PositionSummary,
-  OrderCreateInput,
-  PositionSize,
-  TradeFilters,
-  TradeStats,
-  OrderFilters,
-  OrderStatusFilter,
-  OrderTypeFilter,
-  OrderStats,
-  OrderCancelInput,
-} from './trading'
+export * from './trading'
 export * from './iex-cloud'
 export * from './coinmarketcap'
 export * from './analytics'

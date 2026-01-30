@@ -610,8 +610,8 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 | N2 | useDownload | hooks/useDownload.ts | P0 | `COMPLETED` ✅ | Used in 6 files |
 | N3 | TradeHistory | components/trading/TradeHistory.tsx | P0 | `COMPLETED` ✅ | `/Frontend/src/components/trading/TradeHistory.tsx` (440 lines) |
 | N4 | OrderList | components/trading/OrderList.tsx | P0 | `COMPLETED` ✅ | 704 lines |
-| N5 | VolumeProfileChart | components/charts/VolumeProfileChart.tsx | P0 | `PENDING` | Create new |
-| N6 | DepthChart | components/charts/DepthChart.tsx | P0 | `PENDING` | Create new |
+| N5 | VolumeProfileChart | components/charts/VolumeProfileChart.tsx | P0 | `COMPLETED` ✅ | 703 lines |
+| N6 | DepthChart | components/charts/DepthChart.tsx | P0 | `COMPLETED` ✅ | 380 lines |
 
 ## New Missing Components - P1 (High)
 | # | Task | Component | Priority | Status | Path |
