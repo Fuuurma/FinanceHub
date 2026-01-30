@@ -143,7 +143,11 @@ Frontend/src/components/charts/
 ├── IndicatorConfigModal.tsx  # Indicator configuration modal
 ├── DrawingTools.tsx          # 259 lines - Drawing tools UI (NOT integrated)
 ├── ComparisonChart.tsx       # Multi-asset comparison
-├── MarketHeatmap.tsx         # Task #4 - COMPLETED ✅
+├── MarketHeatmap.tsx         # Task #4 - COMPLETED ✅ with export features (497 lines)
+│   ├── Export: PNG via html2canvas, CSV data export
+│   ├── Features: Sector treemap, drill-down, timeframes, dark mode
+│   └── Dependencies: lightweight-charts not needed (custom treemap)
+│
 ├── TopHoldingsChart.tsx      # Holdings pie chart
 ├── HoldingsAllocationChart.tsx # Allocation breakdown
 ├── HoldingsPnLChart.tsx      # P&L visualization
@@ -284,15 +288,17 @@ export function calculateCorrelation(asset1: number[], asset2: number[]): number
 
 | # | Task | Component | Priority | Status | Existing Path |
 |---|------|-----------|----------|--------|---------------|
-| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `COMPLETED` ✅ | Already has CSV/JSON/Excel |
-| 8 | CorrelationMatrix | components/analytics/CorrelationMatrix.tsx | P0 | `COMPLETED` ✅ | `/components/analytics/CorrelationMatrix.tsx` |
-| 9 | OptionsChain | components/options/OptionsChain.tsx | P1 | `COMPLETED` ✅ | `/components/options/OptionsChain.tsx` |
-| 10 | Backtest Results UI | components/backtest/*.tsx | P2 | `BLOCKED` | No backend exists - requires complete implementation |
-| 11 | AI PricePrediction | components/ai/PricePrediction.tsx | P2 | `PENDING` | No backend/ML models |
-| 12 | News Feed Expansion | components/news/*.tsx | P2 | `PENDING` | Check existing news components |
-| 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `COMPLETED` ✅ | `/components/economics/EconomicCalendar.tsx` |
-| 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `PENDING` | No backend/data source |
-| 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `COMPLETED` ✅ | `/components/ui/KeyboardShortcuts.tsx` |
+| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `EXISTS - ENHANCE` | Has CSV/JSON/Excel, add PDF/density |
+| 3 | AdvancedChart | components/charts/AdvancedChart.tsx | P0 | `COMPLETED` ✅ | `/Frontend/src/components/charts/AdvancedChart.tsx` |
+| 4 | MarketHeatmap | components/charts/MarketHeatmap.tsx | P0 | `COMPLETED` ✅ | `/Frontend/src/components/charts/MarketHeatmap.tsx` (497 lines) |
+| 8 | CorrelationMatrix | components/analytics/CorrelationMatrix.tsx | P0 | `PENDING` | Needs creation |
+| 9 | OptionsChain | components/options/Options P1 | `Chain.tsx |PENDING` | Needs creation |
+| 10 | Backtest Results UI | components/backtest/*.tsx | P2 | `PENDING` | Needs creation |
+| 11 | AI PricePrediction | components/ai/PricePrediction.tsx | P2 | `PENDING` | Needs creation |
+| 12 | News Feed Expansion | components/news/*.tsx | P2 | `PENDING` | Check existing news |
+| 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `PENDING` | Needs creation |
+| 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `PENDING` | Needs creation |
+| 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `PENDING` | Needs creation |
 
 ---
 

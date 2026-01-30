@@ -333,24 +333,19 @@ export function MarketHeatmap({
   const handleExportPNG = useCallback(async () => {
     setIsExporting(true)
     try {
-      const element = document.querySelector('.border-2.border-foreground.overflow-hidden')
-      if (element) {
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-        const rect = element.getBoundingClientRect()
-        canvas.width = rect.width * 2
-        canvas.height = rect.height * 2
-        ctx?.scale(2, 2)
-        
-        const dataUrl = await import('html2canvas').then(mod => mod.default(element, {
-          canvas,
+      const element = document.querySelector('.border-2.border-foreground.overflow-hidden') as HTMLElement
+      if (element && typeof window !== 'undefined') {
+        const html2canvasModule = await import('html2canvas')
+        const html2canvas = html2canvasModule.default
+        const canvas = await html2canvas(element, {
           scale: 2,
           backgroundColor: null,
-        }))
+          logging: false,
+        })
         
         const link = document.createElement('a')
         link.download = `market-heatmap-${timeframe}-${new Date().toISOString().slice(0, 10)}.png`
-        link.href = dataUrl
+        link.href = canvas.toDataURL('image/png')
         link.click()
       }
     } catch (err) {
@@ -462,33 +457,56 @@ export function MarketHeatmap({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center border border-foreground/20">
-              {TIMEFRAMES.map((tf) => (
-                <Button
-                  key={tf}
-                  variant={timeframe === tf ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => onTimeframeChange?.(tf)}
-                  className={cn(
-                    'h-8 px-3 text-xs font-black uppercase rounded-none border-r border-foreground/20 last:border-r-0',
-                    timeframe === tf && 'bg-foreground text-background'
-                  )}
-                >
-                  {tf}
-                </Button>
-              ))}
-            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center border border-foreground/20">
+                {TIMEFRAMES.map((tf) => (
+                  <Button
+                    key={tf}
+                    variant={timeframe === tf ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => onTimeframeChange?.(tf)}
+                    className={cn(
+                      'h-8 px-3 text-xs font-black uppercase rounded-none border-r border-foreground/20 last:border-r-0',
+                      timeframe === tf && 'bg-foreground text-background'
+                    )}
+                  >
+                    {tf}
+                  </Button>
+                ))}
+              </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onRefresh}
-              className="h-8 w-8 border border-foreground/20"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onRefresh}
+                className="h-8 w-8 border border-foreground/20"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 border border-foreground/20"
+                    disabled={isExporting}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportPNG} disabled={isExporting}>
+                    <FileImage className="h-4 w-4 mr-2" />
+                    Export as PNG
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportCSV} disabled={!data}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Export as CSV
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
         </div>
       </CardHeader>
 
