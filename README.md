@@ -435,7 +435,13 @@ This project is licensed under the MIT License.
 
 - **Backend API Docs**: http://localhost:8000/api/docs (when running)
 - **Frontend**: http://localhost:3000 (when running)
-- **Repository**: https://github.com/Fuuurma/FinanceHub-Backend.git
+- **Repository**: https://github.com/Fuuurma/FinanceHub.git
+
+## Repository Structure
+
+This is a **monorepo** containing:
+- **Backend**: Django/Python REST API (`Backend/`)
+- **Frontend**: Next.js TypeScript UI (`Frontend/`)
 
 ---
 
