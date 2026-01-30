@@ -1,12 +1,20 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { ScreenerFilter, ScreenerResult, ScreenerPreset } from '@/lib/types/screener'
 import { screenerApi } from '@/lib/api/screener'
+
+interface CustomPreset {
+  id: string
+  name: string
+  filters: ScreenerFilter[]
+  createdAt: string
+}
 
 interface ScreenerState {
   results: ScreenerResult[]
   selectedFilters: ScreenerFilter[]
   presets: ScreenerPreset[]
+  customPresets: CustomPreset[]
   selectedPreset: string | null
   loading: boolean
   error: string | null
@@ -26,11 +34,12 @@ interface ScreenerState {
   removeFilter: (index: number) => void
   updateFilter: (index: number, updates: Partial<ScreenerFilter>) => void
   setSearchTerm: (term: string) => void
-  setSortBy: (sortBy: string) => void
-  setSortOrder: (sortOrder: 'asc' | 'desc') => void
+  setSort: (sortBy: string, sortOrder: 'asc' | 'desc') => void
   setLimit: (limit: number) => void
   setCurrentPage: (page: number) => void
   setAutoRefresh: (enabled: boolean) => void
+  saveCustomPreset: (name: string, filters: ScreenerFilter[]) => void
+  deleteCustomPreset: (presetId: string) => void
 }
 
 export const useScreenerStore = create<ScreenerState>()(
@@ -39,11 +48,12 @@ export const useScreenerStore = create<ScreenerState>()(
       results: [],
       selectedFilters: [],
       presets: [],
+      customPresets: [],
       selectedPreset: null,
       loading: false,
       error: null,
       searchTerm: '',
-      sortBy: 'relevance',
+      sortBy: 'market_cap',
       sortOrder: 'desc',
       limit: 20,
       currentPage: 1,
@@ -129,12 +139,11 @@ export const useScreenerStore = create<ScreenerState>()(
         set({ searchTerm: term, currentPage: 1 })
       },
 
-      setSortBy: (sortBy: string) => {
-        set({ sortBy })
-      },
-
-      setSortOrder: (sortOrder: 'asc' | 'desc') => {
-        set({ sortOrder })
+      setSort: (sortBy: string, sortOrder: 'asc' | 'desc') => {
+        set({ sortBy, sortOrder })
+        if (get().autoRefresh) {
+          get().runScreener()
+        }
       },
 
       setLimit: (limit: number) => {
@@ -151,15 +160,35 @@ export const useScreenerStore = create<ScreenerState>()(
           const { runScreener } = get()
           runScreener()
         }
+      },
+
+      saveCustomPreset: (name: string, filters: ScreenerFilter[]) => {
+        const newPreset: CustomPreset = {
+          id: `custom-${Date.now()}`,
+          name,
+          filters,
+          createdAt: new Date().toISOString()
+        }
+        set((state) => ({
+          customPresets: [...state.customPresets, newPreset]
+        }))
+      },
+
+      deleteCustomPreset: (presetId: string) => {
+        set((state) => ({
+          customPresets: state.customPresets.filter(p => p.id !== presetId)
+        }))
       }
     }),
     {
       name: 'screener-storage',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         sortBy: state.sortBy,
         sortOrder: state.sortOrder,
         limit: state.limit,
-        autoRefresh: state.autoRefresh
+        autoRefresh: state.autoRefresh,
+        customPresets: state.customPresets
       })
     }
   )

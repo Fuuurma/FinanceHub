@@ -1,4 +1,5 @@
 export { TradingViewChart, type ChartType, type Timeframe } from './TradingViewChart'
+export { AdvancedChart, type ChartType as AdvancedChartType, type Timeframe as AdvancedTimeframe, type DrawingType, type Drawing } from './AdvancedChart'
 export { ChartControls } from './ChartControls'
 export { TechnicalIndicators } from './TechnicalIndicators'
 export { TechnicalIndicatorsPanel } from './TechnicalIndicatorsPanel'

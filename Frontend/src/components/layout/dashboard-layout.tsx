@@ -1,3 +1,4 @@
+"use client"
 // app/(dashboard)/layout.tsx
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/sidebar"
