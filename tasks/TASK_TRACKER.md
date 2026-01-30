@@ -46,10 +46,10 @@
 | D-005 | Delete src/ Directory | ✅ COMPLETED | P1 | Feb 3 5PM | D-003, C-001, C-002, C-003 | ✅ Done - src/ safely removed |
 | D-006 | AWS Infrastructure Research | ✅ COMPLETED | P2 | Feb 10 5PM | D-001 through D-005 | ✅ Done - Research complete with cost analysis |
 | D-007 | CDN Implementation | ✅ COMPLETED | P2 | Feb 15 5PM | D-006 complete | ✅ Done - CloudFlare CDN configured |
-| D-008 | Docker Optimization | ⏳ PENDING | P1 | Feb 12 5PM | S-002 | Multi-stage builds, size reduction |
+| D-008 | Docker Optimization | ✅ COMPLETED | P1 | Feb 12 5PM | S-002 | Multi-stage builds, size reduction | ✅ Done - Backend <500MB, Frontend <200MB, CI/CD scanning, documentation |
 
-**DevOps Progress:** 4 of 7 complete (57%)
-**Next Action:** Start D-008 (Docker optimization)
+**DevOps Progress:** 5 of 7 complete (71%)
+**Next Action:** Start D-009 (S3 Migration) - Recommended at 5K users
 
 ---
 
@@ -67,6 +67,8 @@
 
 ### 💻 Coder Tasks (3 Coders)
 
+**Migration Tasks (C-001 to C-010):**
+
 | Task ID | Task | Assigned To | Status | Priority | Deadline | Dependencies | Updates |
 |---------|------|-------------|--------|----------|----------|--------------|---------|
 | C-001 | Fix Backend Paths | 2 Coders | ✅ COMPLETED | P0 | Jan 31 5PM | D-003 | ✅ Done - Paths updated |
@@ -74,15 +76,56 @@
 | C-003 | Integration Testing | All 3 Coders | ✅ COMPLETED | P0 | Feb 2 5PM | C-001, C-002 | ✅ Done - Verified |
 | C-004 | Exchange Table Migration | Coder | ✅ COMPLETED | P1 | Jan 30 5PM | D-003 | ✅ Done - Schema updated |
 | C-005 | Frontend Completion | Frontend Coder | ⏳ PENDING | P1 | Feb 5 5PM | None | Testing infrastructure |
-| C-005 | Frontend Completion | Frontend Coder | ⏳ PENDING | P1 | Feb 5 5PM | None | Testing infrastructure |
 | C-006 | Data Pipeline Optimization | Backend Coder | ⏳ PENDING | P1 | Feb 7 5PM | None | Batch ops, circuit breaker |
 | C-007 | Unified Task Queue | Backend Coder | ✅ COMPLETED | P0 | Feb 8 5PM | None | Fix Dramatiq/Celery dupes | ✅ Done - Unified system, old files deleted |
 | C-008 | API Rate Limiting & Caching | Backend Coder | ✅ COMPLETED | P0 | Feb 9 5PM | None | Rate limiting, caching | ✅ Done - Tests passing |
 | C-009 | Frontend Performance Optimization | Backend Coder | ✅ COMPLETED | P1 | Feb 12 5PM | None | Bundle size, code splitting | ✅ Next.js webpack optimized, Skeletons created, Debounce hook, Lighthouse config |
-| C-010 | Data Export Functionality | Backend Coder | ⏳ PENDING | P1 | Feb 15 5PM | None | Export to CSV/Excel/PDF |
+| C-010 | Custom Screener Save/Load | Backend Coder | ✅ COMPLETED | P1 | Feb 15 5PM | None | Save/load screener presets | ✅ Preset model, API, store, and UI components created |
 
-**Coder Progress:** 4 of 9 complete (44%)
-**Next Action:** Start C-007 (unified task queue - CRITICAL BUGS) and C-008 (API rate limiting)
+**Feature Tasks (C-011 to C-040) - Created Jan 30, 2026:**
+
+| Task ID | Task | Est. Hours | Status | Priority |
+|---------|------|------------|--------|----------|
+| C-011 | Portfolio Analytics Enhancement | 10-14h | ⏳ PENDING | P1 HIGH |
+| C-012 | Portfolio Rebalancing Tools | 12-16h | ⏳ PENDING | P1 HIGH |
+| C-013 | AI-Powered News Summarization | 14-18h | ⏳ PENDING | P1 HIGH |
+| C-014 | Interactive Chart Drawing Tools | 12-16h | ⏳ PENDING | P1 HIGH |
+| C-015 | Position Size Calculator | 8-12h | ⏳ PENDING | P2 MEDIUM |
+| C-016 | Customizable Dashboards | 14-18h | ⏳ PENDING | P1 HIGH |
+| C-017 | Market Heat Map Visualization | 10-14h | ⏳ PENDING | P1 HIGH |
+| C-019 | Data Export Functionality | 8-12h | ⏳ PENDING | P2 MEDIUM |
+| C-020 | Advanced Alerts & Notifications | 14-18h | ⏳ PENDING | P1 HIGH |
+| C-021 | Advanced Technical Indicators Engine | 16-20h | ⏳ PENDING | P2 MEDIUM |
+| C-022 | Strategy Backtesting Engine | 18-24h | ⏳ PENDING | P1 HIGH |
+| C-023 | Options Greeks Calculator | 12-16h | ⏳ PENDING | P2 MEDIUM |
+| C-024 | Earnings Calendar & Events | 10-14h | ⏳ PENDING | P2 MEDIUM |
+| C-025 | CSV Bulk Import | 6-8h | ⏳ PENDING | P2 MEDIUM |
+| C-026 | Value-at-Risk (VaR) Calculator | 14-18h | ⏳ PENDING | P1 HIGH |
+| C-027 | Universal Asset Search Engine | 12-16h | ⏳ PENDING | P1 HIGH |
+| C-028 | IPO Calendar & Listings Tracker | 10-14h | ⏳ PENDING | P2 MEDIUM |
+| C-029 | Level 2 Market Depth | 12-16h | ⏳ PENDING | P2 MEDIUM |
+| C-030 | Broker API Integration | 14-18h | ⏳ PENDING | P1 HIGH |
+| C-031 | Bond Yield Calculator | 12-16h | ⏳ PENDING | P2 MEDIUM |
+| C-032 | Economic Calendar Tracker | 10-14h | ⏳ PENDING | P2 MEDIUM |
+| C-033 | Keyboard Shortcuts System | 10-12h | ⏳ PENDING | P2 MEDIUM |
+| C-034 | Webhooks System | 12-16h | ⏳ PENDING | P2 MEDIUM |
+| C-035 | Dividend Tracking System | 14-18h | ⏳ PENDING | P1 HIGH |
+| C-036 | Paper Trading System | 16-20h | ⏳ PENDING | P1 HIGH |
+| C-037 | Social Sentiment Analysis | 18-24h | ⏳ PENDING | P1 HIGH |
+| C-038 | Options Chain Visualization | 16-20h | ⏳ PENDING | P1 HIGH |
+| C-039 | Multi-Currency Portfolio Support | 14-18h | ⏳ PENDING | P2 MEDIUM |
+| C-040 | Robo-Advisor Asset Allocation | 18-24h | ⏳ PENDING | P1 HIGH |
+
+**Coder Progress:**
+- Migration tasks: 6 of 10 complete (60%)
+- Feature tasks: 0 of 30 complete (0%)
+- **Total: 6 of 40 complete (15%)**
+- **Total estimated work: 450+ hours**
+
+**Next Action:**
+1. Complete C-011 (Portfolio Analytics Enhancement) - HIGH VALUE
+2. Complete C-016 (Customizable Dashboards) - HIGH VALUE
+3. Complete S-003 (Security fixes) - P0 CRITICAL
 
 ---
 
