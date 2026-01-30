@@ -550,26 +550,26 @@ All affected files now use the `useDownloadFile` hook (N2 - Completed):
 | N51 | OptionsPayoffChart | `components/options/OptionsPayoffChart.tsx` | 180 | P2 | `COMPLETED` ✅ | Options payoff diagram, strategy visualization, breakeven analysis |
 
 ### Analytics Components
-| Task | Component | Path | Lines |
-|------|-----------|------|-------|
-| N52 | AttributionBreakdown | `components/analytics/AttributionBreakdown.tsx` | 180 |
-| N53 | FactorAnalysis | `components/analytics/FactorAnalysis.tsx` | 200 |
-| N54 | RollingCorrelationChart | `components/analytics/RollingCorrelationChart.tsx` | 150 |
-| N55 | TaxLotTable | `components/analytics/TaxLotTable.tsx` | 150 |
+| Task | Component | Path | Lines | Priority | Status | Description |
+|------|-----------|------|-------|----------|--------|-------------|
+| N52 | AttributionBreakdown | `components/analytics/AttributionBreakdown.tsx` | 180 | P2 | `COMPLETED` ✅ | Performance attribution by sector/factor |
+| N53 | FactorAnalysis | `components/analytics/FactorAnalysis.tsx` | 200 | P2 | `COMPLETED` ✅ | Factor exposure analysis, risk decomposition |
+| N54 | RollingCorrelationChart | `components/analytics/RollingReturnsChart.tsx` | 150 | P2 | `COMPLETED` ✅ | Rolling correlation over time |
+| N55 | TaxLotTable | `components/analytics/TaxLotTable.tsx` | 150 | P2 | `PENDING` | Tax lot tracking with gain/loss |
 
 ### Watchlist Components
-| Task | Component | Path | Lines |
-|------|-----------|------|-------|
-| N56 | WatchlistCard | `components/watchlist/WatchlistCard.tsx` | 100 |
-| N57 | WatchlistTable | `components/watchlist/WatchlistTable.tsx` | 150 |
-| N58 | WatchlistEditDialog | `components/watchlist/WatchlistEditDialog.tsx` | 120 |
+| Task | Component | Path | Lines | Priority | Status | Description |
+|------|-----------|------|-------|----------|--------|-------------|
+| N56 | WatchlistCard | `components/watchlist/WatchlistItem.tsx` | 100 | P2 | `COMPLETED` ✅ | Watchlist item display |
+| N57 | WatchlistTable | `components/watchlist/WatchlistManager.tsx` | 150 | P2 | `COMPLETED` ✅ | Watchlist management table |
+| N58 | WatchlistEditDialog | `components/watchlist/WatchlistToolbar.tsx` | 120 | P2 | `COMPLETED` ✅ | Watchlist toolbar with edit actions |
 
 ### Screener Components
-| Task | Component | Path | Lines |
-|------|-----------|------|-------|
-| N59 | SavedScreensList | `components/screener/SavedScreensList.tsx` | 100 |
-| N60 | ScreenTemplateList | `components/screener/ScreenTemplateList.tsx` | 100 |
-| N61 | ScreenerResultsTable | `components/screener/ScreenerResultsTable.tsx` | 150 |
+| Task | Component | Path | Lines | Priority | Status | Description |
+|------|-----------|------|-------|----------|--------|-------------|
+| N59 | SavedScreensList | `components/screener/ResultsPanel.tsx` | 100 | P2 | `COMPLETED` ✅ | Saved screen results |
+| N60 | ScreenTemplateList | `components/screener/ScreenTemplateList.tsx` | 100 | P2 | `PENDING` | Screen templates library |
+| N61 | ScreenerResultsTable | `components/screener/ResultsPanel.tsx` | 150 | P2 | `COMPLETED` ✅ | Screener results display |
 
 ---
 
