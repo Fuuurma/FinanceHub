@@ -3,6 +3,7 @@ export { InsiderTradingPanel, type InsiderTransaction, type InsiderTransactionTy
 export { InstitutionalHoldingsPanel, type InstitutionalHoldingData, type HolderType } from './InstitutionalHoldingsPanel'
 export { EarningsEstimatesPanel, type EarningsEstimate, type EarningsEstimatesSummary } from './EarningsEstimatesPanel'
 export { PriceTargetChart, type PriceTarget, type PriceTargetSummary } from './PriceTargetChart'
+export { SECFilingsList, type SECFiling, type FilingType, type SECFilingsSummary } from './SECFilingsList'
 export type {
   AnalystRating,
   RatingConsensus,

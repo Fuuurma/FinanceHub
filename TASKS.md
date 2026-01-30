@@ -506,11 +506,11 @@ All affected files now use the `useDownloadFile` hook (N2 - Completed):
 | N43 | ImpliedVolatilityChart | `components/risk/ImpliedVolatilityChart.tsx` | 180 | P2 | `COMPLETED` ✅ |
 
 ### Research Components
-| Task | Component | Path | Lines |
-|------|-----------|------|-------|
-| N44 | EarningsEstimatesPanel | `components/research/EarningsEstimatesPanel.tsx` | 150 |
-| N45 | PriceTargetChart | `components/research/PriceTargetChart.tsx` | 120 |
-| N46 | SECFilingsList | `components/research/SECFilingsList.tsx` | 100 |
+| Task | Component | Path | Lines | Priority | Status | Description |
+|------|-----------|------|-------|----------|--------|-------------|
+| N44 | EarningsEstimatesPanel | `components/research/EarningsEstimatesPanel.tsx` | 150 | P2 | `COMPLETED` ✅ | EPS/revenue estimates with analyst consensus |
+| N45 | PriceTargetChart | `components/research/PriceTargetChart.tsx` | 120 | P2 | `COMPLETED` ✅ | Analyst targets, distribution chart, upside potential |
+| N46 | SECFilingsList | `components/research/SECFilingsList.tsx` | 100 | P2 | `PENDING` |
 
 ### Economics & Fundamentals
 | Task | Component | Path | Lines |

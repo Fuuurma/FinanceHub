@@ -1,302 +1,380 @@
-"use client"
+'use client'
 
-import { useState, useMemo } from 'react'
-import { TrendingUp, TrendingDown, Minus, Calendar, DollarSign, BarChart3, Download, RefreshCw } from 'lucide-react'
-import { cn, formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
+import { useState } from 'react'
+import { TrendingUp, TrendingDown, Calendar, Users, Target, RefreshCw, Download, BarChart3, Minus } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Progress } from '@/components/ui/progress'
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn, formatCurrency, formatNumber, formatPercent, formatDate } from '@/lib/utils'
+import type { AnalystEstimates } from '@/lib/types/iex-cloud'
+import type { EarningsReport } from '@/lib/types/fundamentals'
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ReferenceLine } from 'recharts'
 
 export interface EarningsEstimate {
-  period: string
-  periodType: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'FY' | 'H1' | 'H2'
+  fiscalYear: number
+  fiscalPeriod: number
+  periodLabel: string
   epsEstimate: number
   epsLow: number
   epsHigh: number
+  epsCount: number
   revenueEstimate: number
   revenueLow: number
   revenueHigh: number
-  epsCount: number
   revenueCount: number
-  lastUpdated: string
+  growthEstimate: number
 }
 
 export interface EarningsEstimatesSummary {
-  symbol: string
-  nextEarningsDate: string
-  daysUntilEarnings: number
-  currentQuarter: EarningsEstimate
-  nextQuarter: EarningsEstimate
-  fullYear: EarningsEstimate
-  growthRate: number
-  growthRateChange: number
-  analystCount: number
+  avgEPSSurprise: number
+  avgRevenueSurprise: number
+  beatRate: number
+  numberOfEstimates: number
+  avgTargetPrice: number
+  consensusRating: 'buy' | 'hold' | 'sell'
 }
 
-export interface EarningsEstimatesPanelProps {
-  estimates?: EarningsEstimate[]
-  summary?: EarningsEstimatesSummary
-  symbol?: string
-  loading?: boolean
-  error?: string
+export interface EarningsData {
+  symbol: string
+  companyName: string
+  estimates: AnalystEstimates[]
+  historical: EarningsReport[]
+  upcomingEarnings: string | null
+  nextEarningsDate: string | null
+  lastEarningsDate: string | null
+  nextEarningsTime: 'before' | 'after' | 'during' | null
+  summary: {
+    avgEPSSurprise: number
+    avgRevenueSurprise: number
+    beatRate: number
+    numberOfEstimates: number
+    avgTargetPrice: number
+    consensusRating: 'buy' | 'hold' | 'sell'
+  }
+  lastUpdated: string
+}
+
+interface EarningsEstimatesPanelProps {
+  data: EarningsData
+  isLoading?: boolean
+  onRefresh?: () => void
+  onExport?: () => void
   className?: string
 }
 
-type EstimateType = 'eps' | 'revenue'
-
-const PERIOD_LABELS: Record<string, string> = {
-  Q1: 'Q1', Q2: 'Q2', Q3: 'Q3', Q4: 'Q4',
-  FY: 'Full Year', H1: 'H1', H2: 'H2',
+const RATING_COLORS: Record<string, string> = {
+  buy: 'bg-green-100 text-green-800 border-green-200',
+  hold: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  sell: 'bg-red-100 text-red-800 border-red-200',
 }
 
-function EstimateRow({ estimate, type }: { estimate: EarningsEstimate; type: EstimateType }) {
-  const isEps = type === 'eps'
-  const estimateValue = isEps ? estimate.epsEstimate : estimate.revenueEstimate
-  const lowValue = isEps ? estimate.epsLow : estimate.revenueLow
-  const highValue = isEps ? estimate.epsHigh : estimate.revenueHigh
-  const count = isEps ? estimate.epsCount : estimate.revenueCount
+const RATING_LABELS: Record<string, string> = {
+  buy: 'Buy',
+  hold: 'Hold',
+  sell: 'Sell',
+}
 
-  const range = highValue - lowValue
-  const position = range > 0 ? ((estimateValue - lowValue) / range) * 100 : 50
+function EstimateBar({ label, actual, estimate }: { label: string; actual: number | null; estimate: number | null }) {
+  if (!actual && !estimate) return null
+  const maxValue = Math.max(Math.abs(actual || 0), Math.abs(estimate || 0)) * 1.2
+  const actualPercent = maxValue > 0 ? ((actual || 0) / maxValue) * 100 : 0
+  const estimatePercent = maxValue > 0 ? ((estimate || 0) / maxValue) * 100 : 0
+  const isBeat = actual !== null && estimate !== null && actual > estimate
+  const isMiss = actual !== null && estimate !== null && actual < estimate
 
   return (
-    <TableRow>
-      <TableCell className="py-4">
-        <div className="flex flex-col">
-          <span className="font-medium">{estimate.period}</span>
-          <span className="text-xs text-muted-foreground">{PERIOD_LABELS[estimate.periodType] || estimate.periodType}</span>
-        </div>
-      </TableCell>
-      <TableCell className="text-right py-4">
-        <div className="flex flex-col items-end">
-          <span className="font-semibold text-lg">
-            {isEps ? `$${estimateValue.toFixed(2)}` : formatNumber(estimateValue)}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {count} analysts
-          </span>
-        </div>
-      </TableCell>
-      <TableCell className="py-4">
-        <div className="w-full px-4">
-          <div className="flex justify-between text-xs text-muted-foreground mb-1">
-            <span>{isEps ? `$${lowValue.toFixed(2)}` : formatNumber(lowValue)}</span>
-            <span>{isEps ? `$${highValue.toFixed(2)}` : formatNumber(highValue)}</span>
-          </div>
-          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-medium w-24">{label}</span>
+        <div className="flex-1 relative h-2 bg-muted rounded-full overflow-hidden">
+          {actual !== null && (
             <div
-              className="absolute h-full bg-primary rounded-full"
-              style={{ left: `${Math.max(0, Math.min(100, position))}%`, width: '4px' }}
+              className={cn('absolute top-0 h-full rounded-full', isBeat ? 'bg-green-500' : isMiss ? 'bg-red-500' : 'bg-gray-500')}
+              style={{ width: `${Math.abs(actualPercent)}%`, left: actualPercent < 0 ? `${50 - Math.abs(actualPercent)}%` : '50%' }}
             />
-          </div>
+          )}
+          {estimate !== null && (
+            <div
+              className="absolute top-0 h-full bg-blue-500 rounded-full"
+              style={{ width: `${Math.abs(estimatePercent)}%`, left: estimatePercent < 0 ? `${50 - Math.abs(estimatePercent)}%` : '50%' }}
+            />
+          )}
         </div>
-      </TableCell>
-    </TableRow>
-  )
-}
-
-function EstimatesSummary({ summary }: { summary: EarningsEstimatesSummary }) {
-  const isUpcoming = summary.daysUntilEarnings <= 14
-  const isUrgent = summary.daysUntilEarnings <= 7
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">Next Earnings</span>
-        <span className="font-semibold">{summary.nextEarningsDate}</span>
-        <Badge
-          variant={isUrgent ? 'destructive' : isUpcoming ? 'default' : 'secondary'}
-          className="mt-1 w-fit"
-        >
-          {summary.daysUntilEarnings <= 0 ? 'Today' : `${summary.daysUntilEarnings} days`}
-        </Badge>
-      </div>
-
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">Analysts</span>
-        <span className="font-semibold text-lg">{summary.analystCount}</span>
-        <span className="text-xs text-muted-foreground">covering stock</span>
-      </div>
-
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">Growth Rate</span>
-        <span className={cn('font-semibold text-lg', summary.growthRate > 0 ? 'text-green-500' : 'text-red-500')}>
-          {formatPercent(summary.growthRate)}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {summary.growthRateChange > 0 ? '+' : ''}{formatPercent(summary.growthRateChange)} YoY
-        </span>
-      </div>
-
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">Current Est.</span>
-        <span className="font-semibold text-lg">
-          ${summary.currentQuarter.epsEstimate.toFixed(2)}
-        </span>
-        <span className="text-xs text-muted-foreground">EPS for {summary.currentQuarter.period}</span>
+        <div className="flex gap-4 text-xs ml-4">
+          {actual !== null && (
+            <span className={cn('font-medium', isBeat ? 'text-green-600' : isMiss ? 'text-red-600' : 'text-gray-600')}>
+              {formatNumber(actual)}
+            </span>
+          )}
+          {estimate !== null && <span className="font-medium text-blue-600">{formatNumber(estimate)}</span>}
+        </div>
       </div>
     </div>
   )
 }
 
-export function EarningsEstimatesPanel({
-  estimates = [],
-  summary,
-  symbol,
-  loading = false,
-  error,
-  className,
-}: EarningsEstimatesPanelProps) {
-  const [estimateType, setEstimateType] = useState<EstimateType>('eps')
-  const [showConsensus, setShowConsensus] = useState(true)
+function HistoricalEarningsCard({ report }: { report: EarningsReport }) {
+  const isBeat = report.eps_surprise_pct !== null && report.eps_surprise_pct > 0
+  const isMiss = report.eps_surprise_pct !== null && report.eps_surprise_pct < 0
 
-  const epsEstimates = useMemo(() =>
-    estimates.filter(e => e.epsCount > 0),
-    [estimates]
+  return (
+    <div className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-muted/50 transition-colors">
+      <div className="flex items-center gap-3">
+        <div className={cn('p-2 rounded-full', isBeat ? 'bg-green-100' : isMiss ? 'bg-red-100' : 'bg-gray-100')}>
+          {isBeat ? <TrendingUp className="h-4 w-4 text-green-600" /> : isMiss ? <TrendingDown className="h-4 w-4 text-red-600" /> : <Minus className="h-4 w-4 text-gray-600" />}
+        </div>
+        <div>
+          <p className="font-medium text-sm">Q{report.fiscal_period} {report.fiscal_year}</p>
+          <p className="text-xs text-muted-foreground">{formatDate(report.report_date)}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-6">
+        <div className="text-right">
+          <p className="font-medium text-sm">{report.eps_actual !== null ? formatCurrency(report.eps_actual) : 'N/A'}</p>
+          <p className="text-xs text-muted-foreground">EPS</p>
+        </div>
+        <Badge variant={isBeat ? 'default' : isMiss ? 'destructive' : 'secondary'}>
+          {report.eps_surprise_pct !== null ? `${report.eps_surprise_pct >= 0 ? '+' : ''}${formatPercent(report.eps_surprise_pct / 100)}` : 'N/A'}
+        </Badge>
+      </div>
+    </div>
   )
+}
 
-  const revenueEstimates = useMemo(() =>
-    estimates.filter(e => e.revenueCount > 0),
-    [estimates]
+function EstimatesSummaryCard({ summary }: { summary: EarningsData['summary'] }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-blue-600" />
+            <span className="text-xs text-muted-foreground">Beat Rate</span>
+          </div>
+          <p className="text-2xl font-bold mt-2">{formatPercent(summary.beatRate / 100)}</p>
+          <p className="text-xs text-muted-foreground">of earnings beats</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-green-600" />
+            <span className="text-xs text-muted-foreground">Avg EPS Surprise</span>
+          </div>
+          <p className={cn('text-2xl font-bold mt-2', summary.avgEPSSurprise >= 0 ? 'text-green-600' : 'text-red-600')}>
+            {summary.avgEPSSurprise >= 0 ? '+' : ''}{formatPercent(summary.avgEPSSurprise / 100)}
+          </p>
+          <p className="text-xs text-muted-foreground">historical surprise</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-purple-600" />
+            <span className="text-xs text-muted-foreground">Analysts</span>
+          </div>
+          <p className="text-2xl font-bold mt-2">{summary.numberOfEstimates}</p>
+          <p className="text-xs text-muted-foreground">active estimates</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-orange-600" />
+            <span className="text-xs text-muted-foreground">Avg Target</span>
+          </div>
+          <p className="text-2xl font-bold mt-2">{formatCurrency(summary.avgTargetPrice)}</p>
+          <Badge variant="outline" className={cn('mt-1', RATING_COLORS[summary.consensusRating])}>
+            {RATING_LABELS[summary.consensusRating]}
+          </Badge>
+        </CardContent>
+      </Card>
+    </div>
   )
+}
 
-  const handleRefresh = () => {
-    console.log('Refresh earnings estimates')
+function EarningsChart({ estimates }: { estimates: { epsEstimate: number; epsLow: number; epsHigh: number; periodLabel: string }[] }) {
+  const chartData = estimates.map(est => ({
+    period: est.periodLabel,
+    Low: est.epsLow,
+    Estimate: est.epsEstimate,
+    High: est.epsHigh,
+  }))
+
+  if (chartData.length === 0) {
+    return <div className="h-64 flex items-center justify-center text-muted-foreground">No estimate data available</div>
   }
 
-  const handleExport = () => {
-    const data = estimates.map(e => ({
-      period: e.period,
-      type: e.periodType,
-      epsEstimate: e.epsEstimate,
-      epsLow: e.epsLow,
-      epsHigh: e.epsHigh,
-      revenueEstimate: e.revenueEstimate,
-      revenueLow: e.revenueLow,
-      revenueHigh: e.revenueHigh,
-    }))
-    const csv = [
-      Object.keys(data[0] || {}).join(','),
-      ...data.map(row => Object.values(row).join(',')),
-    ].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${symbol || 'earnings'}-estimates.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+  return (
+    <ResponsiveContainer width="100%" height={250}>
+      <BarChart data={chartData} barSize={40}>
+        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+        <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+        <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(2)}`} />
+        <RechartsTooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
+        <ReferenceLine y={0} stroke="#000" />
+        <Bar dataKey="Low" fill="#94a3b8" radius={[2, 2, 0, 0]} />
+        <Bar dataKey="Estimate" fill="#3b82f6" radius={[2, 2, 0, 0]} />
+        <Bar dataKey="High" fill="#94a3b8" radius={[2, 2, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  )
+}
 
-  if (loading) {
+function UpcomingEarningsCard({ data }: { data: EarningsData }) {
+  if (!data.nextEarningsDate) {
     return (
-      <Card className={cn('w-full', className)}>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-32 mt-2" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-64 w-full" />
+      <Card className="bg-muted/50">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center text-muted-foreground">
+            <Calendar className="h-5 w-5 mr-2" />
+            No upcoming earnings date announced
           </div>
         </CardContent>
       </Card>
     )
   }
 
-  if (error || (!estimates.length && !summary)) {
+  const timeLabel = data.nextEarningsTime === 'before' ? 'Before Open' : data.nextEarningsTime === 'after' ? 'After Close' : data.nextEarningsTime === 'during' ? 'During Trading' : ''
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          Upcoming Earnings
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <div className="text-2xl font-bold">{formatDate(data.nextEarningsDate)}</div>
+          {timeLabel && <Badge variant="outline">{timeLabel}</Badge>}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function EarningsEstimatesPanel({ data, isLoading = false, onRefresh, onExport, className }: EarningsEstimatesPanelProps) {
+  const [activeTab, setActiveTab] = useState('estimates')
+
+  if (isLoading) {
     return (
-      <Card className={cn('w-full', className)}>
+      <Card className={cn('', className)}>
         <CardHeader>
-          <CardTitle>Earnings Estimates</CardTitle>
-          <CardDescription>Analyst consensus for upcoming earnings</CardDescription>
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-32 mt-2" />
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-500">{error || 'No estimates data available'}</p>
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+          </div>
+          <Skeleton className="h-64" />
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card className={cn('w-full', className)}>
-      <CardHeader className="pb-2">
+    <Card className={cn('', className)}>
+      <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
               Earnings Estimates
-              {symbol && <Badge variant="outline">{symbol}</Badge>}
             </CardTitle>
-            <CardDescription>Analyst consensus for upcoming earnings periods</CardDescription>
+            <CardDescription>{data.companyName} ({data.symbol}) - Analyst forecasts and historical performance</CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Select value={estimateType} onValueChange={(v) => setEstimateType(v as EstimateType)}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="eps">EPS Estimates</SelectItem>
-                <SelectItem value="revenue">Revenue Estimates</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="icon" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={handleExport}>
-              <Download className="h-4 w-4" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" onClick={() => onRefresh?.()}>
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Refresh data</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" onClick={() => onExport?.()}>
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Export data</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </CardHeader>
-
       <CardContent>
-        {summary && <EstimatesSummary summary={summary} />}
+        <EstimatesSummaryCard summary={data.summary} />
 
-        <Tabs defaultValue="estimates" className="mt-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="estimates">Consensus Estimates</TabsTrigger>
-            <TabsTrigger value="history">Estimate History</TabsTrigger>
-          </TabsList>
+        <div className="mt-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="estimates">Current Estimates</TabsTrigger>
+              <TabsTrigger value="chart">Estimate Trend</TabsTrigger>
+              <TabsTrigger value="history">Historical</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="estimates" className="mt-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Period</TableHead>
-                  <TableHead className="text-right">
-                    {estimateType === 'eps' ? 'EPS Estimate' : 'Revenue Estimate'}
-                  </TableHead>
-                  <TableHead>Range</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(estimateType === 'eps' ? epsEstimates : revenueEstimates).map((estimate, index) => (
-                  <EstimateRow key={index} estimate={estimate} type={estimateType} />
-                ))}
-              </TableBody>
-            </Table>
-          </TabsContent>
+            <TabsContent value="estimates" className="mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <UpcomingEarningsCard data={data} />
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Latest Quarter Estimates</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {data.estimates.slice(0, 3).map((estimate, index) => (
+                      <div key={index} className="space-y-2 pb-3 border-b last:border-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">Q{estimate.fiscalPeriod} {estimate.fiscalYear}</span>
+                          <Badge variant="outline">{estimate.estimateCount || 0} analysts</Badge>
+                        </div>
+                        <EstimateBar label="EPS" actual={null} estimate={estimate.estimatedEPS} />
+                        {estimate.estimatedRevenue && <EstimateBar label="Revenue" actual={null} estimate={estimate.estimatedRevenue / 1000000} />}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
-          <TabsContent value="history" className="mt-4">
-            <div className="text-center py-8 text-muted-foreground">
-              <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>Historical estimate revisions chart would go here</p>
-            </div>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="chart" className="mt-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    EPS Estimate Range
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EarningsChart estimates={[]} />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        <div className="mt-4 pt-4 border-t">
-          <p className="text-xs text-muted-foreground text-center">
-            Last updated: {estimates[0]?.lastUpdated || 'N/A'} · Data from {summary?.analystCount || 0} analysts
-          </p>
+            <TabsContent value="history" className="mt-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Historical Earnings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {data.historical.length === 0 ? (
+                    <div className="p-8 text-center text-muted-foreground">No historical earnings data available</div>
+                  ) : (
+                    data.historical.slice(0, 10).map((report, index) => <HistoricalEarningsCard key={index} report={report} />)
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </CardContent>
     </Card>
