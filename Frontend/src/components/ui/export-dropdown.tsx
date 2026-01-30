@@ -66,7 +66,7 @@ export function ExportDropdown({
     return columns || (data.length > 0 ? Object.keys(data[0]) : [])
   }, [columns, data])
 
-  const formatCellValue = useCallback((value: any): string => {
+  const formatCellValue = useCallback((value: unknown): string => {
     if (value === null || value === undefined) return ''
     if (typeof value === 'object') {
       if (value instanceof Date) return value.toISOString()

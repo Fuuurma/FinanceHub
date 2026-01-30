@@ -109,43 +109,12 @@ export function RealTimeChart({
       setChartData((prev) => {
         const updated = [...prev, newDataPoint].slice(-CHART_CONFIG.BUFFER_SIZES[timeframe])
         return updated
-      })
-      setIsConnected(true)
-    } else {
-      setIsConnected(false)
-    }
-  }, [symbol, prices, timeframe])
+    })
 
-  useEffect(() => {
-    if (!chartContainerRef.current) return
+    chartRef.current = chart as unknown as any
 
-    const chart = createChart(chartContainerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: '#9CA3AF',
-      },
-      grid: {
-        vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
-        horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
-      },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-      },
-      rightPriceScale: {
-        borderColor: 'rgba(148, 163, 184, 0.2)',
-      },
-      timeScale: {
-        borderColor: 'rgba(148, 163, 184, 0.2)',
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      height: height,
-    }) as any
-
-    chartRef.current = chart as any
-
-    let series: any
-    let volumeSeries: any
+    let series: ISeriesApi<'Candlestick' | 'Line' | 'Area'> | null = null
+    let volumeSeries: ISeriesApi<'Histogram'> | null = null
 
     switch (chartType) {
       case 'candlestick':

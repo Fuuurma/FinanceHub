@@ -248,7 +248,16 @@ export function AdvancedChart({
         return
       }
 
-      const ohlcvData: OHLCVData[] = history.map((d: any) => ({
+      interface HistoryItem {
+        date: string
+        open: number
+        high: number
+        low: number
+        close: number
+        volume: number
+      }
+
+      const ohlcvData: OHLCVData[] = history.map((d: HistoryItem) => ({
         date: d.date,
         open: d.open,
         high: d.high,
@@ -317,7 +326,7 @@ export function AdvancedChart({
 
       const chartAny = chart as unknown as any
 
-      let mainSeries: ISeriesApi<any>
+      let mainSeries: ISeriesApi<'Candlestick' | 'Line' | 'Area' | 'Bar'>
 
       if (chartType === 'candlestick') {
         mainSeries = chartAny.addCandlestickSeries({

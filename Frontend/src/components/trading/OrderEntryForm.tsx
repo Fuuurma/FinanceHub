@@ -124,7 +124,7 @@ export function OrderEntryForm({ onSubmit, defaultSymbol = '' }: OrderEntryFormP
 
           <div className="space-y-2">
             <Label htmlFor="orderType">Order Type</Label>
-            <Select value={orderType} onValueChange={(v: any) => setOrderType(v)}>
+            <Select value={orderType} onValueChange={(v: string) => setOrderType(v)}>
               <SelectTrigger id="orderType">
                 <SelectValue />
               </SelectTrigger>
@@ -224,7 +224,7 @@ export function OrderEntryForm({ onSubmit, defaultSymbol = '' }: OrderEntryFormP
 
           <div className="space-y-2">
             <Label htmlFor="timeInForce">Time in Force</Label>
-            <Select value={timeInForce} onValueChange={(v: any) => setTimeInForce(v)}>
+            <Select value={timeInForce} onValueChange={(v: string) => setTimeInForce(v)}>
               <SelectTrigger id="timeInForce">
                 <SelectValue />
               </SelectTrigger>

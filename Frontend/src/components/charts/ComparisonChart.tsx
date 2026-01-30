@@ -270,7 +270,7 @@ export function ComparisonChart({
         padding: 12,
         cornerRadius: 8,
         callbacks: {
-          label: (context: any) => {
+          label: (context: { datasetIndex: number; dataIndex: number }) => {
             const dataset = comparisonData[context.datasetIndex]
             const dataPoint = dataset?.data[context.dataIndex]
             if (!dataset || !dataPoint) return ''
@@ -303,7 +303,7 @@ export function ComparisonChart({
         },
         ticks: {
           color: 'rgba(148, 163, 184, 0.5)',
-          callback: (value: any) =>
+          callback: (value: number) =>
             normalized ? `${value.toFixed(0)}%` : `$${value.toFixed(2)}`,
         },
       },
