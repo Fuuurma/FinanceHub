@@ -6,7 +6,7 @@
     "glob": "^11.1.0",
     "jspdf": "^4.0.0",
     "lightweight-charts": "^5.1.0",
-    "next": "^16.1.6",
+    "next": "^16.2.0-canary.17",
     "react": "^19.0.3",
     "react-dom": "^19.0.3",
     "v8-compile-cache": "^2.4.0"

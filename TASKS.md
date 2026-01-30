@@ -503,23 +503,23 @@ All affected files now use the `useDownloadFile` hook (N2 - Completed):
 | N32 | useKeyPress | `hooks/useKeyPress.ts` | 35 | P2 | `COMPLETED` ✅ |
 
 ### Risk Components
-| Task | Component | Path | Lines | Priority |
-|------|-----------|------|-------|----------|
-| N11 | PositionRiskCard | `components/risk/PositionRiskCard.tsx` | 150 | P1 |
-| N12 | GreeksCalculator | `components/risk/GreeksCalculator.tsx` | 200 | P1 |
-| N13 | StressTestPanel | `components/risk/StressTestPanel.tsx` | 250 | P1 |
+| Task | Component | Path | Lines | Priority | Status |
+|------|-----------|------|-------|----------|--------|
+| N11 | PositionRiskCard | `components/risk/PositionRiskCard.tsx` | 277 | P1 | `COMPLETED` ✅ |
+| N12 | GreeksCalculator | `components/risk/GreeksCalculator.tsx` | 188 | P1 | `COMPLETED` ✅ |
+| N13 | StressTestPanel | `components/risk/StressTestPanel.tsx` | 460 | P1 | `COMPLETED` ✅ |
 
 ### Portfolio Components
-| Task | Component | Path | Lines | Priority |
-|------|-----------|------|-------|----------|
-| N14 | PerformanceChart | `components/portfolio/PerformanceChart.tsx` | 200 | P1 |
-| N15 | RebalancingTool | `components/portfolio/RebalancingTool.tsx` | 300 | P1 |
+| Task | Component | Path | Lines | Priority | Status |
+|------|-----------|------|-------|----------|--------|
+| N14 | PerformanceChart | `components/portfolio/PerformanceChart.tsx` | 376 | P1 | `COMPLETED` ✅ |
+| N15 | RebalancingTool | `components/portfolio/RebalancingTool.tsx` | 326 | P1 | `COMPLETED` ✅ |
 
 ### Research Components
-| Task | Component | Path | Lines | Priority |
-|------|-----------|------|-------|----------|
-| N16 | InsiderTradingPanel | `components/research/InsiderTradingPanel.tsx` | 150 | P1 |
-| N17 | InstitutionalHoldingsPanel | `components/research/InstitutionalHoldingsPanel.tsx` | 180 | P1 |
+| Task | Component | Path | Lines | Priority | Status |
+|------|-----------|------|-------|----------|--------|
+| N16 | InsiderTradingPanel | `components/research/InsiderTradingPanel.tsx` | 295 | P1 | `COMPLETED` ✅ |
+| N17 | InstitutionalHoldingsPanel | `components/research/InstitutionalHoldingsPanel.tsx` | 364 | P1 | `COMPLETED` ✅
 
 ### Basic Charts
 | Task | Component | Path | Lines | Priority | Status |
