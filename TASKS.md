@@ -620,7 +620,7 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 | N8 | useMediaQuery | hooks/useMediaQuery.ts | P1 | `COMPLETED` ✅ | 220 lines |
 | N9 | useDebounce | hooks/useDebounce.ts | P1 | `COMPLETED` ✅ | 50 lines |
 | N10 | useInterval | hooks/useInterval.ts | P1 | `COMPLETED` ✅ | 60 lines |
-| N11 | PositionRiskCard | components/risk/PositionRiskCard.tsx | P1 | `PENDING` | Create new |
+| N11 | PositionRiskCard | components/risk/PositionRiskCard.tsx | P1 | `COMPLETED` ✅ | 220 lines - VaR, beta, liquidity, risk/reward |
 | N12 | GreeksCalculator | components/risk/GreeksCalculator.tsx | P1 | `PENDING` | Create new |
 | N13 | StressTestPanel | components/risk/StressTestPanel.tsx | P1 | `PENDING` | Create new |
 | N14 | PerformanceChart | components/portfolio/PerformanceChart.tsx | P1 | `PENDING` | Create new |
