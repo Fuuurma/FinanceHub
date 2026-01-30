@@ -242,7 +242,7 @@ export function ComparisonChart({
     },
   ])
 
-  const chartOptions = {
+  const chartOptions: any = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {

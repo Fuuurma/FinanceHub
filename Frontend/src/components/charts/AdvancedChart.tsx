@@ -249,7 +249,7 @@ export function AdvancedChart({
       }
 
       const ohlcvData: OHLCVData[] = history.map((d) => ({
-        date: d.date,
+        date: d.timestamp instanceof Date ? d.timestamp.toISOString() : new Date(d.timestamp).toISOString(),
         open: d.open,
         high: d.high,
         low: d.low,
