@@ -13,7 +13,7 @@ env:
 
 jobs:
   backend-lint:
-    name: Backend Lint
+    name: apps/backend Lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -27,31 +27,31 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd Backend
+          cd apps/backend
           pip install -r requirements-testing.txt
 
       - name: Black format check
         run: |
-          cd Backend/src
+          cd apps/backend/src
           black --check .
 
       - name: isort import check
         run: |
-          cd Backend/src
+          cd apps/backend/src
           isort --check-only .
 
       - name: Flake8 lint
         run: |
-          cd Backend/src
+          cd apps/backend/src
           flake8 . --exclude=venv,migrations --max-line-length=100
 
       - name: MyPy type check
         run: |
-          cd Backend/src
+          cd apps/backend/src
           mypy . --ignore-missing-imports || true
 
   backend-test:
-    name: Backend Tests
+    name: apps/backend Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -84,23 +84,23 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd Backend
+          cd apps/backend
           pip install -r requirements-testing.txt
 
       - name: Run migrations
         run: |
-          cd Backend/src
+          cd apps/backend/src
           python manage.py migrate --noinput
 
       - name: Run tests
         run: |
-          cd Backend/src
+          cd apps/backend/src
           pytest --cov=. --cov-report=xml --cov-report=html --junitxml=test-results.xml -v
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./Backend/src/coverage.xml
+          files: ./apps/backend/src/coverage.xml
           flags: backend
           fail_ci_if_error: false
 
@@ -109,17 +109,17 @@ jobs:
         if: always()
         with:
           name: backend-test-results
-          path: Backend/src/test-results.xml
+          path: apps/backend/src/test-results.xml
 
       - name: Upload coverage HTML
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: backend-coverage-html
-          path: Backend/src/htmlcov/
+          path: apps/backend/src/htmlcov/
 
   frontend-lint:
-    name: Frontend Lint
+    name: apps/frontend Lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -130,25 +130,25 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Frontend/package-lock.json
+          cache-dependency-path: apps/frontend/package-lock.json
 
       - name: Install dependencies
         run: |
-          cd Frontend
+          cd apps/frontend
           npm ci
 
       - name: ESLint
         run: |
-          cd Frontend
+          cd apps/frontend
           npm run lint
 
       - name: TypeScript check
         run: |
-          cd Frontend
+          cd apps/frontend
           npx tsc --noEmit --skipLibCheck
 
   frontend-test:
-    name: Frontend Tests
+    name: apps/frontend Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -159,22 +159,22 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Frontend/package-lock.json
+          cache-dependency-path: apps/frontend/package-lock.json
 
       - name: Install dependencies
         run: |
-          cd Frontend
+          cd apps/frontend
           npm ci
 
       - name: Run tests
         run: |
-          cd Frontend
+          cd apps/frontend
           npm test -- --coverage --maxWorkers=2
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./Frontend/coverage/lcov.info
+          files: ./apps/frontend/coverage/lcov.info
           flags: frontend
           fail_ci_if_error: false
 
@@ -183,7 +183,7 @@ jobs:
         if: always()
         with:
           name: frontend-coverage-html
-          path: Frontend/coverage/
+          path: apps/frontend/coverage/
 
   security-scan:
     name: Security Scan
@@ -209,12 +209,12 @@ jobs:
       - name: Run pip-audit (Python)
         run: |
           pip install pip-audit
-          cd Backend
+          cd apps/backend
           pip-audit --format json > ../pip-audit-results.json || true
 
       - name: Run npm audit (Node)
         run: |
-          cd Frontend
+          cd apps/frontend
           npm audit --json > ../npm-audit-results.json || true
 
       - name: Upload audit results
@@ -239,17 +239,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Frontend/package-lock.json
+          cache-dependency-path: apps/frontend/package-lock.json
 
       - name: Build frontend
         run: |
-          cd Frontend
+          cd apps/frontend
           npm ci
           npm run build
 
       - name: Check bundle size
         run: |
-          cd Frontend
+          cd apps/frontend
           du -sh .next
 
   notify:

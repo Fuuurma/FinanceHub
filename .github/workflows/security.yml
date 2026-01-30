@@ -26,13 +26,13 @@ jobs:
 
       - name: Run pip-audit
         run: |
-          cd Backend
+          cd apps/backend
           pip-audit --desc --format json --output pip-audit-report.json
         continue-on-error: true
 
       - name: Run safety check
         run: |
-          cd Backend
+          cd apps/backend
           safety check --json --output safety-report.json
         continue-on-error: true
 
@@ -43,7 +43,7 @@ jobs:
 
       - name: Run npm audit
         run: |
-          cd Frontend
+          cd apps/frontend
           npm audit --json > npm-audit-report.json
         continue-on-error: true
 
@@ -53,9 +53,9 @@ jobs:
         with:
           name: dependency-scan-reports
           path: |
-            Backend/pip-audit-report.json
-            Backend/safety-report.json
-            Frontend/npm-audit-report.json
+            apps/backend/pip-audit-report.json
+            apps/backend/safety-report.json
+            apps/frontend/npm-audit-report.json
 
   code-security-scan:
     name: Code Security Analysis
@@ -75,12 +75,12 @@ jobs:
 
       - name: Run bandit
         run: |
-          bandit -r Backend/src -f json -o bandit-report.json
+          bandit -r apps/backend/src -f json -o bandit-report.json
         continue-on-error: true
 
       - name: Run semgrep
         run: |
-          semgrep --config=auto --json --output semgrep-report.json Backend/src/
+          semgrep --config=auto --json --output semgrep-report.json apps/backend/src/
         continue-on-error: true
 
       - name: Upload reports
@@ -161,7 +161,7 @@ jobs:
 
       - name: Check Python licenses
         run: |
-          cd Backend
+          cd apps/backend
           pip-licenses --from-classification --format=json --output-file=python-licenses.json
 
       - name: Setup Node.js
@@ -171,7 +171,7 @@ jobs:
 
       - name: Check Node licenses
         run: |
-          cd Frontend
+          cd apps/frontend
           npm install -g license-checker
           license-checker --json --out ../node-licenses.json
 
@@ -181,7 +181,7 @@ jobs:
         with:
           name: license-reports
           path: |
-            Backend/python-licenses.json
+            apps/backend/python-licenses.json
             node-licenses.json
 
   notify:
