@@ -50,7 +50,6 @@ import {
 } from 'lucide-react'
 import { TechnicalIndicatorsPanel } from './TechnicalIndicatorsPanel'
 import { IndicatorConfig, calculateAllIndicators, INDICATOR_DESCRIPTIONS } from '@/lib/utils/technical-indicators'
-import type { IndicatorDescription } from '@/lib/utils/technical-indicators'
 import { useRealtimeStore } from '@/stores/realtimeStore'
 import {
   Tooltip,
@@ -782,7 +781,7 @@ export function AdvancedChart({
                     checked={showIndicators.includes(indicator)}
                     onCheckedChange={(checked) => onIndicatorChange?.(indicator, checked as boolean)}
                   >
-                    {(INDICATOR_DESCRIPTIONS as Record<string, IndicatorDescription>)[indicator]?.name || indicator}
+                    {(INDICATOR_DESCRIPTIONS as any)[indicator]?.name || indicator}
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
