@@ -948,13 +948,15 @@ class PriceUpdateConsumer:
 - **Monitoring:** $100/month
 - **Total:** **$1,700/month**
 
-### Enterprise Phase (100K+ users)
-- **Infrastructure:** $3,000/month (multi-region, read replicas)
-- **Data Services:** $2,000/month (premium data feeds)
-- **AI/ML:** $1,000/month (custom models)
-- **Event Streaming:** $500/month (Kafka)
-- **Monitoring:** $200/month
-- **Total:** **$6,700/month**
+### Enterprise Phase (100K+ users) - LEAN STACK
+- **Infrastructure:** $100/month (Render/Railway PaaS)
+- **Data Services:** $200/month (1-2 premium data feeds + caching)
+- **AI/ML:** $100/month (OpenAI API only)
+- **Event Streaming:** $0/month (Redis Streams, not Kafka)
+- **Monitoring:** $0/month (Sentry free tier)
+- **Total:** **$600/month** (91% cost reduction!)
+
+**Key Insight:** 100K users ≠ 100K concurrent. With 15-min caching, free tiers handle 100K users easily (1-5K concurrent typical).
 
 ### Revenue Assumptions:
 - Free tier: $0 (90% of users)
@@ -966,10 +968,10 @@ class PriceUpdateConsumer:
 - At 50K users: 4K Pro + 1K Enterprise = **$140,000/month revenue**
 - At 100K users: 8K Pro + 2K Enterprise = **$280,000/month revenue**
 
-**Profit Margins:**
-- 10K users: $10K revenue - $0.8K costs = **92% margin**
-- 50K users: $140K revenue - $1.7K costs = **99% margin**
-- 100K users: $280K revenue - $6.7K costs = **98% margin**
+**Profit Margins (Lean Stack):**
+- 10K users: $10K revenue - $0.4K costs = **96% margin**
+- 50K users: $140K revenue - $0.5K costs = **99.6% margin**
+- 100K users: $280K revenue - $0.6K costs = **99.8% margin**
 
 ---
 
@@ -1148,10 +1150,16 @@ else:
 4. Monitor costs in real-time
 5. A/B test before migrating
 
-**Cost Growth:** $0 → $800 → $1,700 → $6,700/month
+**Cost Growth (Lean Stack):** $0 → $400 → $500 → $600/month (91% cheaper!)
 
 **Revenue Growth:** $0 → $10K → $140K → $280K/month
 
-**Profit Margins:** 92% → 99% → 98%
+**Profit Margins:** 96% → 99.6% → 99.8%
 
-**Recommendation:** ✅ **Continue on free stack, add paid services when triggers are met**
+**Key Platforms:**
+- **Infrastructure:** Render, Railway, DigitalOcean, Hostinger (PaaS, not AWS)
+- **Event Streaming:** Redis Streams (built into Redis), not Kafka ($500/month savings)
+- **Monitoring:** Sentry free tier, not Datadog ($200/month savings)
+- **AI/ML:** OpenAI API pay-as-you-go, not SageMaker ($900/month savings)
+
+**Recommendation:** ✅ **Continue on free stack, use PaaS platforms, aggressive caching, delay expensive infrastructure**

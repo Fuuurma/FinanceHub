@@ -8,9 +8,14 @@
 
 ## 📋 Overview
 
-This document establishes communication protocols between AI agents working on FinanceHub. AI agents must communicate with peers across disciplines to ensure coordinated, high-quality development.
+This document establishes communication protocols for FinanceHub development using a **Human + AI agents coordination model**.
 
-**Core Principle:** AI agents are specialists that collaborate, not isolated workers.
+**Critical Understanding:** 
+- **You (Human Developer) = Primary Coder + Final Decision Maker**
+- **3 AI agents** work WITH you to provide specialized expertise
+- AI agents are advisors, not replacements for human judgment
+
+**Core Principle:** Human developer leads implementation, AI agents provide specialized support (architecture, security, DevOps)
 
 ---
 
@@ -39,26 +44,35 @@ This document establishes communication protocols between AI agents working on F
 
 ---
 
-### 2. CODER - Developer
+### 2. CODER - **YOU (Human Developer)**
 **Domain:** Frontend, Backend, Full-Stack Implementation
 
 **Responsibilities:**
+- **YOU are the primary developer** - you write code, make implementation decisions
 - Implements features following architectural patterns
 - Writes clean, maintainable code
 - Follows code standards and guidelines
 - Tests implementations
-- Reports issues to architect
+- Makes final decisions on implementation details
+- Coordinates with AI agents for specialized expertise
 
 **Communication Style:**
+- **YOU are in charge** - ask AI agents for guidance when needed
 - Practical, implementation-focused
-- Asks clarifying questions
-- Reports progress with metrics
-- Escalates architectural concerns
+- Ask clarifying questions to GAUDÍ (architect), CHARO (security), KAREN (DevOps)
+- Report progress with metrics
+- Escalate architectural concerns
+
+**Critical Point:**
+- **You are NOT "just another agent"**
+- **You make the final decisions on all implementations**
+- **AI agents work FOR YOU, not instead of you**
+- When in doubt, ask for clarification
 
 **Peers:**
-- **→ ARCHITECT:** Follows orders, reports blockers, requests patterns
-- **→ DEVOPS:** Deployment requirements, environment needs
-- **→ SECURITY:** Security vulnerabilities, code review requests
+- **→ ARCHITECT (GAUDÍ):** You follow architectural orders, request patterns, ask for guidance
+- **→ DEVOPS (KAREN):** You ask about deployment requirements, environment needs
+- **→ SECURITY (CHARO):** You report security vulnerabilities, request code reviews
 
 ---
 
@@ -247,34 +261,40 @@ This document establishes communication protocols between AI agents working on F
 ### Workflow 1: New Feature Development
 
 ```
-ARCHITECT (GAUDÍ)
-  ↓ Issues architectural order
-  ↓ "Build this component with these patterns"
+YOU (Human Developer + Primary Coder)
+  ↓ Read architectural order from GAUDÍ
+  ↓ Implement following patterns
+  ↓ Ask clarifying questions if unclear
+  ↓ Make implementation decisions
   ↓
-CODER (You)
-  ↓ Implements following patterns
-  ↓ Asks clarifying questions
+ARCHITECT (GAUDÍ)
+  ↓ Provides patterns, guidance
+  ↓ Answers questions
+  ↓ Reviews architectural compliance
   ↓
 SECURITY (CHARO)
   ↓ Reviews for vulnerabilities
   ↓ Approves or requests changes
   ↓
 DEVOPS (KAREN)
+  ↓ You request deployment
   ↓ Deploys to staging
   ↓ Monitors performance
+  ↓ Reports back to you
   ↓
-ARCHITECT (GAUDÍ)
-  ✓ Verifies architectural compliance
+YOU (Human Developer)
+  ✓ Verify implementation works
+  ✓ Make final decision on merge
 ```
 
 **Example:**
-1. **GAUDÍ:** "Create MarketHeatmap component with data fetching, error handling, and export features. Use PageErrorBoundary pattern."
-2. **CODER:** "Should I use TradingView Lightweight Charts or Recharts?" ← *Clarifying question*
-3. **GAUDí:** "Use lightweight-charts for performance. See ARCHITECTURE_COMPLETE.md chart section."
-4. **CODER:** *Implements component* → "MarketHeatmap.tsx created (527 lines). Ready for review."
-5. **CHARO:** "Review passed. No security issues. Approved for merge."
-6. **KAREN:** "Deployed to staging. Monitoring for 24h. No issues detected."
-7. **GAUDí:** "Verifies architectural compliance ✓ Approved for production."
+1. **GAUDÍ (AI Architect):** "Create MarketHeatmap component with data fetching, error handling, and export features. Use PageErrorBoundary pattern."
+2. **YOU (Human Coder):** "Should I use TradingView Lightweight Charts or Recharts?" ← *You ask clarifying question*
+3. **GAUDí (AI):** "Use lightweight-charts for performance. See ARCHITECTURE_COMPLETE.md chart section."
+4. **YOU (Human):** *Implements component* → "MarketHeatmap.tsx created (527 lines). Ready for review."
+5. **CHARO (AI Security):** "Review passed. No security issues. Approved for merge."
+6. **KAREN (AI DevOps):** "Deployed to staging. Monitoring for 24h. No issues detected."
+7. **YOU (Human):** "Looks good, merging to production." ← *You make final decision*
 
 ---
 
@@ -399,10 +419,12 @@ Reference: TASKS.md#L650-680
 - ✅ **Mandatory:** All deployments must go through DevOps pipeline
 - ⚠️ **Consults:** Architect for infrastructure requirements, Coder for deployment needs
 
-### Coder (You):
-- ✅ **Authority:** Can **escalate** to Architect if orders are unclear
+### Coder (You - Human Developer):
+- ✅ **Authority:** **YOU are the primary coder and final decision maker**
 - ✅ **Responsibility:** Implementation following architectural patterns
+- ✅ **Decision Making:** YOU decide on implementation details, coding approach
 - ⚠️ **Must Consult:** Architect for patterns, Security for vulnerabilities, DevOps for deployment
+- 📢 **Critical:** AI agents work FOR YOU, not instead of you. You coordinate them.
 
 ---
 
