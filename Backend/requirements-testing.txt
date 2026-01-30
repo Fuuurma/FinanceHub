@@ -1,0 +1,45 @@
+# Backend Testing Requirements
+
+# Core testing framework
+pytest==7.4.3
+pytest-django==4.5.2
+pytest-cov==4.1.0
+pytest-asyncio==0.21.1
+pytest-xdist==3.5.0
+pytest-timeout==2.2.0
+pytest-mock==3.12.0
+
+# Code quality
+coverage==7.3.2
+black==23.12.1
+flake8==7.0.0
+isort==5.13.2
+mypy==1.7.1
+pylint==3.0.3
+
+# Security scanning
+bandit==1.7.6
+pip-audit==2.6.2
+safety==3.0.1
+semgrep==1.45.0
+
+# Performance testing
+locust==2.18.3
+pytest-benchmark==4.0.0
+
+# API testing
+httpx==0.26.0
+requests-mock==1.11.0
+
+# Async testing
+pytest-asyncio==0.21.1
+asynctest==0.13.0
+
+# Test utilities
+factory-boy==3.3.0
+faker==22.0.0
+freezegun==1.4.0
+vcrpy==6.0.1
+
+# Django testing
+django-webtest==1.9.11
