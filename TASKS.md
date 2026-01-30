@@ -1,8 +1,8 @@
 # FinanceHub - Comprehensive Tasks List
 
 **Last Updated:** January 30, 2026  
-**Status:** Active Development  
-**Source Analysis:** FEATURES_SPECIFICATION.md, IMPLEMENTATION_ROADMAP.md, FEATURE_IMPLEMENTATION_GUIDES.md
+**Status:** Active Development + New Tasks Identified  
+**Source Analysis:** FEATURES_SPECIFICATION.md, IMPLEMENTATION_ROADMAP.md, Codebase Exploration
 
 ---
 
@@ -118,192 +118,539 @@ If a task says "Create component XYZ" but XYZ already exists:
 | Total Features Specified | 351 |
 | Features Implemented | ~70 (20%) |
 | **Features Missing** | **281** |
+| **NEW Missing Components Identified** | **~80+** |
 | Backend Completion | 95% |
 | Frontend Completion | 65% |
 | **Frontend Gap** | **30%** |
 
 ---
 
-## 📁 EXISTING COMPONENTS INVENTORY
+# 🚨 CRITICAL: BAD PRACTICES TO FIX (High Priority)
 
-### Charts Components
-```
-Frontend/src/components/charts/
-├── AdvancedChart.tsx         # Task #3 - COMPLETED ✅ (680 lines)
-│   ├── ChartType: 'candlestick' | 'line' | 'area' | 'bar' | 'histogram'
-│   ├── Timeframe: '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w' | '1M'
-│   ├── Indicators: SMA, EMA, RSI, MACD, Bollinger Bands
-│   ├── Drawing: HorizontalLine, TrendLine, Fibonacci, Rectangle, Text
-│   ├── Export: PNG screenshot, CSV data
-│   └── Dependencies: lightweight-charts, @/lib/utils/technical-indicators
-│
-├── ChartControls.tsx         # 401 lines - Controls (timeframe, type, indicators)
-├── TradingViewChart.tsx      # 681 lines - Base trading chart (reference for patterns)
-├── TechnicalIndicatorsPanel.tsx # RSI/MACD sub-panel
-├── IndicatorConfigModal.tsx  # Indicator configuration modal
-├── DrawingTools.tsx          # 259 lines - Drawing tools UI (NOT integrated)
-├── ComparisonChart.tsx       # Multi-asset comparison
-├── MarketHeatmap.tsx         # Task #4 - COMPLETED ✅ with export features (497 lines)
-│   ├── Export: PNG via html2canvas, CSV data export
-│   ├── Features: Sector treemap, drill-down, timeframes, dark mode
-│   └── Dependencies: lightweight-charts not needed (custom treemap)
-│
-├── TopHoldingsChart.tsx      # Holdings pie chart
-├── HoldingsAllocationChart.tsx # Allocation breakdown
-├── HoldingsPnLChart.tsx      # P&L visualization
-└── fundamentals-charts.tsx   # Fundamental data charts
-```
+## TypeScript `any` Type Usage (26 occurrences - HIGH PRIORITY)
 
-### UI Components
-```
-Frontend/src/components/ui/
-├── data-table.tsx            # Task #1 - EXISTS, needs export features
-│   ├── Props: Column<T>[], data: T[], pageSize, searchable, showExport
-│   ├── Features: sorting, pagination, search, column toggle
-│   ├── Missing: density toggle, frozen columns, row numbers
-│   └── Export: CSV, Excel, JSON already implemented (check!)
-│
-├── export-dropdown.tsx       # Task #2 - COMPLETED ✅
-├── button.tsx                # shadcn button (use this!)
-├── select.tsx                # shadcn select (use this!)
-├── dropdown-menu.tsx         # shadcn dropdown (use this!)
-├── card.tsx                  # shadcn card (use this!)
-├── tabs.tsx                  # shadcn tabs (use this!)
-└── [60+ other components]    # Full shadcn/ui library available
-```
+**Priority:** High  
+**Impact:** Type safety compromised, runtime errors likely  
+**Files Affected:** 12 components
 
-### Analytics Components
-```
-Frontend/src/components/analytics/
-├── PerformanceMetrics.tsx    # Task #5 - COMPLETED ✅
-├── PerformanceChart.tsx      # Return chart
-├── RollingReturnsChart.tsx   # Rolling period returns
-├── BenchmarkComparisonChart.tsx # vs SPY, etc.
-├── RiskMetricsHistoryChart.tsx # Risk over time
-├── CorrelationMatrix.tsx     # Task #8 - PENDING ⏳
-└── KPICards/                 # Metric cards (Return, Value, Risk, Drawdown)
-```
+| File | Line(s) | Issue |
+|------|---------|-------|
+| `ui/resizable.tsx` | 10, 23, 27 | Has `@ts-nocheck` directive |
+| `charts/TopHoldingsChart.tsx` | 66 | CustomTooltip props typed as `any` |
+| `charts/TradingViewChart.tsx` | 173 | History mapping uses `(d: any)` |
+| `charts/AdvancedChart.tsx` | 249, 316, 242 | Multiple `any` type usages |
+| `realtime/RealTimeChart.tsx` | 147-148 | Chart series typed as `any` |
+| `ui/export-dropdown.tsx` | 66, 291 | formatCellValue parameter typed as `any` |
+| `trading/OrderEntryForm.tsx` | 127, 227 | Select onValueChange handlers use `any` |
+| `charts/ComparisonChart.tsx` | 273, 306 | Tooltip callback uses `any` |
+| `attribution/SectorAttributionChart.tsx` | 54, 111, 115 | Multiple `any` types |
+| `charts/HoldingsAllocationChart.tsx` | 77, 102, 107 | Multiple `any` types |
+| `charts/HoldingsPnLChart.tsx` | 48, 53 | CustomTooltip types |
 
-### Risk Components
-```
-Frontend/src/components/risk/
-├── RiskDashboard.tsx         # Task #6 - COMPLETED ✅
-│   ├── VaR: Value at Risk (parametric, historical)
-│   ├── CVaR: Expected Shortfall
-│   ├── Beta: Portfolio beta calculation
-│   ├── Stress Testing: Historical scenarios
-│   └── Risk Limits: Alert configuration
-└── index.ts                  # Exports
+**Fix Approach:** Define proper interfaces, remove `@ts-nocheck`, use explicit union types
+
+---
+
+## Direct DOM Manipulation (17 occurrences - HIGH PRIORITY)
+
+**Priority:** High  
+**Impact:** Security risks, memory leaks, React anti-pattern  
+**Files Affected:** 10 components
+
+| File | Line(s) | Issue |
+|------|---------|-------|
+| `ui/export-dropdown.tsx` | 97, 126, 159, 319, 341 | Direct `document.createElement('a')` calls |
+| `charts/MarketHeatmap.tsx` | 336, 346, 388 | Direct DOM query for export |
+| `charts/AdvancedChart.tsx` | 616, 639 | Direct DOM for export |
+| `screener/ResultsPanel.tsx` | 116, 119, 134, 137 | Direct DOM for exports |
+| `analytics/CorrelationMatrix.tsx` | 109, 112, 114 | Direct DOM for export |
+| `trading/PositionTracker.tsx` | 93, 96, 98 | Direct DOM for export |
+
+**Fix Approach:** Create reusable `useDownloadFile` hook:
+```typescript
+function useDownloadFile() {
+  const download = useCallback((blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }, [])
+  return download
+}
 ```
 
 ---
 
-## 🎯 CURRENT PRIORITY
+## Missing Error Boundaries (All chart components - HIGH PRIORITY)
 
-### Next Task: Task #8 - Correlation Matrix
+**Priority:** High  
+**Impact:** App crashes when charts fail to render  
+**Affected:** All chart components (10+)
 
-**Location:** `Frontend/src/components/analytics/CorrelationMatrix.tsx`
-
-**Reference Components:**
-- `Frontend/src/components/analytics/PerformanceMetrics.tsx` - Analytics pattern
-- `Frontend/src/components/charts/ComparisonChart.tsx` - Chart pattern
-- `Frontend/src/components/ui/data-table.tsx` - Table pattern
-
-**Implementation Pattern:**
+**Fix Approach:** Create ErrorBoundary component:
 ```typescript
-interface CorrelationMatrixProps {
-  assets: string[]                  // List of symbols to correlate
-  portfolioId?: string              // Optional: fetch from portfolio
-  timeframe?: Timeframe             // '1M' | '3M' | '6M' | '1Y' | '3Y' | '5Y'
-  method?: 'pearson' | 'spearman'   // Correlation method
-  height?: number
-  onAssetClick?: (asset: string) => void
-}
-
-interface CorrelationData {
-  matrix: number[][]                // NxN correlation matrix
-  assets: string[]                  // Row/column labels
-  clustering?: {                    // Optional hierarchical clustering
-    dendrogram?: any
-    orderedAssets?: string[]
+// components/ui/ErrorBoundary.tsx
+export class ErrorBoundary extends Component<{fallback?: ReactNode}> {
+  state = { hasError: false }
+  static getDerivedStateFromError() { return { hasError: true } }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Chart error:', error, info)
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || <div>Something went wrong</div>
+    }
+    return this.props.children
   }
 }
 ```
 
-**Features Required:**
-- [ ] NxN correlation matrix visualization (heatmap)
-- [ ] Color scale: -1 (red) to +1 (green)
-- [ ] Interactive cells with correlation values on hover
-- [ ] Asset click to filter/remove
-- [ ] Timeframe selector
-- [ ] Clustering/dendrogram view (optional)
-- [ ] Export correlation matrix as CSV/PNG
-- [ ] Responsive design for mobile
+---
 
-**Dependencies:**
-- `d3-hierarchy` or similar for clustering (optional)
-- `recharts` or `lightweight-charts` for heatmap
-- `lib/api/portfolio.ts` - fetch holdings for auto-population
+## setInterval/setTimeout Without Cleanup (3 occurrences - HIGH PRIORITY)
 
-**Helper Function - WHERE TO ADD:**
+**Priority:** High  
+**Impact:** Memory leaks  
+**Files Affected:**
+
+| File | Line(s) | Issue |
+|------|---------|-------|
+| `trading/AccountSummary.tsx` | 23 | `setInterval` without cleanup |
+| `trading/PositionTracker.tsx` | 39 | Polling without proper cleanup |
+| `realtime/LivePriceTicker.tsx` | 20 | Same pattern |
+
+**Fix Approach:**
 ```typescript
-// lib/utils/analytics.ts
-export function calculateCorrelation(asset1: number[], asset2: number[]): number {
-  // Pearson correlation coefficient
-  const n = asset1.length
-  const sum1 = asset1.reduce((a, b) => a + b, 0)
-  const sum2 = asset2.reduce((a, b) => a + b, 0)
-  const sum1Sq = asset1.reduce((a, b) => a + b * b, 0)
-  const sum2Sq = asset2.reduce((a, b) => a + b * b, 0)
-  const pSum = asset1.reduce((sum, x, i) => sum + x * asset2[i], 0)
-  
-  const num = pSum - (sum1 * sum2 / n)
-  const den = Math.sqrt((sum1Sq - sum1 * sum1 / n) * (sum2Sq - sum2 * sum2 / n))
-  
-  return den === 0 ? 0 : num / den
+useEffect(() => {
+  const interval = setInterval(fetchData, 10000)
+  return () => clearInterval(interval)
+}, [fetchData])
+```
+
+---
+
+## Duplicate Code Patterns (MEDIUM PRIORITY)
+
+### Chart Configuration Duplicated
+**Files:** TradingViewChart.tsx, AdvancedChart.tsx, TechnicalIndicatorsPanel.tsx  
+**Solution:** Create `useChartConfig` hook
+
+### Export Functionality Duplicated
+**Files:** export-dropdown.tsx, MarketHeatmap.tsx, AdvancedChart.tsx, ResultsPanel.tsx  
+**Solution:** Create `lib/utils/export.ts`
+
+### CustomTooltip Components Duplicated (7+ files)
+**Files:** TopHoldingsChart, SectorAttributionChart, HoldingsAllocationChart, etc.  
+**Solution:** Create `components/ui/RechartsTooltip.tsx`
+
+---
+
+## Hardcoded Magic Values (MEDIUM PRIORITY)
+
+| File | Line(s) | Value | Should Be |
+|------|---------|-------|-----------|
+| `OrderEntryForm.tsx` | 57, 259 | `0.001` (0.1% fee) | `FEE_PERCENTAGE` constant |
+| `RealTimeChart.tsx` | 225-226 | `0.002` (0.2% variance) | `PRICE_VARIANCE` constant |
+| `ComparisonChart.tsx` | 145 | `1000 + 50` | `BASE_PRICE_MIN` constant |
+| `sidebar.tsx` | 611 | `Math.random() * 40 + 50` | `SIDEBAR_WIDTH` constant |
+
+---
+
+# 🚀 NEW MISSING COMPONENTS (Discovered 2026-01-30)
+
+## P0 - CRITICAL (Must Have Next)
+
+### Error Handling Infrastructure
+| Task | Component | Path | Lines | Priority |
+|------|-----------|------|-------|----------|
+| N1 | ErrorBoundary | `components/ui/ErrorBoundary.tsx` | 50 | P0 |
+| N2 | useDownload | `hooks/useDownload.ts` | 40 | P0 |
+
+### Trading Infrastructure
+| Task | Component | Path | Lines | Priority |
+|------|-----------|------|-------|----------|
+| N3 | TradeHistory | `components/trading/TradeHistory.tsx` | 200 | P0 |
+| N4 | OrderList | `components/trading/OrderList.tsx` | 150 | P0 |
+
+### Charts Missing (Critical)
+| Task | Component | Path | Lines | Priority |
+|------|-----------|------|-------|----------|
+| N5 | VolumeProfileChart | `components/charts/VolumeProfileChart.tsx` | 250 | P0 |
+| N6 | DepthChart | `components/charts/DepthChart.tsx` | 200 | P0 |
+
+---
+
+## P1 - HIGH PRIORITY
+
+### Utility Hooks
+| Task | Component | Path | Lines | Priority |
+|------|-----------|------|-------|----------|
+| N7 | useLocalStorage | `hooks/useLocalStorage.ts` | 60 | P1 |
+| N8 | useMediaQuery | `hooks/useMediaQuery.ts` | 40 | P1 |
+| N9 | useDebounce | `hooks/useDebounce.ts` | 35 | P1 |
+| N10 | useInterval | `hooks/useInterval.ts` | 40 | P1 |
+
+### Risk Components
+| Task | Component | Path | Lines | Priority |
+|------|-----------|------|-------|----------|
+| N11 | PositionRiskCard | `components/risk/PositionRiskCard.tsx` | 150 | P1 |
+| N12 | GreeksCalculator | `components/risk/GreeksCalculator.tsx` | 200 | P1 |
+| N13 | StressTestPanel | `components/risk/StressTestPanel.tsx` | 250 | P1 |
+
+### Portfolio Components
+| Task | Component | Path | Lines | Priority |
+|------|-----------|------|-------|----------|
+| N14 | PerformanceChart | `components/portfolio/PerformanceChart.tsx` | 200 | P1 |
+| N15 | RebalancingTool | `components/portfolio/RebalancingTool.tsx` | 300 | P1 |
+
+### Research Components
+| Task | Component | Path | Lines | Priority |
+|------|-----------|------|-------|----------|
+| N16 | InsiderTradingPanel | `components/research/InsiderTradingPanel.tsx` | 150 | P1 |
+| N17 | InstitutionalHoldingsPanel | `components/research/InstitutionalHoldingsPanel.tsx` | 180 | P1 |
+
+### Basic Charts
+| Task | Component | Path | Lines | Priority |
+|------|-----------|------|-------|----------|
+| N18 | CandlestickChart | `components/charts/CandlestickChart.tsx` | 200 | P1 |
+| N19 | LineChart | `components/charts/LineChart.tsx` | 150 | P1 |
+| N20 | AreaChart | `components/charts/AreaChart.tsx` | 150 | P1 |
+
+---
+
+## P2 - MEDIUM PRIORITY
+
+### UI Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N21 | RetryFallback | `components/ui/RetryFallback.tsx` | 80 |
+| N22 | LoadingOverlay | `components/ui/LoadingOverlay.tsx` | 100 |
+| N23 | DataLoadingSkeleton | `components/ui/DataLoadingSkeleton.tsx` | 120 |
+| N24 | DataExportButton | `components/ui/DataExportButton.tsx` | 80 |
+| N25 | DateRangePicker | `components/ui/DateRangePicker.tsx` | 150 |
+| N26 | SkipLink | `components/ui/SkipLink.tsx` | 40 |
+| N27 | FocusTrap | `components/ui/FocusTrap.tsx` | 60 |
+
+### More Hooks
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N28 | useThrottle | `hooks/useThrottle.ts` | 35 |
+| N29 | useClipboard | `hooks/useClipboard.ts` | 40 |
+| N30 | useClickOutside | `hooks/useClickOutside.ts` | 35 |
+| N31 | usePrevious | `hooks/usePrevious.ts` | 25 |
+| N32 | useKeyPress | `hooks/useKeyPress.ts` | 35 |
+
+### More Charts
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N33 | HeikinAshiChart | `components/charts/HeikinAshiChart.tsx` | 200 |
+| N34 | RenkoChart | `components/charts/RenkoChart.tsx` | 180 |
+| N35 | KagiChart | `components/charts/KagiChart.tsx` | 180 |
+
+### AI Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N36 | PricePrediction | `components/ai/PricePrediction.tsx` | 200 |
+| N37 | BacktestResults | `components/ai/BacktestResults.tsx` | 250 |
+| N38 | SentimentAnalysis | `components/ai/SentimentAnalysis.tsx` | 150 |
+
+### Trading Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N39 | OrderStatus | `components/trading/OrderStatus.tsx` | 100 |
+| N40 | TradeConfirmation | `components/trading/TradeConfirmation.tsx` | 120 |
+| N41 | TradingPanel | `components/trading/TradingPanel.tsx` | 300 |
+
+### Risk Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N42 | ExposureChart | `components/risk/ExposureChart.tsx` | 200 |
+| N43 | ImpliedVolatilityChart | `components/risk/ImpliedVolatilityChart.tsx` | 180 |
+
+### Research Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N44 | EarningsEstimatesPanel | `components/research/EarningsEstimatesPanel.tsx` | 150 |
+| N45 | PriceTargetChart | `components/research/PriceTargetChart.tsx` | 120 |
+| N46 | SECFilingsList | `components/research/SECFilingsList.tsx` | 100 |
+
+### Economics & Fundamentals
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N47 | EconomicIndicatorChart | `components/economics/EconomicIndicatorChart.tsx` | 150 |
+| N48 | FinancialStatements | `components/fundamentals/FinancialStatements.tsx` | 200 |
+| N49 | CompanyProfile | `components/fundamentals/CompanyProfile.tsx` | 150 |
+
+### Options Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N50 | OptionsStatsPanel | `components/options/OptionsStatsPanel.tsx` | 150 |
+| N51 | OptionsPayoffChart | `components/options/OptionsPayoffChart.tsx` | 180 |
+
+### Analytics Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N52 | AttributionBreakdown | `components/analytics/AttributionBreakdown.tsx` | 180 |
+| N53 | FactorAnalysis | `components/analytics/FactorAnalysis.tsx` | 200 |
+| N54 | RollingCorrelationChart | `components/analytics/RollingCorrelationChart.tsx` | 150 |
+| N55 | TaxLotTable | `components/analytics/TaxLotTable.tsx` | 150 |
+
+### Watchlist Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N56 | WatchlistCard | `components/watchlist/WatchlistCard.tsx` | 100 |
+| N57 | WatchlistTable | `components/watchlist/WatchlistTable.tsx` | 150 |
+| N58 | WatchlistEditDialog | `components/watchlist/WatchlistEditDialog.tsx` | 120 |
+
+### Screener Components
+| Task | Component | Path | Lines |
+|------|-----------|------|-------|
+| N59 | SavedScreensList | `components/screener/SavedScreensList.tsx` | 100 |
+| N60 | ScreenTemplateList | `components/screener/ScreenTemplateList.tsx` | 100 |
+| N61 | ScreenerResultsTable | `components/screener/ScreenerResultsTable.tsx` | 150 |
+
+---
+
+# 📁 EXISTING COMPONENTS INVENTORY
+
+## Charts Components (13 existing + 10 missing = 23 total)
+```
+Frontend/src/components/charts/
+├── AdvancedChart.tsx         # Task #3 - COMPLETED ✅ (680 lines)
+├── TradingViewChart.tsx      # Reference pattern (681 lines)
+├── MarketHeatmap.tsx         # Task #4 - COMPLETED ✅ (527 lines)
+├── TechnicalIndicatorsPanel.tsx # RSI/MACD panels
+├── ComparisonChart.tsx       # Multi-asset comparison
+├── IndicatorConfigModal.tsx  # Indicator configuration
+├── DrawingTools.tsx          # Drawing tools UI
+├── HoldingsAllocationChart.tsx # Pie chart
+├── HoldingsPnLChart.tsx      # P&L visualization
+├── TopHoldingsChart.tsx      # Holdings pie chart
+├── fundamentals-charts.tsx   # Fundamental charts
+├── CorrelationMatrix.tsx     # Heatmap visualization
+└── index.ts                  # Exports
+
+# MISSING:
+├── VolumeProfileChart.tsx    # N5 - P0
+├── DepthChart.tsx            # N6 - P0
+├── CandlestickChart.tsx      # N18 - P1
+├── LineChart.tsx             # N19 - P1
+├── AreaChart.tsx             # N20 - P1
+├── HeikinAshiChart.tsx       # N33 - P2
+├── RenkoChart.tsx            # N34 - P2
+├── KagiChart.tsx             # N35 - P2
+├── ErrorBoundary.tsx         # N1 - P0 (UI but often used with charts)
+└── index.ts                  # Update exports
+```
+
+## UI Components (62 existing + 13 missing = 75 total)
+```
+Frontend/src/components/ui/
+├── button.tsx, card.tsx, select.tsx, dropdown-menu.tsx, tabs.tsx
+├── skeleton.tsx, spinner.tsx, empty.tsx  # Loading states
+├── tooltip.tsx, dialog.tsx, sheet.tsx    # Overlays
+├── table.tsx, pagination.tsx, input.tsx  # Forms
+├── badge.tsx, avatar.tsx, progress.tsx   # Display
+└── [40+ more shadcn components]
+
+# MISSING:
+├── ErrorBoundary.tsx         # N1 - P0 - Critical!
+├── RetryFallback.tsx         # N21 - P2
+├── LoadingOverlay.tsx        # N22 - P2
+├── DataLoadingSkeleton.tsx   # N23 - P2
+├── DataExportButton.tsx      # N24 - P2
+├── DateRangePicker.tsx       # N25 - P2
+├── SkipLink.tsx              # N26 - P2
+├── FocusTrap.tsx             # N27 - P2
+└── index.ts                  # Update exports
+```
+
+## Trading Components (4 existing + 6 missing = 10 total)
+```
+Frontend/src/components/trading/
+├── OrderEntryForm.tsx        # Order form
+├── OrderConfirmationDialog.tsx # Order confirmation
+├── PositionTracker.tsx       # Position tracking
+└── AccountSummary.tsx        # Account overview
+
+# MISSING:
+├── TradeHistory.tsx          # N3 - P0 - Critical!
+├── OrderList.tsx             # N4 - P0 - Critical!
+├── OrderStatus.tsx           # N39 - P2
+├── TradeConfirmation.tsx     # N40 - P2
+├── TradingPanel.tsx          # N41 - P2
+└── index.ts                  # Create exports
+```
+
+## Risk Components (1 existing + 9 missing = 10 total)
+```
+Frontend/src/components/risk/
+└── RiskDashboard.tsx         # Main risk dashboard
+
+# MISSING:
+├── PositionRiskCard.tsx      # N11 - P1
+├── GreeksCalculator.tsx      # N12 - P1
+├── StressTestPanel.tsx       # N13 - P1
+├── ExposureChart.tsx         # N42 - P2
+├── ImpliedVolatilityChart.tsx # N43 - P2
+├── LeverageAnalysis.tsx      # P3
+├── RiskLimitPanel.tsx        # P3
+├── DrawdownChart.tsx         # P3
+└── index.ts                  # Create exports
+```
+
+## Hooks (7 existing + 10 missing = 17 total)
+```
+Frontend/src/hooks/
+├── useAuth.ts                # Authentication
+├── useMedia.ts               # Media queries
+├── usePortfolio.ts           # Portfolio data
+├── useRealtimeStore.ts       # Real-time state
+├── use Screener.ts           # Screener logic
+└── useTheme.ts               # Theme (from next-themes)
+
+# MISSING:
+├── useDownload.ts            # N2 - P0 - Critical!
+├── useLocalStorage.ts        # N7 - P1
+├── useMediaQuery.ts          # N8 - P1
+├── useDebounce.ts            # N9 - P1
+├── useInterval.ts            # N10 - P1
+├── useThrottle.ts            # N28 - P2
+├── useClipboard.ts           # N29 - P2
+├── useClickOutside.ts        # N30 - P2
+├── usePrevious.ts            # N31 - P2
+└── useKeyPress.ts            # N32 - P2
+```
+
+---
+
+# 🎯 CURRENT PRIORITY
+
+## Next Task: Task N1 - ErrorBoundary (P0)
+
+**Location:** `Frontend/src/components/ui/ErrorBoundary.tsx`
+
+**Reference Components:**
+- `Frontend/src/components/ui/card.tsx` - Card pattern
+- `Frontend/src/components/ui/button.tsx` - Button pattern
+
+**Implementation Pattern:**
+```typescript
+'use client'
+
+import { Component, ErrorInfo, ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
+import { AlertCircle, RefreshCw } from 'lucide-react'
+
+interface ErrorBoundaryProps {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean
+  error?: Error
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo)
+  }
+
+  handleRetry = () => {
+    this.setState({ hasError: false, error: undefined })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback
+      }
+
+      return (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+          <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
+          <p className="text-muted-foreground mb-4">
+            {this.state.error?.message || 'An unexpected error occurred'}
+          </p>
+          <Button onClick={this.handleRetry}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
 }
 ```
 
-**Reference Documentation:**
-- `FEATURE_IMPLEMENTATION_GUIDES.md` lines 450-520
-- `FEATURES_SPECIFICATION.md` section 3.4 - Correlation matrix
+**Usage:**
+```typescript
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+
+<ErrorBoundary>
+  <TradingViewChart symbol="AAPL" />
+</ErrorBoundary>
+```
 
 ---
 
-### Completed: Task #3 - Advanced Chart Suite ✅
+# ✅ COMPLETE TASK LIST
 
-**Files Created:**
-1. `Frontend/src/components/charts/AdvancedChart.tsx` (680+ lines)
+## Original Tasks (In Progress)
+| # | Task | Component | Priority | Status | Path |
+|---|------|-----------|----------|--------|------|
+| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `EXISTS - ENHANCE` | Has CSV/JSON/Excel |
+| 3 | AdvancedChart | components/charts/AdvancedChart.tsx | P0 | `COMPLETED` ✅ | 680 lines |
+| 4 | MarketHeatmap | components/charts/MarketHeatmap.tsx | P0 | `COMPLETED` ✅ | 527 lines |
 
-**Key Implementation Details:**
-- Uses `lightweight-charts` from TradingView
-- Integrates technical indicators from `lib/utils/technical-indicators.ts`
-- Drawing tools framework ready (needs full integration)
-- Export: PNG via `takeScreenshot()`, CSV via manual generation
-- Theme-aware colors stored in `chartColors` object
+## New Missing Components - P0 (Critical)
+| # | Task | Component | Priority | Status | Path |
+|---|------|-----------|----------|--------|------|
+| N1 | ErrorBoundary | components/ui/ErrorBoundary.tsx | P0 | `PENDING` | Create new |
+| N2 | useDownload | hooks/useDownload.ts | P0 | `PENDING` | Create new |
+| N3 | TradeHistory | components/trading/TradeHistory.tsx | P0 | `PENDING` | Create new |
+| N4 | OrderList | components/trading/OrderList.tsx | P0 | `PENDING` | Create new |
+| N5 | VolumeProfileChart | components/charts/VolumeProfileChart.tsx | P0 | `PENDING` | Create new |
+| N6 | DepthChart | components/charts/DepthChart.tsx | P0 | `PENDING` | Create new |
+
+## New Missing Components - P1 (High)
+| # | Task | Component | Priority | Status | Path |
+|---|------|-----------|----------|--------|------|
+| N7 | useLocalStorage | hooks/useLocalStorage.ts | P1 | `PENDING` | Create new |
+| N8 | useMediaQuery | hooks/useMediaQuery.ts | P1 | `PENDING` | Create new |
+| N9 | useDebounce | hooks/useDebounce.ts | P1 | `PENDING` | Create new |
+| N10 | useInterval | hooks/useInterval.ts | P1 | `PENDING` | Create new |
+| N11 | PositionRiskCard | components/risk/PositionRiskCard.tsx | P1 | `PENDING` | Create new |
+| N12 | GreeksCalculator | components/risk/GreeksCalculator.tsx | P1 | `PENDING` | Create new |
+| N13 | StressTestPanel | components/risk/StressTestPanel.tsx | P1 | `PENDING` | Create new |
+| N14 | PerformanceChart | components/portfolio/PerformanceChart.tsx | P1 | `PENDING` | Create new |
+| N15 | RebalancingTool | components/portfolio/RebalancingTool.tsx | P1 | `PENDING` | Create new |
+| N16 | InsiderTradingPanel | components/research/InsiderTradingPanel.tsx | P1 | `PENDING` | Create new |
+| N17 | InstitutionalHoldingsPanel | components/research/InstitutionalHoldingsPanel.tsx | P1 | `PENDING` | Create new |
+| N18 | CandlestickChart | components/charts/CandlestickChart.tsx | P1 | `PENDING` | Create new |
+| N19 | LineChart | components/charts/LineChart.tsx | P1 | `PENDING` | Create new |
+| N20 | AreaChart | components/charts/AreaChart.tsx | P1 | `PENDING` | Create new |
+
+## New Missing Components - P2 (Medium)
+| # | Task | Component | Priority | Status | Path |
+|---|------|-----------|----------|--------|------|
+| N21-N61 | Various components | See lists above | P2 | `PENDING` | Create new |
 
 ---
 
-## Complete Task List
-
-| # | Task | Component | Priority | Status | Existing Path |
-|---|------|-----------|----------|--------|---------------|
-| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `COMPLETED` ✅ | Export, density toggle, frozen columns |
-| 3 | AdvancedChart | components/charts/AdvancedChart.tsx | P0 | `COMPLETED` ✅ | `/Frontend/src/components/charts/AdvancedChart.tsx` |
-| 4 | MarketHeatmap | components/charts/MarketHeatmap.tsx | P0 | `COMPLETED` ✅ | Treemap visualization |
-| 7 | Screener FilterPanel | components/screener/FilterPanel.tsx | P0 | `EXISTS - ENHANCE` | 100+ filters, Browse tab |
-| 8 | CorrelationMatrix | components/analytics/CorrelationMatrix.tsx | P0 | `COMPLETED` ✅ | Heatmap visualization |
-| 9 | OptionsChain | components/options/OptionsChain.tsx | P1 | `EXISTS - ENHANCE` | 842 lines - complete implementation |
-| 10 | Backtest Results UI | components/backtest/*.tsx | P2 | `COMPLETED` ✅ | Equity curve chart, strategy comparison |
-| 11 | AI PricePrediction | components/ai/PricePrediction.tsx | P2 | `PENDING` | Needs creation |
-| 12 | News Feed | components/news/*.tsx | P2 | `COMPLETED` ✅ | NewsFeed, NewsCard, NewsFilters, NewsSentimentPanel, TrendingTopics |
-| 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `EXISTS - ENHANCE` | 856 lines - comprehensive |
-| 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `COMPLETED` ✅ | `/components/research/AnalystRatings.tsx` |
-| 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `EXISTS - ENHANCE` | Exists, needs enhancement |
-
----
-
-## 🛠️ HELPER FUNCTIONS FOR AGENTS
+# 🛠️ HELPER FUNCTIONS FOR AGENTS
 
 ### File Search
 ```bash
@@ -312,6 +659,9 @@ find Frontend/src/components -name "*Name*"
 
 # Check if component exists
 ls -la Frontend/src/components/ui/data-table.tsx 2>/dev/null && echo "EXISTS" || echo "NOT FOUND"
+
+# Find all TypeScript errors
+cd Frontend/src && npx tsc --noEmit --skipLibCheck 2>&1 | grep "error TS" | wc -l
 ```
 
 ### Common Imports
@@ -350,7 +700,7 @@ describe('ComponentName', () => {
 
 ---
 
-## 📚 REFERENCE DOCUMENTATION
+# 📚 REFERENCE DOCUMENTATION
 
 ### Must Read Before Starting
 1. `AGENTS.md` - Agent instructions and workflow
@@ -368,7 +718,29 @@ describe('ComponentName', () => {
 
 ---
 
-## ✅ COMPLETION CHECKLIST
+# 🔧 REFACTORING OPPORTUNITIES
+
+## Immediate Refactor Candidates
+
+### 1. Duplicate Chart Config → useChartConfig Hook
+**Files:** TradingViewChart.tsx, AdvancedChart.tsx, TechnicalIndicatorsPanel.tsx  
+**Solution:** Create `hooks/useChartConfig.ts`
+
+### 2. Duplicate Export Code → lib/utils/export.ts
+**Files:** export-dropdown.tsx, MarketHeatmap.tsx, AdvancedChart.tsx, ResultsPanel.tsx  
+**Solution:** Create shared export utilities
+
+### 3. Duplicate Tooltips → RechartsTooltip.tsx
+**Files:** 7+ chart components with CustomTooltip  
+**Solution:** Create `components/ui/RechartsTooltip.tsx`
+
+### 4. Magic Values → constants.ts
+**Files:** OrderEntryForm.tsx, RealTimeChart.tsx, ComparisonChart.tsx  
+**Solution:** Create `lib/constants/fees.ts` and `lib/constants/trading.ts`
+
+---
+
+# 📊 COMPLETION CHECKLIST
 
 Before marking a task COMPLETED:
 - [ ] Component created/enhanced at correct path
@@ -383,6 +755,22 @@ Before marking a task COMPLETED:
 
 ---
 
-**Document Version:** 2.0
-**Last Updated:** January 30, 2026
-**Next Review:** After Task #8 (CorrelationMatrix) completion
+# 🚧 BACKEND TASKS (To Be Explored)
+
+## Backend Analysis Pending
+
+The backend codebase at `/Users/sergi/Desktop/Projects/FinanceHub/Backend` needs similar analysis for:
+- [ ] Missing API endpoints
+- [ ] Bad practices in Python code
+- [ ] Database schema improvements
+- [ ] Performance optimization opportunities
+- [ ] Missing services/repositories
+
+**Next Step:** Run codebase exploration on Backend directory to identify similar issues.
+
+---
+
+**Document Version:** 3.0  
+**Last Updated:** January 30, 2026  
+**Next Review:** After Task N1 (ErrorBoundary) completion  
+**Maintained By:** Development Team

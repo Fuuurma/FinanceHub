@@ -37,7 +37,7 @@ import {
 } from 'lucide-react'
 import { createChart, ColorType, CrosshairMode } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
-import type { BacktestResult, StrategyComparisonResult, BacktestResultEnhanced, Trade, MonthlyReturn, RiskMetricsDetail } from '@/lib/types/analytics'
+import type { BacktestResult, StrategyComparisonResult, BacktestResultEnhanced, BacktestTrade, MonthlyReturn, RiskMetricsDetail } from '@/lib/types/analytics'
 import { cn, formatCurrency, formatPercent } from '@/lib/utils'
 
 interface BacktestResultsProps {
@@ -61,7 +61,7 @@ const MOCK_BACKTEST_RESULT: BacktestResultEnhanced = {
     trades: [
       { id: '1', symbol: 'AAPL', entry_date: '2023-01-15', exit_date: '2023-03-20', entry_price: 135.50, exit_price: 155.30, quantity: 100, pnl: 1980, pnl_percent: 14.61, side: 'long', status: 'closed' },
       { id: '2', symbol: 'MSFT', entry_date: '2023-02-01', exit_date: '2023-04-15', entry_price: 240.00, exit_price: 285.40, quantity: 50, pnl: 2270, pnl_percent: 18.92, side: 'long', status: 'closed' },
-      { id: '3', symbol: 'GOOGL', entry_date: '2023-03-10', exit_date: '2023-05-20', entry_price: 95.20, exit_date: '2023-05-20', entry_price: 95.20, exit_price: 118.50, quantity: 120, pnl: 2796, pnl_percent: 24.47, side: 'long', status: 'closed' },
+      { id: '3', symbol: 'GOOGL', entry_date: '2023-03-10', exit_date: '2023-05-20', entry_price: 95.20, exit_price: 118.50, quantity: 120, pnl: 2796, pnl_percent: 24.47, side: 'long', status: 'closed' },
       { id: '4', symbol: 'NVDA', entry_date: '2023-04-01', exit_date: '2023-06-15', entry_price: 275.00, exit_price: 380.50, quantity: 40, pnl: 4220, pnl_percent: 38.36, side: 'long', status: 'closed' },
       { id: '5', symbol: 'TSLA', entry_date: '2023-05-15', exit_date: '2023-07-01', entry_price: 165.00, exit_price: 210.00, quantity: 60, pnl: 2700, pnl_percent: 27.27, side: 'long', status: 'closed' },
     ],

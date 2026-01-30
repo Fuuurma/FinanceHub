@@ -22,3 +22,5 @@ export { useMarketOverview, useMarketMovers, useSectors, useIndices, useTrending
 export { useWatchlists, useWatchlist } from './useWatchlists'
 
 export { usePortfolios, usePortfolioHoldings } from './usePortfolios'
+
+export { useDownload, useDownloadFile } from './useDownload'

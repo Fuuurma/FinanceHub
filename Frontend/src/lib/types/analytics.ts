@@ -241,3 +241,57 @@ export interface StrategyComparisonResult {
   }
   fetched_at: string
 }
+
+export interface BacktestTrade {
+  id: string
+  symbol: string
+  entry_date: string
+  exit_date: string
+  entry_price: number
+  exit_price: number
+  quantity: number
+  pnl: number
+  pnl_percent: number
+  side: 'long' | 'short'
+  status: 'closed' | 'open'
+}
+
+export interface MonthlyReturn {
+  month: string
+  year: number
+  return: number
+  benchmark_return?: number
+}
+
+export interface RiskMetricsDetail {
+  volatility: number
+  beta: number
+  alpha: number
+  sortino_ratio: number
+  calmar_ratio: number
+  var_95: number
+  cvar_95: number
+  recovery_time: number | null
+}
+
+export interface BacktestResultEnhanced extends BacktestResult {
+  data: BacktestResult['data'] & {
+    trades?: BacktestTrade[]
+    monthly_returns?: MonthlyReturn[]
+    risk_metrics?: RiskMetricsDetail
+    benchmark_comparison?: {
+      benchmark_return: number
+      alpha: number
+      beta: number
+      tracking_error: number
+    }
+    total_trades: number
+    profitable_trades: number
+    losing_trades: number
+    avg_win: number
+    avg_loss: number
+    profit_factor: number
+    consecutive_wins: number
+    consecutive_losses: number
+  }
+}
