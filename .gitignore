@@ -217,3 +217,29 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Security-sensitive files
+*.key
+*.pem
+secrets/
+credentials/
+*.csr
+*.crt
+
+# Node modules
+node_modules/
+
+# Database backups
+*.sql.gz
+*.sql
+backups/
+
+# Logs
+logs/
+*.log
+
+# Cache and temporary files
+.cache/
+*.cache
+.tmp/
+tmp/

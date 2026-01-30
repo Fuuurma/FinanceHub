@@ -187,9 +187,8 @@ typecheck-frontend: ## Type check frontend
 ##@ Security
 
 security-scan: ## Run all security scans
-	@echo "$(BLUE)Running security scans...$(NC)"
-	$(MAKE) security-backend
-	$(MAKE) security-frontend
+	@echo "$(BLUE)Running comprehensive security scanner...$(NC)"
+	@./scripts/security-scan.sh
 	@echo "$(GREEN)✓ Security scanning complete$(NC)"
 
 security-backend: ## Scan backend for vulnerabilities

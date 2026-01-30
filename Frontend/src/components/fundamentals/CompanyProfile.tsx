@@ -1,93 +1,38 @@
-"use client"
+'use client'
 
-import { useState } from 'react'
-import { Building2, MapPin, Globe, Calendar, FileText, DollarSign, TrendingUp, Users, Factory } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ExternalLink, MapPin, Building2, Users, TrendingUp } from 'lucide-react'
+import type { CompanyProfileData, CompanyOfficer, CompanyPeer } from '@/lib/types/fundamentals'
 
-export interface CompanyProfileData {
-  symbol: string
-  name: string
-  description: string
-  sector: string
-  industry: string
-  ceo: string
-  employees: number
-  headquarters: string
-  website: string
-  founded: number
-  exchange: string
-  currency: string
-  fiscalYearEnd: string
-  marketCap: number
-  enterpriseValue: number
-  sharesOutstanding: number
-  avgVolume: number
-  peRatio: number
-  eps: number
-  dividendYield: number
-  beta: number
-  lastUpdated: string
-}
-
-export interface CompanyProfileProps {
-  data?: CompanyProfileData
-  symbol?: string
+interface CompanyProfileProps {
+  data?: CompanyProfileData | null
   loading?: boolean
   error?: string
-  className?: string
 }
 
-function formatLargeNumber(num: number): string {
-  if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`
-  if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`
-  if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`
-  return `$${(num / 1e3).toFixed(0)}K`
-}
-
-function InfoRow({ icon: Icon, label, value, href }: { icon: typeof Building2; label: string; value?: string; href?: string }) {
-  if (!value) return null
-  return (
-    <div className="flex items-center gap-3 py-2">
-      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-      <span className="text-sm text-muted-foreground w-24 flex-shrink-0">{label}</span>
-      {href ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-          {value}
-        </a>
-      ) : (
-        <span className="text-sm font-medium">{value}</span>
-      )}
-    </div>
-  )
-}
-
-export function CompanyProfile({
-  data,
-  symbol,
-  loading = false,
-  error,
-  className,
-}: CompanyProfileProps) {
-  const [activeTab, setActiveTab] = useState('overview')
-
+export function CompanyProfile({ data, loading, error }: CompanyProfileProps) {
   if (loading) {
     return (
-      <Card className={cn('w-full', className)}>
+      <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-32 mt-2" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-48 w-full" />
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-4 w-full" />
+          ))}
         </CardContent>
       </Card>
     )
@@ -95,127 +40,209 @@ export function CompanyProfile({
 
   if (error || !data) {
     return (
-      <Card className={cn('w-full', className)}>
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Company Profile
-          </CardTitle>
-          <CardDescription>Company information and business description</CardDescription>
+          <CardTitle>Company Profile</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-500">{error || 'No company data available'}</p>
+          <p className="text-sm text-red-500">{error || 'No data available'}</p>
         </CardContent>
       </Card>
     )
   }
 
+  const formatCurrency = (value: number | undefined) => {
+    if (value === undefined || value === null) return 'N/A'
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value)
+  }
+
+  const formatNumber = (value: number | undefined) => {
+    if (value === undefined || value === null) return 'N/A'
+    return new Intl.NumberFormat('en-US').format(value)
+  }
+
   return (
-    <Card className={cn('w-full', className)}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              {data.name}
-              {symbol && <Badge variant="outline">{symbol}</Badge>}
-            </CardTitle>
-            <CardDescription>{data.sector} · {data.industry}</CardDescription>
+    <Card>
+      <CardHeader>
+        <div className="flex items-start gap-4">
+          <Avatar className="h-16 w-16">
+            <AvatarImage src={data.image} alt={data.companyName} />
+            <AvatarFallback>{data.symbol.slice(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-xl">{data.companyName}</CardTitle>
+              <Badge variant="secondary">{data.exchange}</Badge>
+              <Badge variant="outline">{data.sector}</Badge>
+            </div>
+            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+              <span className="font-mono font-medium">{data.symbol}</span>
+              {data.industry && <span>• {data.industry}</span>}
+            </div>
           </div>
-          <Button variant="outline" size="sm">
-            <FileText className="h-4 w-4 mr-2" />
-            SEC Filings
-          </Button>
+          {data.url && (
+            <Button variant="ghost" size="sm" asChild>
+              <a href={data.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Website
+              </a>
+            </Button>
+          )}
         </div>
       </CardHeader>
-
       <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="statistics">Statistics</TabsTrigger>
-            <TabsTrigger value="management">Management</TabsTrigger>
+            <TabsTrigger value="officers">Officers</TabsTrigger>
+            <TabsTrigger value="peers">Peers</TabsTrigger>
+            <TabsTrigger value="targets">Price Targets</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="mt-4 space-y-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {data.description || 'No company description available.'}
-            </p>
-
-            <Separator />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <InfoRow icon={MapPin} label="Headquarters" value={data.headquarters} />
-                <InfoRow icon={Globe} label="Website" value={data.website} href={data.website} />
-                <InfoRow icon={Calendar} label="Founded" value={data.founded ? String(data.founded) : undefined} />
-                <InfoRow icon={Factory} label="Industry" value={data.industry} />
+          <TabsContent value="overview" className="mt-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              {data.description && (
+                <div className="md:col-span-2">
+                  <h4 className="text-sm font-medium mb-2">Description</h4>
+                  <p className="text-sm text-muted-foreground">{data.description}</p>
+                </div>
+              )}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Details</h4>
+                <div className="grid gap-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">CEO:</span>
+                    <span className="font-medium">{data.ceo || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Employees:</span>
+                    <span className="font-medium">{formatNumber(data.employees)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Headquarters:</span>
+                    <span className="font-medium">{data.city}, {data.state} {data.country}</span>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-1">
-                <InfoRow icon={DollarSign} label="Exchange" value={data.exchange} />
-                <InfoRow icon={DollarSign} label="Currency" value={data.currency} />
-                <InfoRow icon={Calendar} label="Fiscal Year" value={data.fiscalYearEnd} />
-                <InfoRow icon={Users} label="Employees" value={data.employees ? `${data.employees.toLocaleString()}` : undefined} />
-              </div>
+              {data.market && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium">Market</h4>
+                  <div className="grid gap-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Market Cap:</span>
+                      <span className="font-medium">{formatCurrency(data.market.marketCap)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">Shares Outstanding:</span>
+                      <span className="font-medium">{formatNumber(data.market.sharesOutstanding)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">EPS:</span>
+                      <span className="font-medium">{formatCurrency(data.market.eps)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </TabsContent>
 
-          <TabsContent value="statistics" className="mt-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-muted/30 rounded-lg">
-                <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="text-xs">Market Cap</span>
-                </div>
-                <div className="text-lg font-semibold">{formatLargeNumber(data.marketCap)}</div>
+          <TabsContent value="officers" className="mt-4">
+            {data.officers && data.officers.length > 0 ? (
+              <div className="space-y-3">
+                {data.officers.map((officer: CompanyOfficer, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{officer.name}</p>
+                      <p className="text-sm text-muted-foreground">{officer.title}</p>
+                    </div>
+                    {officer.pay && (
+                      <p className="text-sm font-medium">{formatCurrency(officer.pay)}</p>
+                    )}
+                  </div>
+                ))}
               </div>
-
-              <div className="text-center p-4 bg-muted/30 rounded-lg">
-                <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="text-xs">P/E Ratio</span>
-                </div>
-                <div className="text-lg font-semibold">{data.peRatio?.toFixed(2) || 'N/A'}</div>
-              </div>
-
-              <div className="text-center p-4 bg-muted/30 rounded-lg">
-                <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="text-xs">Dividend Yield</span>
-                </div>
-                <div className="text-lg font-semibold">
-                  {data.dividendYield ? `${data.dividendYield.toFixed(2)}%` : 'N/A'}
-                </div>
-              </div>
-
-              <div className="text-center p-4 bg-muted/30 rounded-lg">
-                <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="text-xs">Beta</span>
-                </div>
-                <div className="text-lg font-semibold">{data.beta?.toFixed(2) || 'N/A'}</div>
-              </div>
-            </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No officer data available</p>
+            )}
           </TabsContent>
 
-          <TabsContent value="management" className="mt-4">
-            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Users className="h-6 w-6 text-primary" />
+          <TabsContent value="peers" className="mt-4">
+            {data.peers && data.peers.length > 0 ? (
+              <div className="grid gap-2">
+                {data.peers.map((peer: CompanyPeer, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="text-xs">{peer.symbol.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{peer.companyName}</p>
+                        <p className="text-sm text-muted-foreground">{peer.symbol}</p>
+                      </div>
+                    </div>
+                    {peer.marketCap && (
+                      <Badge variant="secondary">{formatCurrency(peer.marketCap)}</Badge>
+                    )}
+                  </div>
+                ))}
               </div>
-              <div>
-                <div className="font-semibold">{data.ceo || 'CEO'}</div>
-                <div className="text-sm text-muted-foreground">Chief Executive Officer</div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No peer data available</p>
+            )}
+          </TabsContent>
+
+          <TabsContent value="targets" className="mt-4">
+            {data.targets && data.targets.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">Number of Analysts</p>
+                    <p className="text-2xl font-bold">{data.targets.length}</p>
+                  </div>
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">Median Target</p>
+                    <p className="text-2xl font-bold">{formatCurrency(data.targets.reduce((acc, t) => acc + (t.targetMedian || 0), 0) / data.targets.length)}</p>
+                  </div>
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">High Target</p>
+                    <p className="text-2xl font-bold text-green-600">{formatCurrency(Math.max(...data.targets.map((t) => t.targetHigh || 0)))}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {data.targets.map((target, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{target.analystName}</p>
+                        <p className="text-sm text-muted-foreground">{target.updatedDate}</p>
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">Target</p>
+                          <p className="font-medium">{formatCurrency(target.targetMedian)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">Rating</p>
+                          <p className="font-medium">{target.rating}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No price target data available</p>
+            )}
           </TabsContent>
         </Tabs>
-
-        <div className="mt-4 pt-4 border-t">
-          <p className="text-xs text-muted-foreground text-center">
-            Last updated: {data.lastUpdated || 'N/A'}
-          </p>
-        </div>
       </CardContent>
     </Card>
   )
