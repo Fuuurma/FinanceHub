@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ArrowUpDown, ArrowUp, ArrowDown, Search, Columns, ChevronLeft, ChevronRight, Copy, Download, FileJson, FileSpreadsheet, FileText, File, Rows, Maximize2, Minimize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useDownload } from '@/hooks/useDownload'
 
 export type SortDirection = 'asc' | 'desc'
 export type Density = 'compact' | 'normal' | 'spacious'
@@ -146,6 +147,21 @@ export function DataTable<T extends Record<string, any>>({
     spacious: 'py-4',
   }
 
+  const { download, state } = useDownload()
+
+  const copyToClipboard = useCallback(async () => {
+    const headers = visibleColumnsList.map((c) => c.label).join('\t')
+    const rows = filteredData.map((item) =>
+      visibleColumnsList.map((col) => {
+        const value = item[col.key]
+        const rendered = col.render ? col.render(value, item) : value
+        return typeof rendered === 'string' ? rendered : String(rendered ?? '')
+      }).join('\t')
+    ).join('\n')
+    const text = `${headers}\n${rows}`
+    await navigator.clipboard.writeText(text)
+  }, [filteredData, visibleColumnsList])
+
   const exportToCSV = useCallback(() => {
     const headers = visibleColumnsList.map((c) => c.label).join(',')
     const rows = filteredData.map((item) =>
@@ -160,8 +176,9 @@ export function DataTable<T extends Record<string, any>>({
       }).join(',')
     ).join('\n')
     const csv = `${headers}\n${rows}`
-    downloadFile(csv, `${exportFilename}.csv`, 'text/csv')
-  }, [filteredData, visibleColumnsList, exportFilename])
+    const timestamp = new Date().toISOString().split('T')[0]
+    download(csv, { filename: `${exportFilename}_${timestamp}.csv`, mimeType: 'text/csv' })
+  }, [filteredData, visibleColumnsList, exportFilename, download])
 
   const exportToJSON = useCallback(() => {
     const jsonData = filteredData.map((item) => {
@@ -173,8 +190,9 @@ export function DataTable<T extends Record<string, any>>({
       return row
     })
     const json = JSON.stringify(jsonData, null, 2)
-    downloadFile(json, `${exportFilename}.json`, 'application/json')
-  }, [filteredData, visibleColumnsList, exportFilename])
+    const timestamp = new Date().toISOString().split('T')[0]
+    download(json, { filename: `${exportFilename}_${timestamp}.json`, mimeType: 'application/json' })
+  }, [filteredData, visibleColumnsList, exportFilename, download])
 
   const exportToExcel = useCallback(() => {
     const headers = visibleColumnsList.map((c) => c.label).join('\t')
@@ -186,8 +204,9 @@ export function DataTable<T extends Record<string, any>>({
       }).join('\t')
     ).join('\n')
     const tsv = `${headers}\n${rows}`
-    downloadFile(tsv, `${exportFilename}.tsv`, 'text/tab-separated-values')
-  }, [filteredData, visibleColumnsList, exportFilename])
+    const timestamp = new Date().toISOString().split('T')[0]
+    download(tsv, { filename: `${exportFilename}_${timestamp}.xls`, mimeType: 'application/vnd.ms-excel' })
+  }, [filteredData, visibleColumnsList, exportFilename, download])
 
   const exportToPDF = useCallback(() => {
     const headers = ['#', ...visibleColumnsList.map((c) => c.label)]
@@ -200,34 +219,17 @@ export function DataTable<T extends Record<string, any>>({
       }),
     ])
 
-    const csv = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
-    downloadFile(csv, `${exportFilename}.pdf.csv`, 'text/csv')
-  }, [filteredData, visibleColumnsList, exportFilename])
+    let csv = headers.join(',') + '\n'
+    csv += rows.map((row) => row.map((cell) => {
+      const cellStr = String(cell)
+      return cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')
+        ? `"${cellStr.replace(/"/g, '""')}"`
+        : cellStr
+    }).join(',')).join('\n')
 
-  const copyToClipboard = useCallback(() => {
-    const headers = visibleColumnsList.map((c) => c.label).join('\t')
-    const rows = filteredData.map((item) =>
-      visibleColumnsList.map((col) => {
-        const value = item[col.key]
-        const rendered = col.render ? col.render(value, item) : value
-        return typeof rendered === 'string' ? rendered : String(rendered ?? '')
-      }).join('\t')
-    ).join('\n')
-    const text = `${headers}\n${rows}`
-    navigator.clipboard.writeText(text)
-  }, [filteredData, visibleColumnsList])
-
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
+    const timestamp = new Date().toISOString().split('T')[0]
+    download(csv, { filename: `${exportFilename}_${timestamp}.csv`, mimeType: 'text/csv' })
+  }, [filteredData, visibleColumnsList, exportFilename, download])
 
   const SortIcon = ({ column }: { column: Column<T> }) => {
     const key = String(column.key)

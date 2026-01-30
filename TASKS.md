@@ -809,7 +809,7 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 ## Original Tasks (In Progress)
 | # | Task | Component | Priority | Status | Path |
 |---|------|-----------|----------|--------|------|
-| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `EXISTS - ENHANCE` | Has CSV/JSON/Excel |
+| 1 | DataTable Export | components/ui/data-table.tsx | P0 | `COMPLETED` ✅ | Enhanced with useDownload hook, timestamped exports |
 | 3 | AdvancedChart | components/charts/AdvancedChart.tsx | P0 | `COMPLETED` ✅ | 680 lines |
 | 4 | MarketHeatmap | components/charts/MarketHeatmap.tsx | P0 | `COMPLETED` ✅ | 527 lines |
 | 11 | PricePrediction | components/ai/PricePrediction.tsx | P2 | `COMPLETED` ✅ | 320 lines |
