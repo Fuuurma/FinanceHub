@@ -35,6 +35,7 @@ import PortfolioOverview from '@/components/portfolio/PortfolioOverview'
 import HoldingsTable from '@/components/portfolio/HoldingsTable'
 import PortfolioPerformance from '@/components/portfolio/PortfolioPerformance'
 import TransactionsList from '@/components/portfolio/TransactionsList'
+import { PortfolioSwitcher } from '@/components/portfolio/PortfolioSwitcher'
 
 export default function PortfoliosPage() {
   const {
@@ -174,20 +175,9 @@ export default function PortfoliosPage() {
         </Card>
       )}
 
-      {/* Portfolio Selector */}
+      {/* Portfolio Switcher */}
       {portfolios.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {portfolios.map((portfolio) => (
-            <Button
-              key={portfolio.id}
-              variant={selectedPortfolioId === portfolio.id ? 'default' : 'outline'}
-              onClick={() => selectPortfolio(portfolio.id)}
-              className="whitespace-nowrap"
-            >
-              {portfolio.name}
-            </Button>
-          ))}
-        </div>
+        <PortfolioSwitcher />
       )}
 
       {/* No Portfolio State */}

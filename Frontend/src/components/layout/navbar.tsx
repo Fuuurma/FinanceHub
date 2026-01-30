@@ -1,18 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Search, User, LogOut, ShieldAlert, Settings, Moon, Sun, PanelLeft, Menu } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { CommandPalette } from '../search/command-palette'
 import { SignalCenter } from './navbar/signal-center'
-import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarTrigger } from '@/components/ui/sidebar'
 
 export function Navbar() {
   const { setTheme, theme } = useTheme()
   const [commandOpen, setCommandOpen] = useState(false)
-  const { isMobile } = useSidebar()
 
   return (
     <>

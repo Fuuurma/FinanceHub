@@ -1,7 +1,7 @@
 // app/(dashboard)/layout.tsx
 'use client'
 
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/sidebar"
 import { Navbar } from "@/components/layout/navbar"
 import { RightSidebar } from "@/components/layout/right-sidebar"

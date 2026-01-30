@@ -375,10 +375,10 @@ export default function AssetDetailPage() {
       {/* Comprehensive Data Collapsible */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-base flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Comprehensive Data
-            <Badge variant="outline" className="text-xs">12 Sections</Badge>
+            <Badge variant="outline" className="text-xs">32 Sections</Badge>
           </CardTitle>
           <CardDescription>Expand for detailed analysis</CardDescription>
         </CardHeader>
@@ -399,6 +399,188 @@ export default function AssetDetailPage() {
               ]
             },
             {
+              id: 'adv-technicals',
+              title: 'Advanced Technicals',
+              items: [
+                { label: 'RSI (14)', value: '58.4', good: true },
+                { label: 'MACD', value: '1.2', good: true },
+                { label: 'ATR (14)', value: '2.15', good: true },
+                { label: 'Williams %R', value: '-45.2', good: true },
+                { label: 'Stochastic %K', value: '68.5', good: true },
+                { label: 'CCI (20)', value: '85.2', good: true },
+                { label: 'MFI (14)', value: '72.1', good: false },
+                { label: 'OBV', value: '+2.1B', good: true },
+              ]
+            },
+            {
+              id: 'options-flow',
+              title: 'Options Activity',
+              items: [
+                { label: 'Put/Call Ratio', value: '0.65', good: true },
+                { label: 'IV Rank', value: '22.5', good: true },
+                { label: 'IV Percentile', value: '45.2', good: true },
+                { label: '30D Implied Vol', value: '22.5%', good: true },
+                { label: 'Options Volume', value: '845K', good: true },
+                { label: 'Open Interest', value: '4.2M', good: true },
+                { label: 'Max Pain', value: '$175.00', good: true },
+                { label: 'Unusual Activity', value: '3 alerts', good: false },
+              ]
+            },
+            {
+              id: 'institutional',
+              title: 'Institutional Activity',
+              items: [
+                { label: 'Inst. Ownership', value: '61.2%', good: true },
+                { label: 'Total Institutions', value: '5,421', good: true },
+                { label: 'Inst. Shares', value: '9.59B', good: true },
+                { label: 'Q4 Change', value: '+125M', good: true },
+                { label: 'Insider Ownership', value: '0.08%', good: false },
+                { label: 'Short Interest', value: '125.5M', good: true },
+                { label: 'Days to Cover', value: '0.98', good: true },
+                { label: 'Short Float %', value: '0.8%', good: true },
+              ]
+            },
+            {
+              id: 'risk-metrics',
+              title: 'Risk Metrics',
+              items: [
+                { label: 'Beta (5Y)', value: '1.28', good: false },
+                { label: 'Alpha', value: '2.45', good: true },
+                { label: 'Sharpe Ratio', value: '1.85', good: true },
+                { label: 'Sortino Ratio', value: '2.42', good: true },
+                { label: 'Treynor Ratio', value: '14.2', good: true },
+                { label: 'Max Drawdown', value: '-12.5%', good: false },
+                { label: 'Value at Risk', value: '-3.2%', good: true },
+                { label: 'Correlation SPY', value: '0.72', good: true },
+              ]
+            },
+            {
+              id: 'sector-comp',
+              title: 'Sector Comparison',
+              items: [
+                { label: 'vs Sector Avg P/E', value: '+5.2%', good: true },
+                { label: 'vs Sector Growth', value: '+2.1%', good: true },
+                { label: 'Sector Rank', value: '#1 of 45', good: true },
+                { label: 'Industry Rank', value: '#1 of 12', good: true },
+                { label: 'Market Share', value: '28.5%', good: true },
+                { label: 'Peer Avg P/E', value: '32.1', good: true },
+                { label: 'Peer Avg Margin', value: '22.8%', good: true },
+                { label: 'Relative Strength', value: '72.4', good: true },
+              ]
+            },
+            {
+              id: 'social-sentiment',
+              title: 'Social Sentiment',
+              items: [
+                { label: 'Twitter Score', value: '72/100', good: true },
+                { label: 'Reddit Mentions', value: '2,450', good: true },
+                { label: 'WallStreetBets', value: 'Mixed', good: true },
+                { label: 'News Sentiment', value: '68/100', good: true },
+                { label: 'Analyst Sentiment', value: 'Bullish', good: true },
+                { label: 'Social Volume', value: '+45%', good: true },
+                { label: 'Influencer Opinions', value: '8 Buy', good: true },
+                { label: 'Google Trends', value: '85/100', good: true },
+              ]
+            },
+            {
+              id: 'supply-chain',
+              title: 'Supply Chain',
+              items: [
+                { label: 'Major Suppliers', value: '12 key', good: true },
+                { label: 'Supplier Concentration', value: 'Low', good: true },
+                { label: 'Geographic Mfg', value: 'China 85%', good: false },
+                { label: 'Lead Time Risk', value: 'Medium', good: false },
+                { label: 'Customer Concentration', value: 'Moderate', good: true },
+                { label: 'Top Customer', value: '15.2%', good: true },
+                { label: 'Diversification', value: 'Good', good: true },
+                { label: 'Supply Chain Score', value: 'B+', good: true },
+              ]
+            },
+            {
+              id: 'events',
+              title: 'Event Calendar',
+              items: [
+                { label: 'Next Earnings', value: 'May 1, 2024', good: true },
+                { label: 'Earnings Conf', value: 'TBD', good: false },
+                { label: 'Dividend Ex-Date', value: 'May 10, 2024', good: true },
+                { label: 'Shareholder Mtg', value: 'May 15, 2024', good: true },
+                { label: 'Product Launch', value: 'Sep 2024', good: true },
+                { label: 'Conference', value: 'Mar 15, 2024', good: true },
+                { label: 'Analyst Day', value: 'TBD', good: false },
+                { label: 'SEC 10-K Deadline', value: 'Dec 31, 2024', good: true },
+              ]
+            },
+            {
+              id: 'macro',
+              title: 'Macro Sensitivity',
+              items: [
+                { label: 'Interest Rate Sens', value: '-0.15', good: true },
+                { label: 'USD Sensitivity', value: '-0.25', good: true },
+                { label: 'Oil Sensitivity', value: '+0.05', good: true },
+                { label: 'China Exposure', value: '18.5%', good: true },
+                { label: 'Europe Exposure', value: '24.2%', good: true },
+                { label: 'Inflation Impact', value: 'Moderate', good: true },
+                { label: 'Recession Beta', value: '1.05', good: false },
+                { label: 'Economic Moat', value: 'Wide', good: true },
+              ]
+            },
+            {
+              id: 'esg-detail',
+              title: 'ESG & Impact',
+              items: [
+                { label: 'ESG Score', value: '72/100', good: true },
+                { label: 'Carbon Footprint', value: '12.5M tons', good: false },
+                { label: 'Renewable Energy', value: '65%', good: true },
+                { label: 'Water Usage', value: '2.1B gal', good: true },
+                { label: 'Diversity Score', value: '78/100', good: true },
+                { label: 'Board Independence', value: '92%', good: true },
+                { label: 'Executive Pay', value: 'Ratio 245:1', good: false },
+                { label: 'Political Donations', value: '$2.4M', good: true },
+              ]
+            },
+            {
+              id: 'products',
+              title: 'Product Details',
+              items: [
+                { label: 'iPhone Revenue', value: '52.3%', good: true },
+                { label: 'Services Revenue', value: '22.1%', good: true },
+                { label: 'Mac Revenue', value: '8.4%', good: true },
+                { label: 'iPad Revenue', value: '6.2%', good: true },
+                { label: 'Wearables Revenue', value: '5.1%', good: true },
+                { label: 'R&D Spend', value: '$30.2B', good: true },
+                { label: 'Patents', value: '24,500', good: true },
+                { label: 'Brand Value', value: '$483B', good: true },
+              ]
+            },
+            {
+              id: 'valuation-advanced',
+              title: 'Advanced Valuation',
+              items: [
+                { label: 'DCF Value', value: '$195.40', good: true },
+                { label: 'NAV (Net Assets)', value: '$48.20', good: true },
+                { label: 'Liquidation Value', value: '$42.50', good: true },
+                { label: 'Replacement Cost', value: '$155.80', good: true },
+                { label: 'Tangible Book', value: '$3.96', good: true },
+                { label: 'Graham Number', value: '$142.30', good: true },
+                { label: 'EPV (Earnings Power)', value: '$168.50', good: true },
+                { label: 'Peter Lynch Value', value: '$188.75', good: true },
+              ]
+            },
+            {
+              id: 'forecast',
+              title: 'Forecasts & Projections',
+              items: [
+                { label: 'Next Year EPS', value: '$6.85', good: true },
+                { label: 'Next Year Revenue', value: '$405.2B', good: true },
+                { label: '5Y Revenue CAGR', value: '7.2%', good: true },
+                { label: '5Y EPS CAGR', value: '9.8%', good: true },
+                { label: 'Long-term Growth', value: '11.5%', good: true },
+                { label: 'Analyst Price Target', value: '$210.00', good: true },
+                { label: 'Upside Potential', value: '+17.5%', good: true },
+                { label: 'Confidence Level', value: 'High', good: true },
+              ]
+            },
+            {
               id: 'profitability',
               title: 'Profitability Metrics',
               items: [
@@ -409,8 +591,176 @@ export default function AssetDetailPage() {
               ]
             },
             {
+              id: 'analyst-detail',
+              title: 'Analyst Breakdown',
+              items: [
+                { label: 'Strong Buy', value: '18 analysts', good: true },
+                { label: 'Buy', value: '12 analysts', good: true },
+                { label: 'Hold', value: '7 analysts', good: false },
+                { label: 'Sell', value: '1 analyst', good: false },
+                { label: 'Mean Rating', value: '1.52', good: true },
+                { label: 'Median Target', value: '$210.00', good: true },
+                { label: 'High Target', value: '$250.00', good: true },
+                { label: 'Low Target', value: '$175.00', good: false },
+              ]
+            },
+            {
+              id: 'dividend-detail',
+              title: 'Dividend Analysis',
+              items: [
+                { label: 'Dividend Yield', value: '0.52%', good: false },
+                { label: 'Annual Dividend', value: '$0.96', good: true },
+                { label: 'Payout Ratio', value: '15.2%', good: true },
+                { label: 'Dividend Growth', value: '+5.2%', good: true },
+                { label: '5Y Dividend CAGR', value: '8.5%', good: true },
+                { label: 'Years of Growth', value: '12', good: true },
+                { label: 'Yield vs Sector', value: '-0.8%', good: false },
+                { label: 'Yield vs S&P 500', value: '-1.2%', good: false },
+              ]
+            },
+            {
+              id: 'patterns',
+              title: 'Chart Patterns',
+              items: [
+                { label: 'Current Pattern', value: 'Ascending Triangle', good: true },
+                { label: 'Trend', value: 'Uptrend', good: true },
+                { label: 'Support Level', value: '$175.00', good: true },
+                { label: 'Resistance Level', value: '$182.50', good: true },
+                { label: '52W Position', value: 'Top 15%', good: true },
+                { label: 'Pattern Strength', value: 'Strong', good: true },
+                { label: 'Breakout Target', value: '$188.00', good: true },
+                { label: 'Stop Loss Level', value: '$172.00', good: true },
+              ]
+            },
+            {
+              id: 'volatility',
+              title: 'Volatility Metrics',
+              items: [
+                { label: 'Historical Vol (30D)', value: '22.5%', good: true },
+                { label: 'Implied Vol (30D)', value: '24.2%', good: false },
+                { label: 'IV Rank', value: '22.5%', good: true },
+                { label: 'IV Percentile', value: '45.2%', good: true },
+                { label: 'Volatility Index', value: '18.5', good: true },
+                { label: 'Beta (1Y)', value: '1.28', good: false },
+                { label: 'Correlation VIX', value: '0.45', good: true },
+                { label: 'Realized Vol', value: '21.8%', good: true },
+              ]
+            },
+            {
+              id: 'momentum',
+              title: 'Momentum Indicators',
+              items: [
+                { label: 'RSI (14)', value: '58.4', good: true },
+                { label: 'MFI (14)', value: '72.1', good: false },
+                { label: 'ROC (125)', value: '+2.5%', good: true },
+                { label: 'Williams %R', value: '-45.2', good: true },
+                { label: 'CCI (20)', value: '85.2', good: true },
+                { label: 'Stochastic %K', value: '68.5', good: true },
+                { label: 'MACD Signal', value: 'Bullish', good: true },
+                { label: 'Trend Strength', value: 'Strong', good: true },
+              ]
+            },
+            {
+              id: 'ownership-detail',
+              title: 'Ownership Structure',
+              items: [
+                { label: 'Vanguard Group', value: '8.12%', good: true },
+                { label: 'BlackRock', value: '4.56%', good: true },
+                { label: 'State Street', value: '3.89%', good: true },
+                { label: 'Berkshire Hathaway', value: '5.92%', good: true },
+                { label: 'Insiders', value: '0.08%', good: false },
+                { label: 'Retail', value: '38.72%', good: true },
+                { label: 'Total Holders', value: '5,421', good: true },
+                { label: 'Held by Insiders', value: 'No', good: false },
+              ]
+            },
+            {
+              id: 'insider-trading',
+              title: 'Insider Activity',
+              items: [
+                { label: 'Insider Ownership', value: '0.08%', good: false },
+                { label: 'Insider Trades (3M)', value: '12', good: true },
+                { label: 'Buy Orders', value: '8', good: true },
+                { label: 'Sell Orders', value: '4', good: true },
+                { label: 'Net Activity', value: '+125K shares', good: true },
+                { label: 'CEO Buys (1Y)', value: '3', good: true },
+                { label: 'CFO Buys (1Y)', value: '2', good: true },
+                { label: 'Insider Sentiment', value: 'Bullish', good: true },
+              ]
+            },
+            {
+              id: 'short-interest',
+              title: 'Short Interest Data',
+              items: [
+                { label: 'Short Interest', value: '125.5M shares', good: true },
+                { label: 'Short Float %', value: '0.8%', good: true },
+                { label: 'Days to Cover', value: '0.98', good: true },
+                { label: 'Short Change (1M)', value: '-2.1%', good: true },
+                { label: 'Cost to Borrow', value: '0.15%', good: false },
+                { label: 'Utilization', value: 'Low', good: true },
+                { label: 'Short Squeeze Risk', value: 'Low', good: true },
+                { label: 'Avg Daily Vol', value: '52.3M', good: true },
+              ]
+            },
+            {
+              id: 'peer-analysis',
+              title: 'Peer Comparison',
+              items: [
+                { label: 'vs MSFT', value: '+12.5%', good: true },
+                { label: 'vs GOOGL', value: '+18.2%', good: true },
+                { label: 'vs META', value: '+22.5%', good: true },
+                { label: 'vs AMZN', value: '+8.5%', good: true },
+                { label: 'vs TSLA', value: '+35.2%', good: true },
+                { label: 'vs NVDA', value: '+5.8%', good: true },
+                { label: 'Sector Average', value: '+7.8%', good: true },
+                { label: 'S&P 500', value: '+2.5%', good: true },
+              ]
+            },
+            {
+              id: 'financial-ratios',
+              title: 'Financial Health',
+              items: [
+                { label: 'Current Ratio', value: '0.98', good: false },
+                { label: 'Quick Ratio', value: '0.85', good: false },
+                { label: 'Debt/Equity', value: '1.87', good: false },
+                { label: 'Interest Coverage', value: '29.5', good: true },
+                { label: 'Cash Ratio', value: '0.22', good: false },
+                { label: 'Debt/EBITDA', value: '1.85', good: true },
+                { label: 'Net Debt/EBITDA', value: '1.42', good: true },
+                { label: 'Interest Burden', value: '4.2%', good: true },
+              ]
+            },
+            {
+              id: 'cash-flow-detail',
+              title: 'Cash Flow Analysis',
+              items: [
+                { label: 'Operating CF', value: '$110.5B', good: true },
+                { label: 'CapEx', value: '-$10.9B', good: false },
+                { label: 'Free Cash Flow', value: '$99.6B', good: true },
+                { label: 'FCF Margin', value: '26.0%', good: true },
+                { label: 'FCF Conversion', value: '102.7%', good: true },
+                { label: 'CapEx/Sales', value: '2.8%', good: true },
+                { label: 'Dividend Payout', value: '15.2%', good: true },
+                { label: 'Buyback Yield', value: '3.2%', good: true },
+              ]
+            },
+            {
+              id: 'growth-detail',
+              title: 'Growth Analysis',
+              items: [
+                { label: 'Revenue Growth (YoY)', value: '-2.8%', good: false },
+                { label: 'EPS Growth (YoY)', value: '-10.5%', good: false },
+                { label: 'Operating Income Growth', value: '-8.2%', good: false },
+                { label: '3Y Revenue CAGR', value: '7.2%', good: true },
+                { label: '3Y EPS CAGR', value: '9.8%', good: true },
+                { label: '3Y FCF CAGR', value: '11.2%', good: true },
+                { label: '5Y Revenue CAGR', value: '5.8%', good: true },
+                { label: '5Y EPS CAGR', value: '8.5%', good: true },
+              ]
+            },
+            {
               id: 'efficiency',
-              title: 'Efficiency Ratios',
+              title: 'Efficiency Metrics',
               items: [
                 { label: 'Asset Turnover', value: '1.08', good: true },
                 { label: 'Inventory Turnover', value: '38.5', good: true },
@@ -506,6 +856,34 @@ export default function AssetDetailPage() {
                 { label: 'Europe', value: '24.8%', good: true },
                 { label: 'Greater China', value: '18.9%', good: true },
                 { label: 'Japan', value: '6.8%', good: true },
+              ]
+            },
+            {
+              id: 'geographic-detail',
+              title: 'Geographic Revenue',
+              items: [
+                { label: 'Americas', value: '42.5%', good: true },
+                { label: 'Europe', value: '24.8%', good: true },
+                { label: 'Greater China', value: '18.9%', good: true },
+                { label: 'Japan', value: '6.8%', good: true },
+                { label: 'Rest of Asia', value: '5.2%', good: true },
+                { label: 'Emerging Markets', value: '1.8%', good: true },
+                { label: 'Diversification', value: 'Good', good: true },
+                { label: 'Exposure Risk', value: 'Moderate', good: true },
+              ]
+            },
+            {
+              id: 'analyst-detail',
+              title: 'Analyst Recommendations',
+              items: [
+                { label: 'Strong Buy', value: '18', good: true },
+                { label: 'Buy', value: '12', good: true },
+                { label: 'Hold', value: '7', good: false },
+                { label: 'Sell', value: '1', good: false },
+                { label: 'Mean Price Target', value: '$210.00', good: true },
+                { label: 'Median Target', value: '$210.00', good: true },
+                { label: 'High Target', value: '$250.00', good: true },
+                { label: 'Low Target', value: '$175.00', good: false },
               ]
             },
             {

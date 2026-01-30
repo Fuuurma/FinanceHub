@@ -9,7 +9,7 @@ import {
   Settings, LogOut, Key, Activity, Zap, Target,
   FileText, Search, History, Cpu, Plus, ArrowRight,
   PieChart, TrendingUp as TrendingUpIcon, DollarSign,
-  BookOpen, Clock, Globe, Cpu as CpuIcon, Radio, User
+  BookOpen, Clock, Globe, Cpu as CpuIcon, Radio, User, ShieldAlert
 } from 'lucide-react'
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarHeader,
@@ -123,12 +123,6 @@ const toolItems: NavItem[] = [
   { title: 'Watchlist', href: '/watchlist', icon: History, shortcut: 'G+W', description: 'Watchlist' },
   { title: 'Alerts', href: '/alerts', icon: Bell, shortcut: 'G+A', description: 'Price alerts', badge: '3' },
   { title: 'Crypto', href: '/crypto', icon: DollarSign, shortcut: 'G+C', description: 'Cryptocurrency data' },
-]
-
-const settingsItems: NavItem[] = [
-  { title: 'Settings', href: '/settings', icon: Settings, description: 'App settings' },
-  { title: 'Account', href: '/settings#account', icon: User, description: 'Account settings' },
-  { title: 'API Keys', href: '/settings#keys', icon: Key, description: 'Manage API keys' },
 ]
 
 function SidebarNavGroup({ items, title, shortcutHint }: { items: NavItem[]; title: string; shortcutHint?: string }) {

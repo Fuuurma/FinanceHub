@@ -1,123 +1,202 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { useMarketStore } from '@/stores/marketStore';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useEffect, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/ui/page-header'
+import { StatsGrid } from '@/components/ui/stats-grid'
+import { PageTabs, TabContent } from '@/components/ui/page-tabs'
+import {
+  Search,
+  TrendingUp,
+  TrendingDown,
+  Newspaper,
+  Building2,
+  RefreshCw,
+} from 'lucide-react'
+
+const MOCK_INDICES = [
+  { name: 'S&P 500', value: 4875.43, change: 1.23 },
+  { name: 'NASDAQ', value: 15234.56, change: 2.45 },
+  { name: 'DOW JONES', value: 38234.12, change: 0.89 },
+  { name: 'FTSE 100', value: 7567.89, change: -0.34 },
+  { name: 'DAX', value: 16789.23, change: 1.56 },
+  { name: 'Nikkei 225', value: 34567.89, change: 0.12 },
+]
+
+const MOCK_SECTORS = [
+  { name: 'Technology', change: 2.34, volume: 'High' },
+  { name: 'Healthcare', change: 1.23, volume: 'Medium' },
+  { name: 'Financials', change: -0.45, volume: 'High' },
+  { name: 'Energy', change: 3.45, volume: 'Low' },
+  { name: 'Consumer', change: 1.56, volume: 'Medium' },
+  { name: 'Industrial', change: 0.89, volume: 'High' },
+]
+
+const MOCK_NEWS = [
+  { title: 'Fed signals potential rate cut in Q2', time: '2 hours ago', sentiment: 'Bullish' },
+  { title: 'Tech stocks surge on AI optimism', time: '4 hours ago', sentiment: 'Bullish' },
+  { title: 'Oil prices stabilize amid supply concerns', time: '6 hours ago', sentiment: 'Neutral' },
+]
 
 export default function MarketOverviewPage() {
-  const { marketData, isLoading, error, fetchMarketData, setTimeRange } = useMarketStore();
-  const timeRanges = ['1D', '1W', '1M', '3M', '1Y', 'ALL'];
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
-    fetchMarketData('stock');
-  }, []);
+    const timer = setTimeout(() => setLoading(false), 600)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const stats = [
+    { title: 'S&P 500', value: 4875.43, change: 1.23, changeLabel: 'today' },
+    { title: 'NASDAQ', value: 15234.56, change: 2.45, changeLabel: 'today' },
+    { title: 'VIX', value: 13.84, change: -3.15, changeLabel: 'volatility' },
+    { title: 'Trading Vol', value: '4.2B', change: 5.2, changeLabel: 'vs avg' },
+  ]
+
+  const tabs = [
+    { value: 'indices', label: 'Indices', icon: Building2 },
+    { value: 'sectors', label: 'Sectors', icon: TrendingUp },
+    { value: 'news', label: 'News', icon: Newspaper },
+  ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Market Overview</h1>
-          <p className="text-muted-foreground">Comprehensive market data and analysis</p>
+      <PageHeader
+        title="Market Overview"
+        description="Comprehensive market data and analysis"
+        loading={loading}
+        onRefresh={() => setLoading(true)}
+        actions={
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search markets..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        }
+      />
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {loading ? (
+        <div className="grid gap-4 md:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
         </div>
-        <div className="flex gap-2">
-          <Input placeholder="Search assets..." className="w-64" />
-        </div>
-      </div>
+      ) : (
+        <StatsGrid stats={stats} />
+      )}
 
-      <div className="flex gap-2">
-        {timeRanges.map((range) => (
-          <Button key={range} variant="outline" size="sm" onClick={() => setTimeRange(range)}>
-            {range}
-          </Button>
-        ))}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Market Indices</CardTitle>
-          <CardDescription>Major market indices performance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {isLoading ? (
-              [...Array(6)].map((_, i) => <Skeleton key={i} className="h-24" />)
-            ) : (
-              [
-                { name: 'S&P 500', value: 4875.43, change: 1.23 },
-                { name: 'NASDAQ', value: 15234.56, change: 2.45 },
-                { name: 'DOW JONES', value: 38234.12, change: 0.89 },
-                { name: 'FTSE 100', value: 7567.89, change: -0.34 },
-                { name: 'DAX', value: 16789.23, change: 1.56 },
-                { name: 'Nikkei 225', value: 34567.89, change: 0.12 },
-              ].map((index) => (
-                <div key={index.name} className="p-4 border rounded-lg">
-                  <div className="font-semibold">{index.name}</div>
-                  <div className="text-2xl font-bold">{index.value.toFixed(2)}</div>
-                  <div className={`text-sm ${index.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)}%
-                  </div>
+      <PageTabs tabs={tabs} defaultValue="indices" tabsClassName="grid w-full grid-cols-3">
+        <TabContent value="indices" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Major Market Indices</CardTitle>
+              <CardDescription>Global market index performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <Skeleton key={i} className="h-24" />
+                  ))}
                 </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Market Sectors</CardTitle>
-          <CardDescription>Performance by sector</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              { name: 'Technology', change: 2.34, volume: 'High' },
-              { name: 'Healthcare', change: 1.23, volume: 'Medium' },
-              { name: 'Financials', change: -0.45, volume: 'High' },
-              { name: 'Energy', change: 3.45, volume: 'Low' },
-              { name: 'Consumer', change: 1.56, volume: 'Medium' },
-              { name: 'Industrial', change: 0.89, volume: 'High' },
-            ].map((sector) => (
-              <div key={sector.name} className="p-4 border rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div className="font-semibold">{sector.name}</div>
-                  <div className={`text-sm ${sector.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {sector.change >= 0 ? '+' : ''}{sector.change.toFixed(2)}%
-                  </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {MOCK_INDICES.map((index) => (
+                    <div key={index.name} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="font-semibold text-muted-foreground text-sm">{index.name}</div>
+                      <div className="text-2xl font-bold mt-1">{index.value.toFixed(2)}</div>
+                      <div className={`text-sm mt-1 ${index.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)}%
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="text-sm text-muted-foreground mt-2">Volume: {sector.volume}</div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
+        </TabContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Market News</CardTitle>
-          <CardDescription>Latest market news and updates</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[
-              { title: 'Fed signals potential rate cut in Q2', time: '2 hours ago', sentiment: 'Bullish' },
-              { title: 'Tech stocks surge on AI optimism', time: '4 hours ago', sentiment: 'Bullish' },
-              { title: 'Oil prices stabilize amid supply concerns', time: '6 hours ago', sentiment: 'Neutral' },
-            ].map((news) => (
-              <div key={news.title} className="p-4 border rounded-lg">
-                <div className="font-semibold">{news.title}</div>
-                <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-                  <span>{news.time}</span>
-                  <span className="font-medium">{news.sentiment}</span>
+        <TabContent value="sectors" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sector Performance</CardTitle>
+              <CardDescription>Daily performance by economic sector</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <Skeleton key={i} className="h-24" />
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {MOCK_SECTORS.map((sector) => (
+                    <div key={sector.name} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <div className="font-semibold">{sector.name}</div>
+                        <Badge variant="outline">{sector.volume}</Badge>
+                      </div>
+                      <div className={`text-xl font-bold mt-2 ${sector.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {sector.change >= 0 ? '+' : ''}{sector.change.toFixed(2)}%
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabContent>
+
+        <TabContent value="news" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Market News</CardTitle>
+              <CardDescription>Latest market news and updates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-24" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {MOCK_NEWS.map((news, idx) => (
+                    <div key={idx} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div className="font-semibold">{news.title}</div>
+                      <div className="flex justify-between mt-2 text-sm text-muted-foreground">
+                        <span>{news.time}</span>
+                        <Badge variant={news.sentiment === 'Bullish' ? 'default' : news.sentiment === 'Bearish' ? 'destructive' : 'secondary'}>
+                          {news.sentiment}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabContent>
+      </PageTabs>
     </div>
-  );
+  )
 }
