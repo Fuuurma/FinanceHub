@@ -189,7 +189,7 @@ export function RealTimeChart({
     if (!seriesRef.current || chartData.length === 0) return
 
     const ohlcData = chartData.map((point) => ({
-      time: (Number(point.time) / 1000) as any,
+      time: (Number(point.time) / 1000) as Time,
       open: point.price,
       high: point.price * (1 + Math.random() * 0.002),
       low: point.price * (1 - Math.random() * 0.002),

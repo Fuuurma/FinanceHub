@@ -19,7 +19,7 @@ export interface RealTimePrice {
   close?: number
 }
 
-export interface Trade {
+export interface RealTimeTrade {
   tradeId: string
   symbol: string
   price: number

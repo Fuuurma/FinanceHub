@@ -30,6 +30,7 @@ import {
   Maximize2,
   Minimize2,
   Activity,
+  CheckCircle,
 } from 'lucide-react'
 import {
   AreaChart,
