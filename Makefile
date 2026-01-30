@@ -409,3 +409,61 @@ smoke-test: ## Run smoke tests
 
 check-health: ## Quick health check
 	@./scripts/health-check.sh
+
+##@ SLO/SLI Monitoring
+
+slo-report: ## Generate SLO/SLI compliance report
+	@echo "$(BLUE)Generating SLO report...$(NC)"
+	@python3 scripts/slo-monitor.py report
+
+slo-monitor: ## Start SLO monitoring loop (1 hour)
+	@echo "$(BLUE)Starting SLO monitoring...$(NC)"
+	@python3 scripts/slo-monitor.py monitor --interval 60 --duration 3600
+
+slo-check: ## Quick SLO compliance check
+	@echo "$(BLUE)Checking SLO compliance...$(NC)"
+	@python3 scripts/slo-monitor.py check
+
+##@ Incident Response
+
+incident-monitor: ## Start automated incident monitoring
+	@echo "$(BLUE)Starting incident monitoring...$(NC)"
+	@./scripts/incident-response.sh monitor
+
+incident-check: ## Single incident check
+	@echo "$(BLUE)Running incident check...$(NC)"
+	@./scripts/incident-response.sh check
+
+incident-report: ## Show incident report
+	@./scripts/incident-response.sh report
+
+##@ Infrastructure Drift Detection
+
+drift-capture: ## Capture infrastructure baseline
+	@echo "$(BLUE)Capturing infrastructure state...$(NC)"
+	@./scripts/drift-detect.sh capture
+
+drift-detect: ## Detect infrastructure drift
+	@echo "$(BLUE)Detecting infrastructure drift...$(NC)"
+	@./scripts/drift-detect.sh detect
+
+drift-summary: ## Show drift summary
+	@./scripts/drift-detect.sh summary
+
+##@ Advanced Operations
+
+auto-remediate: ## Enable auto-remediation and fix issues
+	@echo "$(YELLOW)⚠️  Enabling auto-remediation...$(NC)"
+	@AUTO_FIX=true ./scripts/incident-response.sh remediate
+
+monitor-all: ## Start all monitoring (SLO + incidents)
+	@echo "$(BLUE)Starting comprehensive monitoring...$(NC)"
+	@$(MAKE) -j2 slo-monitor incident-monitor
+
+compliance-check: ## Full compliance check (drift + SLO + health)
+	@echo "$(BLUE)Running compliance check...$(NC)"
+	@echo "=== Health Check ===" && make check-health
+	@echo ""
+	@echo "=== SLO Check ===" && make slo-check
+	@echo ""
+	@echo "=== Drift Detection ===" && make drift-detect
