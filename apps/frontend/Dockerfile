@@ -5,13 +5,13 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY apps/frontend/package*.json ./
+COPY src/package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Copy source code
-COPY apps/frontend/ ./
+COPY src/ ./src/
 
 # Build application
 RUN npm run build

@@ -17,9 +17,9 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements and install Python dependencies
-COPY apps/backend/requirements-testing.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements-testing.txt
+    pip install --no-cache-dir -r requirements.txt
 
 # Production stage
 FROM python:3.11-slim
@@ -41,12 +41,15 @@ RUN useradd -m -u 1000 appuser
 # Set work directory
 WORKDIR /app
 
+# Set work directory
+WORKDIR /app/src
+
 # Copy Python dependencies from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY apps/backend/src/ ./src/
+COPY src/ ./
 
 # Change ownership
 RUN chown -R appuser:appuser /app
