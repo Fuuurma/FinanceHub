@@ -635,8 +635,8 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 | N13 | StressTestPanel | components/risk/StressTestPanel.tsx | P1 | `COMPLETED` ✅ | 320 lines - 8 presets, custom scenarios, VaR breach detection |
 | N14 | PerformanceChart | components/portfolio/PerformanceChart.tsx | P1 | `COMPLETED` ✅ | 280 lines - Interactive chart with value/return views, benchmarks, metrics |
 | N15 | RebalancingTool | components/portfolio/RebalancingTool.tsx | P1 | `IN PROGRESS` | Creating comprehensive rebalancing interface |
-| N16 | InsiderTradingPanel | components/research/InsiderTradingPanel.tsx | P1 | `PENDING` | Create new |
-| N17 | InstitutionalHoldingsPanel | components/research/InstitutionalHoldingsPanel.tsx | P1 | `PENDING` | Create new |
+| N16 | InsiderTradingPanel | components/research/InsiderTradingPanel.tsx | P1 | `COMPLETED` ✅ | 220 lines - Transaction tracking, top insiders, buy/sell summary |
+| N17 | InstitutionalHoldingsPanel | components/research/InstitutionalHoldingsPanel.tsx | P1 | `COMPLETED` ✅ | 280 lines - Institutional holdings, changes, ETF allocations |
 | N18 | CandlestickChart | components/charts/CandlestickChart.tsx | P1 | `COMPLETED` ✅ | 200 lines |
 | N19 | LineChart | components/charts/LineChart.tsx | P1 | `COMPLETED` ✅ | 180 lines |
 | N20 | AreaChart | components/charts/AreaChart.tsx | P1 | `COMPLETED` ✅ | 180 lines |
