@@ -129,7 +129,7 @@ export function DividendHistory({ symbol = 'AAPL', className }: DividendHistoryP
       d.type,
       d.declaredDate || '',
     ])
-    downloadCSV(rows, `${symbol}_dividend_history`, headers)
+    downloadCSV(rows, `${symbol}_dividend_history`)
   }
 
   const handleExportJSON = () => {

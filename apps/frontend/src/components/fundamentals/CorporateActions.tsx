@@ -162,7 +162,7 @@ export function CorporateActions({ symbol = 'AAPL', className }: CorporateAction
       a.recordDate || '',
       a.targetCompany || '',
     ])
-    downloadCSV(rows, `${symbol}_corporate_actions`, headers)
+    downloadCSV(rows, `${symbol}_corporate_actions`)
   }
 
   const handleExportJSON = () => {
