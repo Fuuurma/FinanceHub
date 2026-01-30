@@ -34,3 +34,11 @@ export { useDebounce, useDebouncedCallback, useDebouncedValue } from './useDebou
 export { useInterval } from './useInterval'
 
 export { useThrottle, useThrottledValue, useThrottledCallback } from './useThrottle'
+
+export { useClipboard } from './useClipboard'
+
+export { useClickOutside } from './useClickOutside'
+
+export { usePrevious } from './usePrevious'
+
+export { useKeyPress, useKeysPressed } from './useKeyPress'
