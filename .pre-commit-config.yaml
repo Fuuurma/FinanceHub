@@ -1,0 +1,99 @@
+# Pre-commit hooks for FinanceHub
+# Install with: pre-commit install
+
+repos:
+  # Backend - Python
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: ['--check', '--diff']
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--check-only', '--diff']
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ['--max-line-length=100', '--extend-ignore=E203']
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [django-stubs, types-requests]
+        args: ['--ignore-missing-imports']
+
+  # Frontend - TypeScript/JavaScript
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.56.0
+    hooks:
+      - id: eslint
+        files: \.(ts|tsx|js|jsx)$
+        types: [file]
+        additional_dependencies:
+          - eslint@8.56.0
+          - '@typescript-eslint/parser@6.18.1'
+          - '@typescript-eslint/eslint-plugin@6.18.1'
+          - eslint-config-next@14.2.5
+
+  # General
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+
+  # Security
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml']
+        additional_dependencies: ['bandit[toml]']
+        files: ^Backend/src/
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package.lock.json
+
+  # Docker
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: ['--ignore', 'DL3008', '--ignore', 'DL3013']
+
+  # Custom hooks
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest check
+        entry: cd Backend/src && pytest --tb=short -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: typecheck-check
+        name: TypeScript check
+        entry: cd Frontend && npx tsc --noEmit
+        language: system
+        pass_filenames: false
+        always_run: true

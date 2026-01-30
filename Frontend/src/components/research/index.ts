@@ -1,4 +1,5 @@
 export { AnalystRatings } from './AnalystRatings'
+export { InsiderTradingPanel, type InsiderTransaction, type InsiderTransactionType, type InsiderTradingSummary } from './InsiderTradingPanel'
 export type {
   AnalystRating,
   RatingConsensus,
