@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import {
   LineChart,
   TrendingUp,
@@ -27,7 +28,7 @@ import {
 import { assetsApi } from '@/lib/api/assets'
 import { IndicatorConfig } from '@/lib/utils/technical-indicators'
 
-export default function AdvancedChartsPage() {
+function AdvancedChartsPageContent() {
   const [symbol, setSymbol] = useState('AAPL')
   const [timeframe, setTimeframe] = useState<Timeframe>('1d')
   const [chartType, setChartType] = useState<ChartType>('candlestick')
@@ -444,5 +445,17 @@ export default function AdvancedChartsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+export default function AdvancedChartsPage() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Advanced Charts page error:', error, errorInfo)
+      }}
+    >
+      <AdvancedChartsPageContent />
+    </PageErrorBoundary>
   )
 }
