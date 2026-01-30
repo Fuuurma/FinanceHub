@@ -4,9 +4,9 @@ import { useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, RotateCcw, Play, RefreshCw, Clock } from 'lucide-react'
-import { FilterPanel } from '@/components/screener/FilterPanel'
-import { ResultsPanel } from '@/components/screener/ResultsPanel'
+import { Loader2, RotateCcw, Play, Clock } from 'lucide-react'
+import { ScreenerFilter } from '@/components/screener/ScreenerFilter'
+import { ScreenerResults } from '@/components/screener/ScreenerResults'
 import { useScreenerStore } from '@/stores/screenerStore'
 
 function formatLastUpdated(dateString: string | null): string {
@@ -21,10 +21,8 @@ export default function ScreenerPage() {
     clearFilters,
     loading,
     error,
-    selectedFilters,
-    selectedPreset,
-    autoRefresh,
-    lastUpdated
+    filters,
+    last_updated,
   } = useScreenerStore()
 
   const handleRunScreener = useCallback(() => {
@@ -37,20 +35,12 @@ export default function ScreenerPage() {
 
   useEffect(() => {
     runScreener()
-  }, [runScreener])
+  }, [])
 
-  useEffect(() => {
-    if (!autoRefresh) return
-
-    const interval = setInterval(() => {
-      runScreener()
-    }, 30000)
-
-    return () => clearInterval(interval)
-  }, [autoRefresh, runScreener])
-
-  const filtersCount = selectedFilters.length
-  const isFiltered = filtersCount > 0 || selectedPreset !== null
+  const activeFilterCount = Object.values(filters).filter(
+    (v) => v !== undefined && v !== null && v !== ''
+  ).length
+  const isFiltered = activeFilterCount > 0
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -63,33 +53,26 @@ export default function ScreenerPage() {
           <div className="flex items-center gap-3 mt-2 text-sm">
             {isFiltered && (
               <Badge variant="secondary">
-                {filtersCount} filter{filtersCount !== 1 ? 's' : ''} applied
+                {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} applied
               </Badge>
             )}
-            {autoRefresh ? (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                Auto-refresh
-              </Badge>
-            ) : (
-              <span className="text-muted-foreground flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                Last updated: {formatLastUpdated(lastUpdated)}
-              </span>
-            )}
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Last updated: {formatLastUpdated(last_updated)}
+            </span>
           </div>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={clearFilters}
+            onClick={handleClearFilters}
             disabled={loading || !isFiltered}
           >
             <RotateCcw className="h-4 w-4 mr-2" />
             Clear All
           </Button>
           <Button
-            onClick={runScreener}
+            onClick={handleRunScreener}
             disabled={loading}
           >
             {loading ? (
@@ -108,12 +91,12 @@ export default function ScreenerPage() {
         </Alert>
       )}
 
-      <div className="grid lg:grid-cols-4 gap-6">
+      <div className="grid lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
         <div className="lg:col-span-1">
-          <FilterPanel />
+          <ScreenerFilter />
         </div>
         <div className="lg:col-span-3">
-          <ResultsPanel />
+          <ScreenerResults />
         </div>
       </div>
     </div>

@@ -1,51 +1,36 @@
+/**
+ * Screener API Client
+ * Stock screener endpoints
+ */
+
 import { apiClient } from './client'
 import type {
-  ScreenerFilter,
-  ScreenerFiltersOut,
   ScreenerResponse,
-  ScreenerPreset,
-} from '@/lib/types/screener'
+  ScreenerRequest,
+  ScreenerFiltersResponse,
+  ScreenerFilter,
+} from '../types/screener'
 
 export const screenerApi = {
-  getFilters: async (): Promise<ScreenerFiltersOut> => {
-    return await apiClient.get<ScreenerFiltersOut>('/screener/filters')
+  /**
+   * Run stock screener with filters
+   * Backend endpoint: POST /api/fundamentals/screener
+   */
+  runScreener: async (filters: ScreenerRequest): Promise<ScreenerResponse> => {
+    return await apiClient.post<ScreenerResponse>('/fundamentals/screener', filters)
   },
 
-  getPresets: async (): Promise<ScreenerPreset[]> => {
-    return await apiClient.get<ScreenerPreset[]>('/screener/presets')
+  /**
+   * Get available screener filters and presets
+   */
+  getFilters: async (): Promise<ScreenerFiltersResponse> => {
+    return await apiClient.get<ScreenerFiltersResponse>('/screener/filters')
   },
 
-  screenAssets: async (
-    filters?: ScreenerFilter[],
-    preset?: string | null,
-    limit: number = 20,
-    sortBy: string = 'relevance',
-    sortOrder: string = 'desc'
-  ): Promise<ScreenerResponse> => {
-    const params = new URLSearchParams()
-    if (limit) params.append('limit', limit.toString())
-    if (sortBy) params.append('sort_by', sortBy)
-    if (sortOrder) params.append('sort_order', sortOrder)
-
-    if (preset) {
-      params.append('preset', preset)
-    }
-
-    if (filters && filters.length > 0) {
-      return await apiClient.post<ScreenerResponse>(`/screener/screen?${params.toString()}`, filters)
-    }
-
-    return await apiClient.get<ScreenerResponse>(`/screener/screen?${params.toString()}`)
-  },
-
-  applyPreset: async (presetName: string): Promise<{ preset_name: string; filters_applied: number; success: boolean }> => {
-    return await apiClient.post<{ preset_name: string; filters_applied: number; success: boolean }>(
-      '/screener/apply-preset',
-      { preset_name: presetName }
-    )
-  },
-
-  clearFilters: async (): Promise<{ message: string }> => {
-    return await apiClient.post<{ message: string }>('/screener/clear-filters')
+  /**
+   * Get available screener presets
+   */
+  getPresets: async (): Promise<Record<string, { name: string; description: string }>> => {
+    return await apiClient.get<Record<string, { name: string; description: string }>>('/screener/presets')
   },
 }
