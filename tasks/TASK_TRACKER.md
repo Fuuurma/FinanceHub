@@ -42,11 +42,8 @@
 
 | Task ID | Task | Status | Priority | Deadline | Dependencies | Updates |
 |---------|------|--------|----------|----------|--------------|---------|
-| D-001 | Backup src/ Directory | ⏳ Pending | P0 | Jan 30 10AM | None | Ready to start |
-| D-002 | Fix Git Repository | ⏳ Pending | P0 | Jan 30 2PM | D-001 | Blocked on backup |
-| D-003 | Rename Directories | ⏳ Pending | P0 | Jan 31 12PM | D-002 | Blocked on repo fix |
-| D-004 | Update CI/CD | ⏳ Pending | P1 | Feb 2 5PM | D-003 | Blocked on reorg |
 | D-005 | Delete src/ Directory | ⏳ Pending | P1 | Feb 3 5PM | D-003, C-001, C-002, C-003 | Blocked on all fixes |
+| D-006 | AWS Infrastructure Research | ⏳ Pending | P2 | Feb 10 5PM | D-001 through D-005 | New task - starts after migration |
 
 **DevOps Progress:** 0 of 5 complete (0%)
 **Next Action:** Karen should start D-001 immediately
