@@ -292,7 +292,7 @@ export function calculateCorrelation(asset1: number[], asset2: number[]): number
 | 12 | News Feed Expansion | components/news/*.tsx | P2 | `PENDING` | Check existing news components |
 | 13 | Economic Calendar | components/economics/EconomicCalendar.tsx | P1 | `PENDING` | No backend/data source |
 | 14 | Analyst Ratings | components/research/AnalystRatings.tsx | P1 | `PENDING` | No backend/data source |
-| 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `PENDING` | UI feature only |
+| 15 | Keyboard Shortcuts | components/ui/KeyboardShortcuts.tsx | P3 | `COMPLETED` ✅ | `/components/ui/KeyboardShortcuts.tsx` |
 
 ---
 
