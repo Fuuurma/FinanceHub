@@ -71,6 +71,43 @@
 
 ## 🎯 NEXT PRIORITIES
 
+### Current Task: Apply PageErrorBoundary to Market Pages (IN PROGRESS)
+
+**Status:** IN PROGRESS
+**Priority:** P0 - Critical Error Handling
+**Deadline:** 2026-02-05
+
+**Pages to Update:**
+- [ ] `market/dashboard/page.tsx` (364 lines)
+- [ ] `market/overview/page.tsx`
+- [ ] `market/stocks/page.tsx`
+- [ ] `market/indices/page.tsx`
+- [ ] `market/movers/page.tsx`
+
+**Pattern to Follow:**
+```typescript
+export default function PageName() {
+  return (
+    <PageErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('PageName error:', error, errorInfo)
+      }}
+    >
+      <PageNameContent />
+    </PageErrorBoundary>
+  )
+}
+```
+
+**Files Already Updated:**
+- ✅ `charts/advanced/page.tsx`
+- ✅ `assets/[assetId]/page.tsx`
+- ✅ `economics/page.tsx`
+- ✅ `analytics/page.tsx`
+- ✅ `holdings/page.tsx`
+
+---
+
 ### Phase 2 - Short-term (This Month):
 1. **Provider Abstraction Layers**
    - Create abstraction for data providers (Yahoo, Polygon, Binance, etc.)
@@ -91,10 +128,6 @@
    - Create Terraform templates for ECS deployment
    - Set up infrastructure as code
    - Prepare for 10K user milestone
-
-### Immediate Next Steps:
-- Apply PageErrorBoundary to remaining chart pages (market dashboard, assets pages)
-- Start Phase 2 provider abstraction implementation
 
 ---
 
@@ -449,7 +482,7 @@ All affected files now use the `useDownloadFile` hook (N2 - Completed):
 | N10 | useInterval | `hooks/useInterval.ts` | 60 | P1 | `COMPLETED` ✅ |
 | N30 | useClickOutside | `hooks/useClickOutside.ts` | 35 | P2 | `COMPLETED` ✅ |
 | N31 | usePrevious | `hooks/usePrevious.ts` | 25 | P2 | `COMPLETED` ✅ |
-| N32 | useKeyPress | `hooks/useKeyPress.ts` | 35 | P2 | `PENDING` |
+| N32 | useKeyPress | `hooks/useKeyPress.ts` | 35 | P2 | `COMPLETED` ✅ |
 
 ### Risk Components
 | Task | Component | Path | Lines | Priority |
@@ -802,7 +835,10 @@ export function DepthChart({ symbol, timeframe, onHover }: DepthChartProps) {
 | N26 | SkipLink | components/ui/SkipLink.tsx | P2 | `COMPLETED` ✅ | Accessibility skip link component |
 | N27 | FocusTrap | components/ui/FocusTrap.tsx | P2 | `COMPLETED` ✅ | Keyboard focus trapping for modals |
 | N28 | useThrottle | hooks/useThrottle.ts | P2 | `COMPLETED` ✅ | Throttle function, value, and callback variants |
-| N29-N32 | Utility Hooks | See lists above | P2 | `PENDING` | Create new |
+| N29 | useClipboard | hooks/useClipboard.ts | P2 | `COMPLETED` ✅ | Clipboard API with fallback |
+| N30 | useClickOutside | hooks/useClickOutside.ts | P2 | `COMPLETED` ✅ | Click outside detection |
+| N31 | usePrevious | hooks/usePrevious.ts | P2 | `COMPLETED` ✅ | Previous value hook |
+| N32 | useKeyPress | hooks/useKeyPress.ts | P2 | `COMPLETED` ✅ | Keyboard event handling |
 | N33-N35 | Advanced Charts | See lists above | P2 | `COMPLETED` ✅ | Heikin Ashi, Renko, Kagi chart implementations |
 
 ---
