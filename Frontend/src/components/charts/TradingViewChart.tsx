@@ -170,16 +170,7 @@ export function TradingViewChart({
         return
       }
 
-      interface HistoryItem {
-        date: string
-        open: number
-        high: number
-        low: number
-        close: number
-        volume: number
-      }
-
-      const ohlcvData: OHLCVData[] = history.map((d: HistoryItem) => ({
+      const ohlcvData: OHLCVData[] = history.map((d) => ({
         date: d.date,
         open: d.open,
         high: d.high,

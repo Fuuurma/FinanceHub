@@ -109,6 +109,35 @@ export function RealTimeChart({
       setChartData((prev) => {
         const updated = [...prev, newDataPoint].slice(-CHART_CONFIG.BUFFER_SIZES[timeframe])
         return updated
+      })
+    }
+  }, [prices, symbol, timeframe])
+
+  useEffect(() => {
+    if (!chartContainerRef.current) return
+
+    const chart = createChart(chartContainerRef.current, {
+      width: chartContainerRef.current.clientWidth,
+      height,
+      layout: {
+        background: { type: ColorType.Solid, color: '#0a0a0a' },
+        textColor: '#a0a0a0',
+      },
+      grid: {
+        vertLines: { color: '#1a1a1a' },
+        horzLines: { color: '#1a1a1a' },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      },
+      rightPriceScale: {
+        borderColor: '#1a1a1a',
+      },
+      timeScale: {
+        borderColor: '#1a1a1a',
+        timeVisible: true,
+        secondsVisible: false,
+      },
     })
 
     chartRef.current = chart as unknown as any
