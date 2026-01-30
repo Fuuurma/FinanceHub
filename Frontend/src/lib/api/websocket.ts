@@ -3,6 +3,7 @@
  * Manages WebSocket connections with auto-reconnection and event emission
  */
 
+import { apiClient } from './client'
 import type {
   WebSocketMessage,
   SubscriptionRequest,
@@ -326,4 +327,147 @@ export function resetWebSocketClient(): void {
     wsClientInstance.disconnect()
     wsClientInstance = null
   }
+}
+
+// ================= WEBSOCKET AUTH API (I6) =================
+
+export interface TokenResponse {
+  access_token: string
+  refresh_token?: string
+  token_type: string
+  expires_in: number
+  user_id: string
+  username: string
+  tier: string
+}
+
+export interface RefreshTokenRequest {
+  refresh_token: string
+}
+
+export interface TokenVerifyResponse {
+  valid: boolean
+  user_id?: string
+  username?: string
+  email?: string
+  tier?: string
+  expires_at?: string
+  subscriptions_remaining?: number
+}
+
+export interface UserQuotaResponse {
+  user_id: string
+  tier: string
+  connections: {
+    current: number
+    max: number
+  }
+  subscriptions: Record<string, unknown>
+  rate_limit: Record<string, unknown>
+  messages: Record<string, unknown>
+}
+
+export interface ConnectionInfo {
+  connection_id: string
+  connected_at: string
+  subscriptions: string[]
+  messages_sent: number
+  messages_received: number
+}
+
+export interface UserConnectionsResponse {
+  user_id: string
+  total_connections: number
+  connections: ConnectionInfo[]
+  max_connections: number
+}
+
+export interface SubscribePreCheckResponse {
+  allowed: boolean
+  symbol: string
+  current_subscriptions: number
+  message: string
+}
+
+export interface AuthStatsResponse {
+  session_stats: Record<string, unknown>
+  quota_stats: Record<string, unknown>
+  blocked_count: number
+}
+
+const WS_API = '/ws'
+
+export const websocketApi = {
+  // ================= TOKEN MANAGEMENT =================
+
+  getToken(username: string, password: string): Promise<TokenResponse> {
+    return apiClient.post(`${WS_API}/auth/token`, null, {
+      params: { username, password },
+    })
+  },
+
+  refreshToken(refreshToken: string): Promise<TokenResponse> {
+    return apiClient.post(`${WS_API}/auth/token/refresh`, {
+      refresh_token: refreshToken,
+    })
+  },
+
+  verifyToken(token: string): Promise<TokenVerifyResponse> {
+    return apiClient.get(`${WS_API}/auth/verify`, {
+      params: { token },
+    })
+  },
+
+  // ================= QUOTA & CONNECTIONS =================
+
+  getUserQuota(userId: string): Promise<UserQuotaResponse> {
+    return apiClient.get(`${WS_API}/auth/quota`, {
+      params: { user_id: userId },
+    })
+  },
+
+  getUserConnections(userId: string): Promise<UserConnectionsResponse> {
+    return apiClient.get(`${WS_API}/auth/connections`, {
+      params: { user_id: userId },
+    })
+  },
+
+  checkSubscriptionPreCheck(symbol: string, channel: string = 'price'): Promise<SubscribePreCheckResponse> {
+    return apiClient.post(`${WS_API}/auth/subscription/pre-check`, {
+      symbol,
+      channel,
+    })
+  },
+
+  // ================= AUTH STATS =================
+
+  getAuthStats(): Promise<AuthStatsResponse> {
+    return apiClient.get(`${WS_API}/auth/stats`)
+  },
+
+  getBlockedUsers(): Promise<{ blocked_users: string[]; count: number }> {
+    return apiClient.get(`${WS_API}/auth/blocked`)
+  },
+
+  blockUser(userId: string, reason: string = 'Manual block'): Promise<{
+    success: boolean
+    user_id: string
+    blocked_until: string
+    message: string
+  }> {
+    return apiClient.post(`${WS_API}/auth/block`, {
+      user_id: userId,
+      reason,
+    })
+  },
+
+  unblockUser(userId: string): Promise<{
+    success: boolean
+    user_id: string
+    message: string
+  }> {
+    return apiClient.post(`${WS_API}/auth/unblock`, null, {
+      params: { user_id: userId },
+    })
+  },
 }
