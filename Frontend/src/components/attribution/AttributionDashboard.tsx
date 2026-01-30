@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import type { Holding, AttributionPeriod } from '@/lib/types/holdings'
 import type { BenchmarkType } from '@/lib/types/attribution'
+import type { BenchmarkConfig } from '@/lib/types/attribution'
 import {
   calculateAttributionSummary,
   calculateHoldingAttribution,
@@ -35,7 +36,6 @@ import {
   DEFAULT_ATTRIBUTION_PERIODS,
   BENCHMARK_CONFIGS,
   BENCHMARK_CATEGORIES,
-  type BenchmarkConfig,
 } from '@/lib/utils/attribution-calculations'
 import { SECTOR_COLORS } from '@/lib/types/attribution'
 import { cn } from '@/lib/utils'
@@ -49,6 +49,7 @@ interface AttributionDashboardProps {
   loading?: boolean
   onPeriodChange?: (period: AttributionPeriod) => void
   benchmark?: BenchmarkType
+  initialBenchmark?: BenchmarkType
 }
 
 export function AttributionDashboard({

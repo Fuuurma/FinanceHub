@@ -44,7 +44,7 @@ const transactionSchema = z.object({
   quantity: z.coerce.number().positive('Quantity must be positive'),
   price: z.coerce.number().nonnegative('Price must be non-negative'),
   fees: z.coerce.number().min(0, 'Fees must be non-negative').default(0),
-  date: z.date({ required_error: 'Date is required' }),
+  date: z.date().refine((val) => !isNaN(val.getTime()), { message: 'Date is required' }),
   notes: z.string().optional(),
 })
 
@@ -66,7 +66,7 @@ export function AddTransactionDialog({
   const [loading, setLoading] = useState(false)
 
   const form = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionSchema),
+    resolver: zodResolver(transactionSchema) as any,
     defaultValues: {
       type: 'buy',
       asset_class: 'stocks',

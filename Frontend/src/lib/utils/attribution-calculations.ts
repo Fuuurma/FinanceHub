@@ -6,11 +6,11 @@ import type {
   PeriodAttribution,
   AttributionTrend,
   AttributionFilters,
-  Holding,
   BenchmarkConfig,
   BenchmarkType,
   BenchmarkComparison,
 } from '@/lib/types/attribution'
+import type { Holding } from '@/lib/types/holdings'
 
 // ============================================================================
 // WebAssembly-style optimized calculations (using typed arrays for performance)

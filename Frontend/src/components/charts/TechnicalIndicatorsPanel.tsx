@@ -147,7 +147,7 @@ export function TechnicalIndicatorsPanel({
 
     lineSeries.setData(rsiValidData)
 
-    chart.priceScale().applyOptions({
+    chart.priceScale('').applyOptions({
       autoScale: true,
     })
 

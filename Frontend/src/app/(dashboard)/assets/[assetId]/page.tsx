@@ -45,11 +45,19 @@ interface AssetData {
   changePercent: number
   marketCap: number
   volume: number
+  dayHigh: number
+  dayLow: number
+  week52High: number
+  week52Low: number
+  avgVolume: number
   peRatio?: number
+  pbRatio?: number
+  eps?: number
   dividend?: {
     yield: number
     frequency: string
     lastExDate: string
+    amount: number
   }
   fundamentals?: {
     sector: string
@@ -58,6 +66,28 @@ interface AssetData {
     employees: number
     founded: string
     website: string
+    marketCap?: number
+    revenue?: number
+    profitMargin?: number
+    roe?: number
+    debtToEquity?: number
+  }
+  technicals?: {
+    rsi?: number
+    macd?: number
+    sma20?: number
+    sma50?: number
+    sma200?: number
+    support?: number
+    resistance?: number
+  }
+  financials?: {
+    revenue?: number
+    netIncome?: number
+    totalAssets?: number
+    totalDebt?: number
+    operatingCashFlow?: number
+    freeCashFlow?: number
   }
   news?: Array<{
     id: string
@@ -119,11 +149,19 @@ export default function AssetDetailPage() {
         changePercent: 1.33,
         marketCap: 2800000000000,
         volume: 52340000,
+        dayHigh: 180.15,
+        dayLow: 176.40,
+        week52High: 199.62,
+        week52Low: 124.17,
+        avgVolume: 58200000,
         peRatio: 28.5,
+        pbRatio: 45.2,
+        eps: 6.27,
         dividend: {
           yield: 0.52,
           frequency: 'Quarterly',
-          lastExDate: '2024-02-09'
+          lastExDate: '2024-02-09',
+          amount: 0.24
         },
         fundamentals: {
           sector: 'Technology',
@@ -131,7 +169,28 @@ export default function AssetDetailPage() {
           description: 'Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.',
           employees: 164000,
           founded: '1976',
-          website: 'https://www.apple.com'
+          website: 'https://www.apple.com',
+          revenue: 383285000000,
+          profitMargin: 25.3,
+          roe: 147.9,
+          debtToEquity: 1.87
+        },
+        technicals: {
+          rsi: 58.4,
+          macd: 1.2,
+          sma20: 176.8,
+          sma50: 179.2,
+          sma200: 175.4,
+          support: 175.0,
+          resistance: 182.5
+        },
+        financials: {
+          revenue: 383285000000,
+          netIncome: 96995000000,
+          totalAssets: 352583000000,
+          totalDebt: 115964000000,
+          operatingCashFlow: 110543000000,
+          freeCashFlow: 99584000000
         },
         news: [
           {
@@ -291,66 +350,195 @@ export default function AssetDetailPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="fundamentals">Fundamentals</TabsTrigger>
+          <TabsTrigger value="technicals">Technicals</TabsTrigger>
+          <TabsTrigger value="financials">Financials</TabsTrigger>
           <TabsTrigger value="news">News</TabsTrigger>
           <TabsTrigger value="dividends">Dividends</TabsTrigger>
-          <TabsTrigger value="similar">Similar</TabsTrigger>
           <TabsTrigger value="analysts">Analysts</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid md:grid-cols-4 gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Market Cap</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${(assetData.marketCap / 1000000000).toFixed(2)}B
+          {/* Compact Stats Grid - 1/4 size */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Key Statistics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 gap-3">
+                {/* Price Data */}
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Market Cap</p>
+                  <p className="text-sm font-bold">${(assetData.marketCap / 1000000000000).toFixed(2)}T</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Volume</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {(assetData.volume / 1000000).toFixed(2)}M
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Day High</p>
+                  <p className="text-sm font-semibold text-green-600">${assetData.dayHigh?.toFixed(2)}</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            {assetData.peRatio && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">P/E Ratio</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{assetData.peRatio.toFixed(2)}</div>
-                </CardContent>
-              </Card>
-            )}
-
-            {assetData.dividend && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Dividend Yield</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{assetData.dividend.yield.toFixed(2)}%</div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Day Low</p>
+                  <p className="text-sm font-semibold text-red-600">${assetData.dayLow?.toFixed(2)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">52W High</p>
+                  <p className="text-sm font-semibold">${assetData.week52High?.toFixed(2)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">52W Low</p>
+                  <p className="text-sm font-semibold">${assetData.week52Low?.toFixed(2)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Volume</p>
+                  <p className="text-sm font-bold">{(assetData.volume / 1000000).toFixed(1)}M</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Avg Vol</p>
+                  <p className="text-sm font-semibold">{(assetData.avgVolume / 1000000).toFixed(1)}M</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">P/E Ratio</p>
+                  <p className="text-sm font-bold">{assetData.peRatio?.toFixed(2)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">P/B Ratio</p>
+                  <p className="text-sm font-semibold">{assetData.pbRatio?.toFixed(2)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">EPS</p>
+                  <p className="text-sm font-bold">${assetData.eps?.toFixed(2)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Div Yield</p>
+                  <p className="text-sm font-semibold">{assetData.dividend?.yield.toFixed(2)}%</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Div Amount</p>
+                  <p className="text-sm font-bold">${assetData.dividend?.amount.toFixed(2)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="grid md:grid-cols-2 gap-6">
             <OrderBook symbol={assetId} />
             <TradeFeed symbol={assetId} />
           </div>
+        </TabsContent>
+
+        {/* Technicals Tab */}
+        <TabsContent value="technicals" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Technical Indicators</CardTitle>
+              <CardDescription>Key technical metrics and levels</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {assetData.technicals ? (
+                <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">RSI (14)</p>
+                    <p className={`text-sm font-bold ${
+                      (assetData.technicals.rsi || 0) >= 70 ? 'text-red-600' :
+                      (assetData.technicals.rsi || 0) <= 30 ? 'text-green-600' :
+                      ''
+                    }`}>
+                      {assetData.technicals.rsi?.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">MACD</p>
+                    <p className={`text-sm font-bold ${(assetData.technicals.macd || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {assetData.technicals.macd?.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">SMA 20</p>
+                    <p className="text-sm font-semibold">${assetData.technicals.sma20?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">SMA 50</p>
+                    <p className="text-sm font-semibold">${assetData.technicals.sma50?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">SMA 200</p>
+                    <p className="text-sm font-semibold">${assetData.technicals.sma200?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Support</p>
+                    <p className="text-sm font-bold text-green-600">${assetData.technicals.support?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Resistance</p>
+                    <p className="text-sm font-bold text-red-600">${assetData.technicals.resistance?.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">vs SMA20</p>
+                    <p className={`text-sm font-semibold ${(assetData.price || 0) > (assetData.technicals.sma20 || 0) ? 'text-green-600' : 'text-red-600'}`}>
+                      {(assetData.price || 0) > (assetData.technicals.sma20 || 0) ? 'Above' : 'Below'}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground">Technical data not available</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Financials Tab */}
+        <TabsContent value="financials" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Financial Metrics</CardTitle>
+              <CardDescription>Key financial data (in millions)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {assetData.financials ? (
+                <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Revenue</p>
+                    <p className="text-sm font-bold">${(assetData.financials.revenue! / 1000000).toFixed(0)}M</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Net Income</p>
+                    <p className="text-sm font-semibold">${(assetData.financials.netIncome! / 1000000).toFixed(0)}M</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Total Assets</p>
+                    <p className="text-sm font-bold">${(assetData.financials.totalAssets! / 1000000000).toFixed(1)}B</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Total Debt</p>
+                    <p className="text-sm font-semibold">${(assetData.financials.totalDebt! / 1000000000).toFixed(1)}B</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Op Cash Flow</p>
+                    <p className="text-sm font-bold text-green-600">${(assetData.financials.operatingCashFlow! / 1000000000).toFixed(1)}B</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Free Cash Flow</p>
+                    <p className="text-sm font-semibold text-green-600">${(assetData.financials.freeCashFlow! / 1000000000).toFixed(1)}B</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Profit Margin</p>
+                    <p className="text-sm font-bold">{assetData.fundamentals?.profitMargin?.toFixed(1)}%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">ROE</p>
+                    <p className="text-sm font-semibold">{assetData.fundamentals?.roe?.toFixed(1)}%</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Debt/Equity</p>
+                    <p className="text-sm font-bold">{assetData.fundamentals?.debtToEquity?.toFixed(2)}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground">Financial data not available</p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="fundamentals">
@@ -402,8 +590,15 @@ export default function AssetDetailPage() {
         <TabsContent value="news">
           <Card>
             <CardHeader>
-              <CardTitle>Latest News</CardTitle>
-              <CardDescription>Recent news and sentiment analysis</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Latest News</CardTitle>
+                  <CardDescription>Recent news and sentiment analysis</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/sentiment">View All News →</a>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -462,33 +657,6 @@ export default function AssetDetailPage() {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
-
-        <TabsContent value="similar">
-          <Card>
-            <CardHeader>
-              <CardTitle>Similar Assets</CardTitle>
-              <CardDescription>Assets with high correlation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {assetData.similarAssets?.map((asset) => (
-                  <div key={asset.symbol} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-semibold">{asset.symbol}</p>
-                      <p className="text-sm text-muted-foreground">{asset.name}</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant="outline">
-                        {asset.correlation >= 0.7 ? 'High' : asset.correlation >= 0.5 ? 'Moderate' : 'Low'} Correlation
-                      </Badge>
-                      <p className="text-sm text-muted-foreground mt-1">{(asset.correlation * 100).toFixed(0)}%</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="analysts">

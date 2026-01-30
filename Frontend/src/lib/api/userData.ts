@@ -4,7 +4,14 @@
  */
 
 import { apiClient } from './client'
-import type { Watchlist, WatchlistInput, AddToWatchlistInput, Alert, AlertInput, Portfolio, PortfolioInput, Holding, HoldingInput } from '@/lib/types'
+import type { Watchlist, WatchlistInput, Alert, AlertCreateInput, AlertUpdateInput } from '@/lib/types'
+import type { Portfolio, PortfolioCreateInput, PortfolioUpdateInput } from '@/lib/types/portfolio'
+import type { Holding, CreateHoldingInput, UpdateHoldingInput } from '@/lib/types/holdings'
+import type { WatchlistAsset } from '@/lib/types/watchlist'
+
+interface AddToWatchlistInput {
+  symbols: string[]
+}
 
 interface AddAssetsResponse {
   message: string
@@ -43,7 +50,7 @@ export const userDataApi = {
     })
   },
 
-  createAlert(data: AlertInput): Promise<Alert> {
+  createAlert(data: AlertCreateInput): Promise<Alert> {
     return apiClient.post('/data/alerts', data)
   },
 
@@ -55,7 +62,7 @@ export const userDataApi = {
     return apiClient.get('/data/portfolios')
   },
 
-  createPortfolio(data: PortfolioInput): Promise<Portfolio> {
+  createPortfolio(data: PortfolioCreateInput): Promise<Portfolio> {
     return apiClient.post('/data/portfolios', data)
   },
 
@@ -63,7 +70,7 @@ export const userDataApi = {
     return apiClient.get(`/data/portfolios/${id}/holdings`)
   },
 
-  addHolding(id: string, data: HoldingInput): Promise<Holding> {
+  addHolding(id: string, data: CreateHoldingInput): Promise<Holding> {
     return apiClient.post(`/data/portfolios/${id}/holdings`, data)
   },
 

@@ -72,7 +72,7 @@ export async function calculateHoldingAttributionWasm(
       ...unrealizedPnls,
     ])
     
-    const resultsPtr = wasmModule!.exports.calculate_holding_attribution(
+    const resultsPtr = (wasmModule!.exports.calculate_holding_attribution as Function)(
       inputValues.byteOffset,
       inputValues.byteOffset + length * 8,
       inputValues.byteOffset + length * 16,
@@ -105,7 +105,7 @@ export async function calculateBrinsonFachlerWasm(
   try {
     await loadWasmModule()
     
-    const resultsPtr = wasmModule!.exports.calculate_brinson_fachler(
+    const resultsPtr = (wasmModule!.exports.calculate_brinson_fachler as Function)(
       portfolioWeight,
       benchmarkWeight,
       portfolioReturn,
@@ -135,7 +135,7 @@ export async function calculateCorrelationWasm(
     const arr1 = new Float64Array(returns1)
     const arr2 = new Float64Array(returns2)
     
-    return wasmModule!.exports.calculate_correlation(
+    return (wasmModule!.exports.calculate_correlation as Function)(
       arr1.byteOffset,
       arr2.byteOffset,
       returns1.length
@@ -155,7 +155,7 @@ export async function calculateBetaWasm(
     const arr1 = new Float64Array(portfolioReturns)
     const arr2 = new Float64Array(benchmarkReturns)
     
-    return wasmModule!.exports.calculate_beta(
+    return (wasmModule!.exports.calculate_beta as Function)(
       arr1.byteOffset,
       arr2.byteOffset,
       portfolioReturns.length
@@ -174,7 +174,7 @@ export async function calculateSharpeRatioWasm(
     
     const arr = new Float64Array(returns)
     
-    return wasmModule!.exports.calculate_sharpe_ratio(
+    return (wasmModule!.exports.calculate_sharpe_ratio as Function)(
       arr.byteOffset,
       returns.length,
       riskFreeRate
@@ -190,7 +190,7 @@ export async function calculateMaxDrawdownWasm(values: number[]): Promise<number
     
     const arr = new Float64Array(values)
     
-    return wasmModule!.exports.calculate_max_drawdown(arr.byteOffset, values.length) as number
+    return (wasmModule!.exports.calculate_max_drawdown as Function)(arr.byteOffset, values.length) as number
   } catch {
     return calculateMaxDrawdownJs(values)
   }
@@ -202,7 +202,7 @@ export async function calculateStandardDeviationWasm(returns: number[]): Promise
     
     const arr = new Float64Array(returns)
     
-    return wasmModule!.exports.calculate_standard_deviation(arr.byteOffset, returns.length) as number
+    return (wasmModule!.exports.calculate_standard_deviation as Function)(arr.byteOffset, returns.length) as number
   } catch {
     return calculateStandardDeviationJs(returns)
   }

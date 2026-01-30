@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Watchlist } from '@/lib/types/portfolio';
+import type { Watchlist } from '@/lib/types/watchlist';
 import { apiClient } from '@/lib/api/client';
 
 interface WatchlistState {

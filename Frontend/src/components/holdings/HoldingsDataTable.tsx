@@ -159,7 +159,7 @@ export function HoldingsDataTable({
         accessorKey: 'quantity',
         header: 'Quantity',
         cell: ({ row }) => (
-          <span className="font-mono">{row.getValue('quantity').toLocaleString()}</span>
+          <span className="font-mono">{(row.getValue('quantity') as number).toLocaleString()}</span>
         ),
         size: 100,
       },
@@ -175,7 +175,7 @@ export function HoldingsDataTable({
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        cell: ({ row }) => formatCurrency(row.getValue('average_cost')),
+        cell: ({ row }) => formatCurrency(row.getValue('average_cost') as number),
         size: 120,
       },
       {
