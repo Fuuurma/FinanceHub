@@ -51,12 +51,12 @@ import type {
   CryptoRating,
   EtfRating,
   BondRating,
-  AssetType,
+  RatingAssetType,
   RatingSummary,
 } from '@/lib/types/ratings'
 import { cn } from '@/lib/utils'
 
-const ASSET_TYPE_LABELS: Record<AssetType, string> = {
+const ASSET_TYPE_LABELS: Record<RatingAssetType, string> = {
   stock: 'Stocks',
   crypto: 'Cryptocurrency',
   etf: 'ETFs',
@@ -89,7 +89,7 @@ const PERIOD_OPTIONS = [
 
 interface AnalystRatingsProps {
   symbol?: string
-  assetType?: AssetType
+  assetType?: RatingAssetType
   className?: string
 }
 
@@ -208,7 +208,164 @@ function ConsensusGauge({ consensus }: { consensus: RatingConsensus }) {
   )
 }
 
-function RatingDistributionChart({ distribution }: { distribution: RatingConsensus['rating_distribution'] }) {
+function PriceTargetChart({ ratings, currentPrice, consensus }: { ratings: AnalystRating[]; currentPrice: number; consensus: RatingConsensus }) {
+  const validRatings = ratings.filter(r => r.target_price)
+  if (validRatings.length === 0) return null
+
+  const minTarget = Math.min(currentPrice, ...validRatings.map(r => r.target_price_low || r.target_price!), consensus.target_price_low || currentPrice)
+  const maxTarget = Math.max(currentPrice, ...validRatings.map(r => r.target_price_high || r.target_price!), consensus.target_price_high || currentPrice)
+  const range = maxTarget - minTarget
+
+  const scalePosition = (price: number) => ((price - minTarget) / range) * 100
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Price Targets</CardTitle>
+        <CardDescription>Current: ${currentPrice.toFixed(2)} | Consensus: ${consensus.average_target_price?.toFixed(2) || 'N/A'}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="relative h-40 bg-muted/30 rounded-lg p-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full h-0.5 bg-gray-200" />
+          </div>
+          <div className="relative h-full flex items-center">
+            {validRatings.map((rating, idx) => {
+              const position = scalePosition(rating.target_price!)
+              const lowPos = rating.target_price_low ? scalePosition(rating.target_price_low) : position - 2
+              const highPos = rating.target_price_high ? scalePosition(rating.target_price_high) : position + 2
+              return (
+                <TooltipProvider key={rating.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className="absolute flex flex-col items-center cursor-pointer"
+                        style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
+                      >
+                        <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow" />
+                        {rating.target_price_high && rating.target_price_low && (
+                          <div
+                            className="absolute top-3 w-0.5 bg-blue-300"
+                            style={{ height: `${Math.abs(highPos - lowPos)}px`, bottom: '8px' }}
+                          />
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="text-xs">
+                        <p className="font-medium">{rating.rating_source}</p>
+                        <p>Target: ${rating.target_price?.toFixed(2)}</p>
+                        {rating.target_price_high && rating.target_price_low && (
+                          <p>Range: ${rating.target_price_low.toFixed(2)} - ${rating.target_price_high.toFixed(2)}</p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )
+            })}
+            <div
+              className="absolute flex flex-col items-center"
+              style={{ left: `${scalePosition(currentPrice)}%`, transform: 'translateX(-50%)' }}
+            >
+              <div className="w-4 h-4 rounded-full bg-gray-800 border-2 border-white shadow" />
+              <span className="absolute top-5 text-xs font-medium whitespace-nowrap">Current</span>
+            </div>
+          </div>
+          <div className="absolute bottom-1 left-0 right-0 flex justify-between text-xs text-muted-foreground px-2">
+            <span>${minTarget.toFixed(0)}</span>
+            <span>${maxTarget.toFixed(0)}</span>
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
+          <div className="p-2 bg-muted/50 rounded">
+            <div className="text-xs text-muted-foreground">Average</div>
+            <div className="font-semibold">${consensus.average_target_price?.toFixed(2) || '-'}</div>
+          </div>
+          <div className="p-2 bg-green-50 rounded">
+            <div className="text-xs text-muted-foreground">High</div>
+            <div className="font-semibold text-green-600">${consensus.target_price_high?.toFixed(2) || '-'}</div>
+          </div>
+          <div className="p-2 bg-red-50 rounded">
+            <div className="text-xs text-muted-foreground">Low</div>
+            <div className="font-semibold text-red-600">${consensus.target_price_low?.toFixed(2) || '-'}</div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function RatingActions({ ratings }: { ratings: AnalystRating[] }) {
+  const actions = ratings.filter(r => r.confidence_score && r.confidence_score >= 85)
+  if (actions.length === 0) return null
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Recent Upgrades/Downgrades</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {actions.slice(0, 5).map((rating) => (
+            <div key={rating.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div>
+                <div className="font-medium">{rating.rating_source}</div>
+                <div className="text-sm text-muted-foreground">
+                  {rating.analyst_name || 'Analyst'}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs">
+                  {getRecommendationLabel(rating.recommendation)}
+                </Badge>
+                <span className="text-sm text-muted-foreground">→</span>
+                <Badge className={cn(getRecommendationColor(rating.recommendation), 'text-xs')}>
+                  Target: ${rating.target_price?.toFixed(2)}
+                </Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function exportToCSV(ratings: AnalystRating[], symbol: string) {
+  const headers = ['Source', 'Analyst', 'Rating', 'Recommendation', 'Target Price', 'Target Low', 'Target High', 'Confidence', 'Published']
+  const rows = ratings.map(r => [
+    r.rating_source,
+    r.analyst_name || '',
+    r.rating_value.toString(),
+    r.recommendation,
+    r.target_price?.toString() || '',
+    r.target_price_low?.toString() || '',
+    r.target_price_high?.toString() || '',
+    r.confidence_score?.toString() || '',
+    r.published_at
+  ])
+  
+  const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${symbol}_ratings.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function exportToJSON(ratings: AnalystRating[], symbol: string) {
+  const json = JSON.stringify(ratings, null, 2)
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${symbol}_ratings.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
   const total = distribution.strong_buy + distribution.buy + distribution.hold + distribution.sell + distribution.strong_sell
   if (total === 0) return null
 
@@ -342,11 +499,23 @@ function RatingTrends({ trends }: { trends: RatingTrend[] }) {
   )
 }
 
-function AnalystRatingTable({ ratings }: { ratings: AnalystRating[] }) {
+function AnalystRatingTable({ ratings, showConfidence }: { ratings: AnalystRating[]; showConfidence?: boolean }) {
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const getConfidenceBadge = (score: number) => {
+    if (score >= 90) return { label: 'High', className: 'bg-green-100 text-green-700' }
+    if (score >= 70) return { label: 'Medium', className: 'bg-yellow-100 text-yellow-700' }
+    return { label: 'Low', className: 'bg-red-100 text-red-700' }
+  }
+
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-lg">Analyst Ratings</CardTitle>
+        <Badge variant="outline">{ratings.length} ratings</Badge>
       </CardHeader>
       <CardContent>
         <div className="overflow-auto max-h-96">
@@ -356,41 +525,55 @@ function AnalystRatingTable({ ratings }: { ratings: AnalystRating[] }) {
                 <th className="text-left p-2 text-sm font-medium">Source</th>
                 <th className="text-left p-2 text-sm font-medium">Rating</th>
                 <th className="text-right p-2 text-sm font-medium">Target</th>
+                {showConfidence && <th className="text-center p-2 text-sm font-medium">Confidence</th>}
                 <th className="text-left p-2 text-sm font-medium">Published</th>
               </tr>
             </thead>
             <tbody>
-              {ratings.map((rating) => (
-                <tr key={rating.id} className="border-b hover:bg-muted/50">
-                  <td className="p-2">
-                    <div className="font-medium">{rating.rating_source}</div>
-                    {rating.analyst_name && (
-                      <div className="text-xs text-muted-foreground">{rating.analyst_name}</div>
-                    )}
-                  </td>
-                  <td className="p-2">
-                    <Badge className={getRecommendationColor(rating.recommendation)}>
-                      {getRecommendationLabel(rating.recommendation)}
-                    </Badge>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {formatRatingValue(rating.rating_value, rating.rating_scale)} / {rating.rating_scale}
-                    </div>
-                  </td>
-                  <td className="p-2 text-right">
-                    {rating.target_price && (
-                      <div>${rating.target_price.toFixed(2)}</div>
-                    )}
-                    {rating.target_price_high && rating.target_price_low && (
-                      <div className="text-xs text-muted-foreground">
-                        ${rating.target_price_low.toFixed(2)} - ${rating.target_price_high.toFixed(2)}
+              {ratings.map((rating) => {
+                const confidence = getConfidenceBadge(rating.confidence_score || 0)
+                return (
+                  <tr key={rating.id} className="border-b hover:bg-muted/50">
+                    <td className="p-2">
+                      <div className="font-medium">{rating.rating_source}</div>
+                      {rating.analyst_name && (
+                        <div className="text-xs text-muted-foreground">{rating.analyst_name}</div>
+                      )}
+                    </td>
+                    <td className="p-2">
+                      <Badge className={getRecommendationColor(rating.recommendation)}>
+                        {getRecommendationLabel(rating.recommendation)}
+                      </Badge>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {formatRatingValue(rating.rating_value, rating.rating_scale)} / {rating.rating_scale}
                       </div>
+                    </td>
+                    <td className="p-2 text-right">
+                      {rating.target_price && (
+                        <div className="font-medium">${rating.target_price.toFixed(2)}</div>
+                      )}
+                      {rating.target_price_high && rating.target_price_low && (
+                        <div className="text-xs text-muted-foreground">
+                          ${rating.target_price_low.toFixed(2)} - ${rating.target_price_high.toFixed(2)}
+                        </div>
+                      )}
+                    </td>
+                    {showConfidence && (
+                      <td className="p-2 text-center">
+                        <Badge className={cn('text-xs', confidence.className)}>
+                          {confidence.label}
+                        </Badge>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {rating.confidence_score || 0}%
+                        </div>
+                      </td>
                     )}
-                  </td>
-                  <td className="p-2 text-sm text-muted-foreground">
-                    {new Date(rating.published_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
+                    <td className="p-2 text-sm text-muted-foreground">
+                      {formatDate(rating.published_at)}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

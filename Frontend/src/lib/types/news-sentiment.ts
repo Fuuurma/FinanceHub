@@ -78,3 +78,11 @@ export interface TrendingTopic {
   article_count: number
   related_symbols: string[]
 }
+
+export interface NewsFilters {
+  category: string
+  sentiment: string
+  impact: string
+  timeframe: string
+  source: string
+}

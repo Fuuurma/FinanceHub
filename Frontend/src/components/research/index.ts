@@ -7,7 +7,7 @@ export type {
   CryptoRating,
   EtfRating,
   BondRating,
-  AssetType,
+  RatingAssetType,
   RatingSummary,
   RatingFilter,
   RatingAction,
