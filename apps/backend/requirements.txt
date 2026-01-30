@@ -19,6 +19,7 @@ django-redis>=5.4.0
 # Background Tasks
 celery>=5.3.0
 dramatiq[redis]>=1.16.0
+django-dramatiq>=0.11.0
 django-celery-beat>=2.5.0
 
 # ASGI Server
@@ -41,6 +42,7 @@ python-dotenv>=1.0.0
 pillow>=10.0.0
 openpyxl>=3.1.0
 xlsxwriter>=3.1.0
+orjson>=3.9.0
 
 # Auth
 PyJWT>=2.8.0
