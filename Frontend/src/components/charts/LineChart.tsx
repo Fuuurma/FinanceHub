@@ -134,7 +134,9 @@ export function LineChart({
 
     chartRef.current = chart
 
-    const lineSeries = chart.addLineSeries({
+    const chartAny = chart as unknown as any
+
+    const lineSeries = chartAny.addLineSeries({
       color: colors.line,
       lineWidth,
       lineType: lineType === 'dotted' ? 2 : lineType === 'dashed' ? 3 : 0,

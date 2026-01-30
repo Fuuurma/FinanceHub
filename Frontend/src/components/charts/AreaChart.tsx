@@ -141,7 +141,9 @@ export function AreaChart({
 
     chartRef.current = chart
 
-    const areaSeries = chart.addAreaSeries({
+    const chartAny = chart as unknown as any
+
+    const areaSeries = chartAny.addAreaSeries({
       lineColor: colors.line,
       topColor: colors.top,
       bottomColor: colors.bottom,

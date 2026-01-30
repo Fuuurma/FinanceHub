@@ -151,7 +151,9 @@ export function CandlestickChart({
 
     chartRef.current = chart
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const chartAny = chart as unknown as any
+
+    const candlestickSeries = chartAny.addCandlestickSeries({
       upColor: colors.upColor,
       downColor: colors.downColor,
       borderDownColor: colors.downColor,
@@ -163,7 +165,7 @@ export function CandlestickChart({
     candlestickSeriesRef.current = candlestickSeries
 
     if (showVolume) {
-      const volumeSeries = chart.addHistogramSeries({
+      const volumeSeries = chartAny.addHistogramSeries({
         color: colors.volumeDownColor,
         priceFormat: {
           type: 'volume',
