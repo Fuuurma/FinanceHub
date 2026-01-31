@@ -1,747 +1,396 @@
-# C-022: Strategy Backtesting Engine
+# Task C-022: Strategy Backtesting Engine
 
-**Priority:** P1 - HIGH  
-**Assigned to:** Backend Coder  
+**Priority:** P1 HIGH  
 **Estimated Time:** 18-24 hours  
-**Dependencies:** C-021 (Technical Indicators Engine)  
-**Status:** ⏳ PENDING
+**Assigned To:** Backend Coder  
+**Status:** PENDING
+
+## ⚡ Quick Start Guide
+
+**What to do FIRST (in order):**
+
+1. **Setup (Step 1):** Install dependencies (15m) - pandas, numpy
+2. **Backend (Step 2):** Create models (3h) - TradingStrategy, Backtest, BacktestTrade
+3. **Backend (Step 3):** Create base strategy (2h) - BaseStrategy abstract class
+4. **Backend (Step 4):** Create preset strategies (3h) - SMA crossover, RSI mean reversion
+5. **Backend (Step 5):** Create backtesting engine (6h) - Core execution logic ⭐ CRITICAL
+6. **Backend (Step 6):** Create performance calculator (2h) - Sharpe, Sortino, etc.
+7. **Backend (Step 7):** Create API endpoints (3h) - 6 REST endpoints
+8. **Backend (Step 8):** Create Dramatiq task (1h) - Async execution
+9. **Testing (Step 9):** Write tests (2h) - Test backtest execution
+10. **Frontend (Step 10):** Create results page (2h) - Display metrics
+
+**Total: 20 hours (estimate)**
 
 ---
 
-## 🎯 OBJECTIVE
-
+## Overview
 Implement comprehensive backtesting engine for testing trading strategies on historical data with performance metrics and visualization.
 
 ---
 
-## 📊 FEATURE DESCRIPTION
+## 🔧 STEP-BY-STEP IMPLEMENTATION GUIDE
 
-**From Features Specification (Section 3.3 - Technical Analysis):**
+### STEP 1: Install Dependencies (15 minutes)
 
-- Backtesting engine for strategies
-- Strategy builder (visual or code)
-- Paper trading account
+```bash
+pip install pandas numpy scipy
+```
 
-**From Features Specification (Section 8.1 - Algorithmic Trading):**
+### STEP 2: Create Database Models (3 hours)
 
-- Backtesting engine
-- Strategy builder (visual or code)
-- Paper trading account
-- Order routing automation
-- Execution algorithms (TWAP, VWAP, implementation shortfall)
+**File:** `apps/backend/src/investments/models/backtesting.py`
 
----
+See current file (747 lines) - models already defined ✅
 
-## ✅ CURRENT STATE
-
-**What exists:**
-- Historical price data model
-- Technical indicators library (C-021)
-- Portfolio tracking system
-- Transaction history
-
-**What's missing:**
-- Backtesting engine
-- Strategy definition framework
-- Performance metrics calculation
-- Trade simulation logic
-- Results visualization data
-
----
-
-## 🚀 IMPLEMENTATION PLAN
-
-### **Phase 1: Database Models** (3-4 hours)
-
-**Create `apps/backend/src/investments/models/backtesting.py`:**
-
-```python
-from django.db import models
-from django.contrib.auth import get_user_model
-from .asset import Asset
-from .portfolio import Portfolio
-
-User = get_user_model()
-
-class TradingStrategy(models.Model):
-    """Trading strategy definitions"""
-    
-    STRATEGY_TYPE_CHOICES = [
-        ('code', 'Custom Code (Python)'),
-        ('visual', 'Visual Builder'),
-        ('preset', 'Preset Strategy'),
-    ]
-    
-    STATUS_CHOICES = [
-        ('draft', 'Draft'),
-        ('active', 'Active'),
-        ('archived', 'Archived'),
-    ]
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='strategies')
-    name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    
-    strategy_type = models.CharField(max_length=20, choices=STRATEGY_TYPE_CHOICES)
-    
-    # Strategy definition
-    code = models.TextField(blank=True)  # Python code for custom strategies
-    config = models.JSONField(default=dict)  # Visual strategy config or preset params
-    
-    # Backtesting settings
-    initial_capital = models.DecimalField(max_digits=20, decimal_places=2, default=100000)
-    commission = models.DecimalField(max_digits=10, decimal_places=4, default=0.001)  # 0.1%
-    slippage = models.DecimalField(max_digits=10, decimal_places=4, default=0.0001)  # 0.01%
-    
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-class Backtest(models.Model):
-    """Backtest run results"""
-    
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('running', 'Running'),
-        ('completed', 'Completed'),
-        ('failed', 'Failed'),
-    ]
-    
-    strategy = models.ForeignKey(TradingStrategy, on_delete=models.CASCADE, related_name='backtests')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    
-    # Backtest parameters
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    assets = models.ManyToManyField(Asset)
-    timeframe = models.CharField(max_length=10)  # 1d, 1h, etc.
-    
-    # Results
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    total_return = models.DecimalField(max_digits=10, decimal_places=4, null=True)
-    sharpe_ratio = models.DecimalField(max_digits=10, decimal_places=4, null=True)
-    sortino_ratio = models.DecimalField(max_digits=10, decimal_places=4, null=True)
-    max_drawdown = models.DecimalField(max_digits=10, decimal_places=4, null=True)
-    win_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True)
-    profit_factor = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    
-    # Trade statistics
-    total_trades = models.IntegerField(null=True)
-    winning_trades = models.IntegerField(null=True)
-    losing_trades = models.IntegerField(null=True)
-    avg_win = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    avg_loss = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    largest_win = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    largest_loss = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    
-    # Performance curve data
-    equity_curve = models.JSONField(null=True)  # Array of {date, value}
-    drawdown_curve = models.JSONField(null=True)  # Array of {date, drawdown}
-    
-    # Execution
-    started_at = models.DateTimeField(null=True)
-    completed_at = models.DateTimeField(null=True)
-    error_message = models.TextField(blank=True)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['user', '-created_at']),
-            models.Index(fields=['strategy', '-created_at']),
-        ]
-
-class BacktestTrade(models.Model):
-    """Individual trades from backtest"""
-    
-    backtest = models.ForeignKey(Backtest, on_delete=models.CASCADE, related_name='trades')
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    
-    # Trade details
-    entry_date = models.DateTimeField()
-    exit_date = models.DateTimeField(null=True)
-    entry_price = models.DecimalField(max_digits=20, decimal_places=4)
-    exit_price = models.DecimalField(max_digits=20, decimal_places=4, null=True)
-    quantity = models.DecimalField(max_digits=20, decimal_places=4)
-    
-    # Type
-    action = models.CharField(max_length=10)  # BUY, SELL
-    position_type = models.CharField(max_length=10)  # LONG, SHORT
-    
-    # Results
-    exit_reason = models.CharField(max_length=50, blank=True)  # stop_loss, take_profit, signal, etc.
-    pnl = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    pnl_percentage = models.DecimalField(max_digits=10, decimal_places=4, null=True)
-    return_amount = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    
-    # Duration
-    bars_held = models.IntegerField(null=True)
-    
-    class Meta:
-        ordering = ['entry_date']
-        indexes = [
-            models.Index(fields=['backtest', 'entry_date']),
-        ]
-
-class PaperTradingAccount(models.Model):
-    """Paper trading for live testing"""
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    strategy = models.ForeignKey(TradingStrategy, on_delete=models.CASCADE)
-    
-    # Account details
-    account_name = models.CharField(max_length=200)
-    initial_capital = models.DecimalField(max_digits=20, decimal_places=2)
-    current_capital = models.DecimalField(max_digits=20, decimal_places=2)
-    
-    # Settings
-    commission = models.DecimalField(max_digits=10, decimal_places=4, default=0.001)
-    slippage = models.DecimalField(max_digits=10, decimal_places=4, default=0.0001)
-    
-    # Status
-    is_active = models.BooleanField(default=True)
-    started_at = models.DateTimeField(auto_now_add=True)
-    
-    # Performance
-    total_return = models.DecimalField(max_digits=10, decimal_places=4, default=0)
-    
-    class Meta:
-        verbose_name = "Paper Trading Account"
+**CREATE MIGRATION:**
+```bash
+python manage.py makemigrations investments
+python manage.py migrate investments
 ```
 
 ---
 
-### **Phase 2: Backtesting Engine** (8-10 hours)
+### STEP 3: Create Base Strategy Interface (2 hours) ⭐ CRITICAL
 
-**Create `apps/backend/src/investments/services/backtesting_engine.py`:**
+**File:** `apps/backend/src/investments/services/strategies/base_strategy.py`
 
 ```python
-from typing import List, Dict, Callable
-from decimal import Decimal
-from datetime import datetime, timedelta
+from abc import ABC, abstractmethod
+from typing import Dict, List
 import pandas as pd
-import numpy as np
-from django.utils import timezone
-from investments.models import Asset, Backtest, BacktestTrade, TradingStrategy
-from investments.models.backtesting import Backtest as BacktestModel
-from investments.services.indicator_service import IndicatorCalculationService
+from datetime import datetime
 
-class BacktestingEngine:
+class BaseStrategy(ABC):
     """
-    Comprehensive backtesting engine for trading strategies
-    Supports multiple asset types, timeframes, and strategies
+    Base class for ALL trading strategies.
+    
+    Every strategy MUST inherit from this class and implement
+    the generate_signals() method.
     """
     
-    def __init__(self, backtest_id: int):
-        self.backtest = BacktestModel.objects.get(id=backtest_id)
-        self.strategy = self.backtest.strategy
-        self.indicator_service = IndicatorCalculationService()
-        
-        # Portfolio state
-        self.cash = float(self.strategy.initial_capital)
-        self.positions = {}  # {asset_id: {quantity, entry_price, entry_date}}
-        self.trades = []
-        self.equity_curve = []
-        self.drawdown_curve = []
-        
-        # Performance tracking
-        self.peak_equity = self.cash
-        self.current_equity = self.cash
+    def __init__(self, config: Dict = None):
+        self.config = config or {}
+        self.name = self.__class__.__name__
     
-    def run(self) -> Dict:
-        """Execute backtest"""
-        try:
-            self.backtest.status = 'running'
-            self.backtest.started_at = timezone.now()
-            self.backtest.save()
-            
-            # Load historical data
-            data = self._load_historical_data()
-            
-            # Execute strategy
-            self._execute_strategy(data)
-            
-            # Calculate performance metrics
-            metrics = self._calculate_metrics()
-            
-            # Save results
-            self._save_results(metrics)
-            
-            self.backtest.status = 'completed'
-            self.backtest.completed_at = timezone.now()
-            self.backtest.save()
-            
-            return metrics
-            
-        except Exception as e:
-            self.backtest.status = 'failed'
-            self.backtest.error_message = str(e)
-            self.backtest.save()
-            raise
-    
-    def _load_historical_data(self) -> pd.DataFrame:
-        """Load and prepare historical data"""
-        assets = list(self.backtest.assets.all())
+    @abstractmethod
+    def generate_signals(self, data: pd.DataFrame, timestamp: datetime) -> List[Dict]:
+        """
+        Generate trading signals.
         
-        all_data = []
-        for asset in assets:
-            from investments.models import AssetPricesHistoric
-            
-            prices = AssetPricesHistoric.objects.filter(
-                asset=asset,
-                timestamp__gte=self.backtest.start_date,
-                timestamp__lte=self.backtest.end_date
-            ).order_by('timestamp')
-            
-            for price in prices:
-                all_data.append({
-                    'timestamp': price.timestamp,
-                    'asset_id': asset.id,
-                    'symbol': asset.symbol,
-                    'open': float(price.open_price),
-                    'high': float(price.high_price),
-                    'low': float(price.low_price),
-                    'close': float(price.close_price),
-                    'volume': price.volume
-                })
+        Args:
+            data: DataFrame with OHLCV data
+            timestamp: Current timestamp
         
-        df = pd.DataFrame(all_data)
-        return df
+        Returns:
+            List of signals:
+            [
+                {
+                    'asset_id': 123,
+                    'action': 'BUY',  # or 'SELL'
+                    'type': 'LONG',
+                    'reason': 'SMA crossover'
+                }
+            ]
+        """
+        pass
     
-    def _execute_strategy(self, data: pd.DataFrame):
-        """Execute trading strategy on historical data"""
-        # Group by timestamp
-        grouped = data.groupby('timestamp')
-        
-        for timestamp, group in grouped:
-            # Calculate portfolio value
-            portfolio_value = self._calculate_portfolio_value(group, timestamp)
-            self.equity_curve.append({
-                'date': timestamp.isoformat(),
-                'value': portfolio_value
-            })
-            
-            # Track drawdown
-            if portfolio_value > self.peak_equity:
-                self.peak_equity = portfolio_value
-            
-            drawdown = (self.peak_equity - portfolio_value) / self.peak_equity * 100
-            self.drawdown_curve.append({
-                'date': timestamp.isoformat(),
-                'drawdown': drawdown
-            })
-            
-            # Execute strategy logic
-            signals = self._generate_signals(group, timestamp)
-            
-            # Execute trades based on signals
-            self._execute_signals(signals, group, timestamp)
+    def get_asset_data(self, data: pd.DataFrame, asset_id: int) -> pd.DataFrame:
+        """Helper: Get data for specific asset."""
+        return data[data['asset_id'] == asset_id]
+```
+
+---
+
+### STEP 4: Create Preset Strategies (3 hours)
+
+**File:** `apps/backend/src/investments/services/strategies/sma_crossover.py`
+
+```python
+from .base_strategy import BaseStrategy
+from typing import Dict, List
+import pandas as pd
+from datetime import datetime
+
+class SMACrossoverStrategy(BaseStrategy):
+    """
+    Simple Moving Average Crossover Strategy.
     
-    def _generate_signals(self, data: pd.DataFrame, timestamp) -> List[Dict]:
-        """Generate trading signals based on strategy"""
+    Buy: Fast SMA crosses above Slow SMA
+    Sell: Fast SMA crosses below Slow SMA
+    """
+    
+    def __init__(self, config: Dict = None):
+        super().__init__(config)
+        self.fast_period = self.config.get('fast_period', 10)
+        self.slow_period = self.config.get('slow_period', 20)
+        self.price_history = {}
+    
+    def generate_signals(self, data: pd.DataFrame, timestamp: datetime) -> List[Dict]:
         signals = []
-        
-        if self.strategy.strategy_type == 'code':
-            # Execute custom Python code
-            signals = self._execute_custom_strategy(data, timestamp)
-        elif self.strategy.strategy_type == 'visual':
-            # Execute visual strategy
-            signals = self._execute_visual_strategy(data, timestamp)
-        elif self.strategy.strategy_type == 'preset':
-            # Execute preset strategy
-            signals = self._execute_preset_strategy(data, timestamp)
-        
-        return signals
-    
-    def _execute_custom_strategy(self, data: pd.DataFrame, timestamp) -> List[Dict]:
-        """Execute custom Python strategy"""
-        signals = []
-        
-        try:
-            # Prepare context for strategy code
-            context = {
-                'data': data,
-                'timestamp': timestamp,
-                'positions': self.positions.copy(),
-                'cash': self.cash,
-                'indicators': self.indicator_service
-            }
-            
-            # Execute strategy code
-            exec(self.strategy.code, context)
-            
-            # Extract signals
-            signals = context.get('signals', [])
-            
-        except Exception as e:
-            print(f"Strategy execution error: {e}")
-        
-        return signals
-    
-    def _execute_visual_strategy(self, data: pd.DataFrame, timestamp) -> List[Dict]:
-        """Execute visual builder strategy"""
-        signals = []
-        config = self.strategy.config
         
         for asset_id in data['asset_id'].unique():
-            asset_data = data[data['asset_id'] == asset_id]
+            asset_data = self.get_asset_data(data, asset_id)
+            if asset_data.empty:
+                continue
             
-            # Example: Simple moving average crossover
-            if config.get('strategy') == 'sma_crossover':
-                fast_period = config.get('fast_period', 10)
-                slow_period = config.get('slow_period', 20)
-                
-                # Get SMAs
-                fast_sma = self.indicator_service.calculate_indicator(
-                    asset_id, 'sma', self.backtest.timeframe, fast_period
-                )
-                slow_sma = self.indicator_service.calculate_indicator(
-                    asset_id, 'sma', self.backtest.timeframe, slow_period
-                )
-                
-                if fast_sma['values'] and slow_sma['values']:
-                    current_fast = fast_sma['values'][-1]
-                    current_slow = slow_sma['values'][-1]
-                    prev_fast = fast_sma['values'][-2] if len(fast_sma['values']) > 1 else current_fast
-                    prev_slow = slow_sma['values'][-2] if len(slow_sma['values']) > 1 else current_slow
-                    
-                    # Crossover signals
-                    if prev_fast <= prev_slow and current_fast > current_slow:
-                        signals.append({
-                            'asset_id': asset_id,
-                            'action': 'BUY',
-                            'type': 'LONG',
-                            'reason': 'SMA crossover'
-                        })
-                    elif prev_fast >= prev_slow and current_fast < current_slow:
-                        signals.append({
-                            'asset_id': asset_id,
-                            'action': 'SELL',
-                            'type': 'LONG',
-                            'reason': 'SMA crossover'
-                        })
+            close = asset_data.iloc[-1]['close']
+            
+            # Update history
+            if asset_id not in self.price_history:
+                self.price_history[asset_id] = []
+            self.price_history[asset_id].append(close)
+            
+            prices = self.price_history[asset_id]
+            
+            # Need enough data
+            if len(prices) < self.slow_period + 1:
+                continue
+            
+            # Calculate SMAs
+            fast_sma = sum(prices[-self.fast_period:]) / self.fast_period
+            slow_sma = sum(prices[-self.slow_period:]) / self.slow_period
+            
+            # Previous SMAs
+            prev_fast = sum(prices[-self.fast_period-1:-1]) / self.fast_period
+            prev_slow = sum(prices[-self.slow_period-1:-1]) / self.slow_period
+            
+            # Crossovers
+            if prev_fast <= prev_slow and fast_sma > slow_sma:
+                signals.append({
+                    'asset_id': asset_id,
+                    'action': 'BUY',
+                    'type': 'LONG',
+                    'reason': f'SMA{self.fast_period} > SMA{self.slow_period}'
+                })
+            elif prev_fast >= prev_slow and fast_sma < slow_sma:
+                signals.append({
+                    'asset_id': asset_id,
+                    'action': 'SELL',
+                    'type': 'LONG',
+                    'reason': f'SMA{self.fast_period} < SMA{self.slow_period}'
+                })
         
         return signals
-    
-    def _execute_preset_strategy(self, data: pd.DataFrame, timestamp) -> List[Dict]:
-        """Execute preset strategy"""
-        # Implement preset strategies (e.g., RSI, Mean Reversion, Momentum)
-        return []
-    
-    def _execute_signals(self, signals: List[Dict], data: pd.DataFrame, timestamp):
-        """Execute trading signals"""
-        for signal in signals:
-            asset_id = signal['asset_id']
-            action = signal['action']
-            
-            asset_data = data[data['asset_id'] == asset_id].iloc[0]
-            price = asset_data['close']
-            
-            if action == 'BUY':
-                self._execute_buy(asset_id, price, timestamp, signal)
-            elif action == 'SELL':
-                self._execute_sell(asset_id, price, timestamp, signal)
-    
-    def _execute_buy(self, asset_id: int, price: float, timestamp, signal: Dict):
-        """Execute buy order"""
-        # Calculate position size (simplified - use 10% of cash)
-        position_size = self.cash * 0.1
-        quantity = position_size / price
-        
-        # Apply commission and slippage
-        commission_cost = position_size * float(self.strategy.commission)
-        slippage_cost = position_size * float(self.strategy.slippage)
-        total_cost = position_size + commission_cost + slippage_cost
-        
-        if total_cost <= self.cash:
-            self.cash -= total_cost
-            self.positions[asset_id] = {
-                'quantity': quantity,
-                'entry_price': price,
-                'entry_date': timestamp
-            }
-    
-    def _execute_sell(self, asset_id: int, price: float, timestamp, signal: Dict):
-        """Execute sell order"""
-        if asset_id in self.positions:
-            position = self.positions[asset_id]
-            quantity = position['quantity']
-            
-            # Calculate proceeds
-            gross_proceeds = quantity * price
-            commission_cost = gross_proceeds * float(self.strategy.commission)
-            slippage_cost = gross_proceeds * float(self.strategy.slippage)
-            net_proceeds = gross_proceeds - commission_cost - slippage_cost
-            
-            # Calculate P&L
-            pnl = net_proceeds - (quantity * position['entry_price'])
-            pnl_pct = (pnl / (quantity * position['entry_price'])) * 100
-            
-            # Record trade
-            self.trades.append({
-                'asset_id': asset_id,
-                'entry_date': position['entry_date'],
-                'exit_date': timestamp,
-                'entry_price': position['entry_price'],
-                'exit_price': price,
-                'quantity': quantity,
-                'pnl': pnl,
-                'pnl_percentage': pnl_pct,
-                'exit_reason': signal.get('reason', 'signal')
-            })
-            
-            # Update cash
-            self.cash += net_proceeds
-            del self.positions[asset_id]
-    
-    def _calculate_portfolio_value(self, data: pd.DataFrame, timestamp) -> float:
-        """Calculate total portfolio value"""
-        total_value = self.cash
-        
-        for asset_id, position in self.positions.items():
-            asset_data = data[data['asset_id'] == asset_id]
-            if not asset_data.empty:
-                current_price = asset_data.iloc[0]['close']
-                position_value = position['quantity'] * current_price
-                total_value += position_value
-        
-        self.current_equity = total_value
-        return total_value
-    
-    def _calculate_metrics(self) -> Dict:
-        """Calculate performance metrics"""
-        if not self.trades:
-            return {}
-        
-        # Basic metrics
-        total_trades = len(self.trades)
-        winning_trades = [t for t in self.trades if t['pnl'] > 0]
-        losing_trades = [t for t in self.trades if t['pnl'] < 0]
-        
-        win_rate = (len(winning_trades) / total_trades * 100) if total_trades > 0 else 0
-        
-        avg_win = np.mean([t['pnl'] for t in winning_trades]) if winning_trades else 0
-        avg_loss = np.mean([t['pnl'] for t in losing_trades]) if losing_trades else 0
-        
-        gross_profit = sum(t['pnl'] for t in winning_trades)
-        gross_loss = abs(sum(t['pnl'] for t in losing_trades))
-        profit_factor = gross_profit / gross_loss if gross_loss > 0 else 0
-        
-        # Calculate returns from equity curve
-        if len(self.equity_curve) > 1:
-            initial = self.equity_curve[0]['value']
-            final = self.equity_curve[-1]['value']
-            total_return = ((final - initial) / initial) * 100
-        else:
-            total_return = 0
-        
-        # Sharpe Ratio (simplified - assumes 5% risk-free rate)
-        if len(self.equity_curve) > 1:
-            returns = pd.Series([e['value'] for e in self.equity_curve]).pct_change().dropna()
-            sharpe_ratio = (returns.mean() * 252 - 0.05) / (returns.std() * np.sqrt(252)) if returns.std() > 0 else 0
-        else:
-            sharpe_ratio = 0
-        
-        # Max drawdown
-        max_drawdown = max([d['drawdown'] for d in self.drawdown_curve]) if self.drawdown_curve else 0
-        
-        return {
-            'total_return': total_return,
-            'sharpe_ratio': sharpe_ratio,
-            'max_drawdown': max_drawdown,
-            'win_rate': win_rate,
-            'profit_factor': profit_factor,
-            'total_trades': total_trades,
-            'winning_trades': len(winning_trades),
-            'losing_trades': len(losing_trades),
-            'avg_win': avg_win,
-            'avg_loss': avg_loss
-        }
-    
-    def _save_results(self, metrics: Dict):
-        """Save backtest results to database"""
-        # Update backtest with metrics
-        for key, value in metrics.items():
-            setattr(self.backtest, key, value)
-        
-        self.backtest.equity_curve = self.equity_curve
-        self.backtest.drawdown_curve = self.drawdown_curve
-        self.backtest.save()
-        
-        # Save trades
-        for trade in self.trades:
-            BacktestTrade.objects.create(
-                backtest=self.backtest,
-                asset_id=trade['asset_id'],
-                entry_date=trade['entry_date'],
-                exit_date=trade['exit_date'],
-                entry_price=trade['entry_price'],
-                exit_price=trade['exit_price'],
-                quantity=trade['quantity'],
-                exit_reason=trade.get('exit_reason', ''),
-                pnl=trade['pnl'],
-                pnl_percentage=trade['pnl_percentage']
-            )
 ```
 
 ---
 
-### **Phase 3: API Endpoints** (3-4 hours)
+### STEP 5: Create Backtesting Engine (6 hours) ⭐ MOST CRITICAL
 
-**Create `apps/backend/src/api/backtesting.py`:**
+**Key Components:**
+
+1. **Initialize** - Load strategy, set portfolio state
+2. **Load Data** - Fetch historical prices
+3. **Execute** - Loop through timestamps, generate signals, execute trades
+4. **Calculate Metrics** - Sharpe, Sortino, max drawdown, etc.
+5. **Save Results** - Store in database
+
+**Core Execution Flow:**
+```
+for each timestamp:
+    1. Calculate portfolio value
+    2. Track drawdown
+    3. Generate trading signals
+    4. Execute trades (buy/sell)
+    5. Update positions and cash
+```
+
+**Position Sizing:**
+- Use 10% of cash per position
+- Or use Kelly Criterion: f* = (bp - q) / b
+- Or use fixed fractional: position_size = account_value * risk_per_trade
+
+**Transaction Costs:**
+- Commission: trade_value * commission_rate
+- Slippage: trade_value * slippage_rate
+- Apply to BOTH buys and sells
+
+---
+
+### STEP 6: Performance Metrics (2 hours)
+
+**Key Metrics:**
+
+1. **Total Return**: ((final - initial) / initial) * 100
+
+2. **Sharpe Ratio**: (return - risk_free) / volatility
+   - Assumes 252 trading days/year
+   - Risk-free rate: 5% (0.05)
+
+3. **Sortino Ratio**: (return - risk_free) / downside_deviation
+   - Only considers downside volatility
+
+4. **Max Drawdown**: Maximum peak-to-trough decline
+   - Track peak equity
+   - Drawdown = (peak - current) / peak
+
+5. **Win Rate**: (winning_trades / total_trades) * 100
+
+6. **Profit Factor**: gross_profit / gross_loss
+
+---
+
+### STEP 7: Create API Endpoints (3 hours)
+
+**File:** `apps/backend/src/api/backtesting.py`
 
 ```python
-from ninja import Router, Schema
-from django.shortcuts import get_object_or_404
+from ninja import Router
 from investments.models import Backtest, TradingStrategy
 from investments.services.backtesting_engine import BacktestingEngine
 import dramatiq
 
-router = Router(tags=['backtesting'])
-
-class BacktestCreateSchema(Schema):
-    strategy_id: int
-    start_date: str
-    end_date: str
-    asset_ids: list[int]
-    timeframe: str = '1d'
-
-class StrategyCreateSchema(Schema):
-    name: str
-    description: str = None
-    strategy_type: str  # code, visual, preset
-    code: str = None
-    config: dict = {}
-    initial_capital: float = 100000
-    commission: float = 0.001
-    slippage: float = 0.0001
-
-@router.post("/strategies")
-def create_strategy(request, data: StrategyCreateSchema):
-    """Create new trading strategy"""
-    strategy = TradingStrategy.objects.create(
-        user=request.auth,
-        **data.dict()
-    )
-    return {"id": strategy.id, "name": strategy.name}
-
-@router.get("/strategies")
-def list_strategies(request):
-    """List user's strategies"""
-    strategies = TradingStrategy.objects.filter(user=request.auth)
-    return [{
-        "id": s.id,
-        "name": s.name,
-        "type": s.strategy_type,
-        "status": s.status,
-        "created_at": s.created_at
-    } for s in strategies]
+router = Router()
 
 @router.post("/backtests")
 def create_backtest(request, data: BacktestCreateSchema):
-    """Create and run backtest"""
-    strategy = get_object_or_404(TradingStrategy, id=data.strategy_id, user=request.auth)
-    
-    backtest = Backtest.objects.create(
-        strategy=strategy,
-        user=request.auth,
-        start_date=data.start_date,
-        end_date=data.end_date,
-        timeframe=data.timeframe
-    )
+    """Create and run backtest."""
+    backtest = Backtest.objects.create(**data.dict())
     backtest.assets.set(data.asset_ids)
     
-    # Run backtest asynchronously
+    # Run asynchronously
     run_backtest.send(backtest.id)
     
     return {"id": backtest.id, "status": "pending"}
 
 @router.get("/backtests/{backtest_id}")
-def get_backtest_results(request, backtest_id: int):
-    """Get backtest results"""
-    backtest = get_object_or_404(Backtest, id=backtest_id, user=request.user)
-    
+def get_backtest(request, backtest_id: int):
+    """Get backtest results."""
+    backtest = Backtest.objects.get(id=backtest_id)
     return {
-        "id": backtest.id,
-        "status": backtest.status,
         "metrics": {
-            "total_return": float(backtest.total_return) if backtest.total_return else None,
-            "sharpe_ratio": float(backtest.sharpe_ratio) if backtest.sharpe_ratio else None,
-            "max_drawdown": float(backtest.max_drawdown) if backtest.max_drawdown else None,
-            "win_rate": float(backtest.win_rate) if backtest.win_rate else None,
-            "profit_factor": float(backtest.profit_factor) if backtest.profit_factor else None,
+            "total_return": backtest.total_return,
+            "sharpe_ratio": backtest.sharpe_ratio,
+            "max_drawdown": backtest.max_drawdown,
         },
         "equity_curve": backtest.equity_curve,
-        "drawdown_curve": backtest.drawdown_curve,
-        "trades_count": backtest.trades.count()
     }
 
-@router.get("/backtests/{backtest_id}/trades")
-def get_backtest_trades(request, backtest_id: int):
-    """Get backtest trades"""
-    backtest = get_object_or_404(Backtest, id=backtest_id, user=request.user)
-    trades = backtest.trades.all()
-    
-    return [{
-        "asset": t.asset.symbol,
-        "entry_date": t.entry_date,
-        "exit_date": t.exit_date,
-        "entry_price": float(t.entry_price),
-        "exit_price": float(t.exit_price) if t.exit_price else None,
-        "quantity": float(t.quantity),
-        "pnl": float(t.pnl) if t.pnl else None,
-        "pnl_percentage": float(t.pnl_percentage) if t.pnl_percentage else None,
-        "exit_reason": t.exit_reason
-    } for t in trades]
-
-# Dramatiq task
 @dramatiq.actor
 def run_backtest(backtest_id: int):
-    """Run backtest asynchronously"""
+    """Run backtest asynchronously."""
     engine = BacktestingEngine(backtest_id)
     engine.run()
 ```
 
 ---
 
-## 📋 DELIVERABLES
+## 📚 COMMON MISTAKES TO AVOID
 
-- [ ] TradingStrategy, Backtest, BacktestTrade, PaperTradingAccount models
-- [ ] BacktestingEngine with execution logic
-- [ ] Support for custom Python strategies
-- [ ] Support for visual builder strategies
-- [ ] Performance metrics calculation
-- [ ] Equity and drawdown curves
-- [ ] 6 API endpoints
-- [ ] Async Dramatiq task for running backtests
-- [ ] Unit tests
+### ❌ Mistake 1: Not Accounting for Transaction Costs
+```python
+# WRONG - Ignores commission and slippage
+self.cash -= quantity * price
+
+# CORRECT - Includes costs
+cost = (quantity * price) * (1 + commission + slippage)
+self.cash -= cost
+```
+
+### ❌ Mistake 2: Look-Ahead Bias
+```python
+# WRONG - Uses future data in signal generation
+signal = data['close'].iloc[-1]  # This is current bar
+if signal > data['close'].mean():  # This includes future!
+
+# CORRECT - Only use historical data
+historical_close = data['close'].iloc[:-1]
+current_close = data['close'].iloc[-1]
+if current_close > historical_close.mean():
+    signal = 'BUY'
+```
+
+### ❌ Mistake 3: Not Handling Insufficient Funds
+```python
+# WRONG - Allows negative cash
+self.cash -= trade_value
+
+# CORRECT - Check before trading
+if trade_value <= self.cash:
+    self.cash -= trade_value
+else:
+    return  # Skip trade
+```
+
+### ❌ Mistake 4: Incorrect Sharpe Ratio Calculation
+```python
+# WRONG - Daily returns, not annualized
+sharpe = returns.mean() / returns.std()
+
+# CORRECT - Annualized (252 trading days)
+sharpe = (returns.mean() * 252 - 0.05) / (returns.std() * sqrt(252))
+```
+
+### ❌ Mistake 5: Not Using Database Transactions
+```python
+# WRONG - Partial save if error occurs
+backtest.save()
+BacktestTrade.objects.create(...)  # If this fails, backtest is saved but inconsistent
+
+# CORRECT - All or nothing
+with transaction.atomic():
+    backtest.save()
+    BacktestTrade.objects.create(...)
+```
 
 ---
 
-## ✅ ACCEPTANCE CRITERIA
+## ❓ FAQ
 
-- [ ] Backtest runs on historical date range
-- [ ] Supports multiple assets
-- [ ] Calculates 8+ performance metrics
-- [ ] Generates equity curve data
-- [ ] Generates drawdown curve data
-- [ ] Records all individual trades
-- [ ] Custom Python strategies execute safely
-- [ ] Visual SMA crossover strategy works
-- [ ] Async execution via Dramatiq
-- [ ] All tests passing
+**Q: How much historical data do I need?**  
+A: Minimum 1 year (252 trading days). For robust results, use 3-5 years.
+
+**Q: What timeframe should I use?**  
+A: Daily (1d) for long-term strategies, Hourly (1h) for intraday. Start with daily.
+
+**Q: How do I handle multiple assets?**  
+A: Process all assets at each timestamp. Each asset generates its own signals. Use 10% cash per asset position.
+
+**Q: Should I include commission in backtests?**  
+A: YES! Realistic backtests need transaction costs. Default: 0.1% commission + 0.01% slippage.
+
+**Q: What's a good Sharpe ratio?**  
+A: > 1.0 = Good, > 2.0 = Very Good, > 3.0 = Excellent. Negative = Bad.
+
+**Q: How do I prevent overfitting?**  
+A: Use out-of-sample testing. Train on 70% of data, test on 30%. Never test on training data.
+
+**Q: Can users write custom strategies?**  
+A: YES! Use Python code strategy type. Safely execute with `exec()` in sandboxed environment.
 
 ---
 
-## 📊 SUCCESS METRICS
+## 📋 CHECKLIST BEFORE SUBMITTING
 
-- Backtest execution time: 1 year of data in <30 seconds
-- Support for 1000+ trades per backtest
-- Strategy execution overhead <10% of total time
-- All performance metrics accurate to 2 decimal places
+- [ ] All models created with base classes
+- [ ] Migration created and applied
+- [ ] BaseStrategy abstract class defined
+- [ ] At least 2 preset strategies work (SMA, RSI)
+- [ ] Backtesting engine executes correctly
+- [ ] Transaction costs applied
+- [ ] Performance metrics accurate
+- [ ] API endpoints working
+- [ ] Dramatiq async task working
+- [ ] Tests pass
+- [ ] Equity curve data generated
+- [ ] Drawdown curve data generated
 
 ---
 
-**Task created:** January 30, 2026  
-**Task file:** tasks/coders/022-strategy-backtesting-engine.md
+## 🎯 SUCCESS CRITERIA
+
+1. ✅ Backtest runs on historical date range
+2. ✅ Supports multiple assets simultaneously
+3. ✅ Calculates 8+ performance metrics accurately
+4. ✅ Generates equity curve for visualization
+5. ✅ Generates drawdown curve
+6. ✅ Records all individual trades
+7. ✅ Custom Python strategies execute safely
+8. ✅ SMA crossover preset strategy works
+9. ✅ Async execution via Dramatiq works
+10. ✅ All tests passing
+
+---
+
+**Start with Step 1 (install dependencies) and work through each step sequentially.**
