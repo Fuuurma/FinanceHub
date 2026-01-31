@@ -121,7 +121,7 @@ def get_symbol_sentiment(
 def get_symbol_posts(
     request, symbol: str, source: Optional[str] = None, limit: int = 50
 ):
-    posts = SocialPost.objects.filter(symbols__icontains=symbol)
+    posts = SocialPost.objects.filter(symbol=symbol.upper())
     if source:
         posts = posts.filter(source=source)
     posts = posts.order_by("-created_at")[:limit]
@@ -135,11 +135,11 @@ def get_symbol_posts(
             "post_id": post.post_id,
             "author": post.author,
             "content": post.content,
-            "symbols": post.symbols_list,
+            "symbols": [post.symbol],
             "followers_count": post.followers_count,
-            "likes_count": post.likes_count,
-            "comments_count": post.comments_count,
-            "shares_count": post.shares_count,
+            "likes_count": 0,
+            "comments_count": post.comments,
+            "shares_count": post.shares,
             "engagement_score": post.engagement_score,
             "created_at": post.created_at,
         }
@@ -147,16 +147,16 @@ def get_symbol_posts(
             post_data["sentiment_analysis"] = {
                 "id": sentiment.id,
                 "source": sentiment.source,
-                "content_hash": sentiment.content_hash,
+                "content_hash": "",
                 "vader_compound": sentiment.vader_compound,
                 "vader_positive": sentiment.vader_positive,
                 "vader_negative": sentiment.vader_negative,
                 "vader_neutral": sentiment.vader_neutral,
                 "textblob_polarity": sentiment.textblob_polarity,
                 "textblob_subjectivity": sentiment.textblob_subjectivity,
-                "combined_score": sentiment.combined_score,
+                "combined_score": sentiment.weighted_sentiment,
                 "confidence": sentiment.confidence,
-                "sentiment_label": sentiment.sentiment_label,
+                "sentiment_label": sentiment.sentiment,
                 "created_at": sentiment.created_at,
             }
         result.append(SocialPostSchema(**post_data))

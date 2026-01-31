@@ -4,8 +4,13 @@ from typing import List
 from pydantic import BaseModel
 from datetime import datetime
 
-from .models import BrokerConnection, BrokerPosition, BrokerTransaction, BrokerOrder
-from .services.broker_service import BrokerService, EncryptionService
+from brokers.models import (
+    BrokerConnection,
+    BrokerPosition,
+    BrokerTransaction,
+    BrokerOrder,
+)
+from brokers.services.broker_service import BrokerService, EncryptionService
 
 router = Router()
 
