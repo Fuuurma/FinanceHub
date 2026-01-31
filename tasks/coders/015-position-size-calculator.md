@@ -1,376 +1,433 @@
-# C-015: Position Size Calculator & Risk Tools
+# Task C-015: Position Size Calculator & Risk Tools
 
-**Priority:** P1 - HIGH  
-**Assigned to:** Backend Coder  
+**Priority:** P1 HIGH  
 **Estimated Time:** 8-12 hours  
-**Dependencies:** None  
-**Status:** ⏳ PENDING
+**Assigned To:** Backend Coder  
+**Status:** PENDING
+
+## ⚡ Quick Start Guide
+
+**What to do FIRST (in order):**
+
+1. **Backend (Step 1):** Create risk service (3h) - Position size, risk/reward calculations
+2. **Backend (Step 2):** Create API endpoints (2h) - 4 REST endpoints
+3. **Backend (Step 3):** Create risk metrics (2h) - Portfolio risk score, VaR
+4. **Frontend (Step 4):** Create calculator form (1.5h) - Position size calculator UI
+5. **Frontend (Step 5):** Create risk analysis page (1.5h) - Display risk metrics
+6. **Testing (Step 6):** Write tests (1h) - Test calculations
+
+**Total: 9 hours (estimate)**
 
 ---
 
-## 🎯 OBJECTIVE
-
+## Overview
 Implement position size calculator and risk management tools for portfolio protection.
 
 ---
 
-## 📊 FEATURE DESCRIPTION
+## 🔧 STEP-BY-STEP IMPLEMENTATION GUIDE
 
-**From Features Specification (Section 5.1 - Position Risk):**
+### STEP 1: Create Risk Management Service (3 hours) ⭐ CRITICAL
 
-- Position size calculator
-- Portfolio risk score
-- Stop-loss order recommendations
-- Risk/reward ratio analysis
-- Maximum drawdown tracking
-
----
-
-## ✅ CURRENT STATE
-
-**What exists:**
-- Basic portfolio tracking
-- Position data in PortfolioPosition model
-
-**What's missing:**
-- Position size calculation
-- Risk metrics
-- Stop-loss recommendations
-- Risk/reward analysis
-
----
-
-## 🚀 IMPLEMENTATION PLAN
-
-### **Phase 1: Risk Calculation Service** (4-5 hours)
-
-**Create `apps/backend/src/investments/services/risk_service.py`:**
+**File:** `apps/backend/src/investments/services/risk_service.py`
 
 ```python
 from typing import Dict, List
 from decimal import Decimal
-from investments.models import Portfolio, PortfolioPosition, Asset
 
 class RiskManagementService:
+    """
+    Risk management and position sizing service.
     
-    def calculate_position_size(self, portfolio_value: float, risk_percentage: float, stop_loss_pct: float) -> Dict:
+    Helps traders:
+    - Calculate optimal position sizes
+    - Manage risk per trade
+    - Calculate stop-loss levels
+    - Analyze risk/reward ratios
+    """
+    
+    def calculate_position_size(
+        self,
+        portfolio_value: float,
+        account_balance: float,
+        risk_per_trade: float,
+        entry_price: float,
+        stop_loss_price: float
+    ) -> Dict:
         """
-        Calculate optimal position size based on risk
+        Calculate optimal position size using fixed fractional method.
+        
+        Formula:
+        Position Size = (Account Balance × Risk Per Trade) / (Entry Price - Stop Loss)
         
         Args:
             portfolio_value: Total portfolio value
-            risk_percentage: Max risk per trade (e.g., 1% = 0.01)
-            stop_loss_pct: Stop loss percentage (e.g., 5% = 0.05)
+            account_balance: Available cash for trading
+            risk_per_trade: Risk per trade (e.g., 0.01 for 1%)
+            entry_price: Entry price per share
+            stop_loss_price: Stop loss price per share
         
         Returns:
-            {position_size, max_loss, shares, risk_amount}
+            Dictionary with position size details
         """
-        risk_amount = portfolio_value * risk_percentage
-        position_size = risk_amount / stop_loss_pct
+        # Calculate risk amount (dollar amount to risk)
+        risk_amount = account_balance * risk_per_trade
+        
+        # Calculate risk per share
+        risk_per_share = abs(entry_price - stop_loss_price)
+        
+        if risk_per_share == 0:
+            return {
+                'error': 'Entry price and stop loss cannot be the same'
+            }
+        
+        # Calculate position size (number of shares)
+        position_shares = risk_amount / risk_per_share
+        
+        # Calculate position value
+        position_value = position_shares * entry_price
+        
+        # Calculate max loss (if stop loss is hit)
+        max_loss = position_shares * risk_per_share
+        
+        # Calculate position as percentage of portfolio
+        position_pct = (position_value / portfolio_value * 100) if portfolio_value > 0 else 0
         
         return {
-            'portfolio_value': portfolio_value,
-            'risk_percentage': risk_percentage * 100,
-            'risk_amount': risk_amount,
-            'stop_loss_percentage': stop_loss_pct * 100,
-            'position_size': position_size,
-            'position_percentage': (position_size / portfolio_value * 100) if portfolio_value > 0 else 0
+            'position_shares': round(position_shares, 2),
+            'position_value': round(position_value, 2),
+            'position_percentage': round(position_pct, 2),
+            'risk_amount': round(risk_amount, 2),
+            'risk_per_share': round(risk_per_share, 2),
+            'max_loss': round(max_loss, 2),
+            'max_loss_percentage': round((max_loss / account_balance * 100), 2),
+            'stop_loss_distance': round(risk_per_share / entry_price * 100, 2)
         }
     
-    def calculate_risk_reward_ratio(self, entry_price: float, stop_loss: float, target_price: float) -> Dict:
+    def calculate_stop_loss(
+        self,
+        entry_price: float,
+        stop_loss_pct: float,
+        position_type: str = 'LONG'
+    ) -> float:
         """
-        Calculate risk/reward ratio for a trade
+        Calculate stop loss price.
+        
+        Args:
+            entry_price: Entry price
+            stop_loss_pct: Stop loss percentage (e.g., 0.05 for 5%)
+            position_type: 'LONG' or 'SHORT'
         
         Returns:
-            {risk, reward, ratio, verdict}
+            Stop loss price
         """
+        if position_type == 'LONG':
+            # Long: Stop loss below entry
+            return entry_price * (1 - stop_loss_pct)
+        else:
+            # Short: Stop loss above entry
+            return entry_price * (1 + stop_loss_pct)
+    
+    def calculate_risk_reward_ratio(
+        self,
+        entry_price: float,
+        stop_loss: float,
+        target_price: float
+    ) -> Dict:
+        """
+        Calculate risk/reward ratio.
+        
+        R/R Ratio = (Target Price - Entry) / (Entry - Stop Loss)
+        
+        Guidelines:
+        - R/R >= 3.0: EXCELLENT
+        - R/R >= 2.0: GOOD
+        - R/R >= 1.0: FAIR
+        - R/R < 1.0: POOR
+        
+        Args:
+            entry_price: Entry price
+            stop_loss: Stop loss price
+            target_price: Target/profit price
+        
+        Returns:
+            Dictionary with R/R analysis
+        """
+        # Calculate risk and reward
         risk = abs(entry_price - stop_loss)
         reward = abs(target_price - entry_price)
-        ratio = reward / risk if risk > 0 else 0
         
-        # Verdict
-        if ratio >= 3:
-            verdict = "EXCELLENT"
-        elif ratio >= 2:
-            verdict = "GOOD"
-        elif ratio >= 1:
-            verdict = "FAIR"
+        if risk == 0:
+            return {
+                'error': 'Risk cannot be zero (entry and stop loss are the same)'
+            }
+        
+        # Calculate ratio
+        ratio = reward / risk
+        
+        # Determine verdict
+        if ratio >= 3.0:
+            verdict = 'EXCELLENT'
+            color = 'green'
+        elif ratio >= 2.0:
+            verdict = 'GOOD'
+            color = 'blue'
+        elif ratio >= 1.0:
+            verdict = 'FAIR'
+            color = 'yellow'
         else:
-            verdict = "POOR"
+            verdict = 'POOR'
+            color = 'red'
         
         return {
             'entry_price': entry_price,
             'stop_loss': stop_loss,
             'target_price': target_price,
-            'risk_per_share': risk,
-            'reward_per_share': reward,
+            'risk_per_share': round(risk, 2),
+            'reward_per_share': round(reward, 2),
             'risk_reward_ratio': round(ratio, 2),
-            'verdict': verdict
+            'verdict': verdict,
+            'color': color
         }
     
-    def calculate_portfolio_risk_score(self, portfolio_id: int) -> Dict:
+    def calculate_portfolio_risk_score(
+        self,
+        positions: List[Dict]
+    ) -> Dict:
         """
-        Calculate overall portfolio risk score (0-100)
+        Calculate overall portfolio risk score.
+        
+        Factors:
+        - Concentration risk (single position > 20%)
+        - Correlation risk (highly correlated assets)
+        - Volatility risk (overall portfolio volatility)
+        
+        Args:
+            positions: List of position dicts with {symbol, value, volatility}
         
         Returns:
-            {risk_score, risk_level, factors}
+            Portfolio risk analysis
         """
-        positions = PortfolioPosition.objects.filter(
-            portfolio_id=portfolio_id
-        ).select_related('asset')
+        if not positions:
+            return {
+                'risk_score': 0,
+                'risk_level': 'NONE',
+                'factors': []
+            }
         
-        total_value = sum(p.current_value for p in positions)
+        total_value = sum(p['value'] for p in positions)
+        risk_factors = []
+        risk_score = 0
         
-        # Risk factors
-        factors = []
-        total_score = 0
-        
-        # 1. Concentration risk (0-25 points)
-        max_position_pct = max((p.current_value / total_value * 100) for p in positions) if positions else 0
+        # Concentration risk
+        max_position_pct = max((p['value'] / total_value * 100) for p in positions)
         if max_position_pct > 20:
-            concentration_score = 25
-            factors.append({'factor': 'Concentration', 'score': 25, 'note': f'Max position {max_position_pct:.1f}% is high'})
+            risk_score += 20
+            risk_factors.append({
+                'type': 'CONCENTRATION',
+                'severity': 'HIGH',
+                'description': f'Max position is {max_position_pct:.1f}% (>20% recommended)'
+            })
         elif max_position_pct > 10:
-            concentration_score = 15
-            factors.append({'factor': 'Concentration', 'score': 15, 'note': f'Max position {max_position_pct:.1f}% is moderate'})
+            risk_score += 10
+            risk_factors.append({
+                'type': 'CONCENTRATION',
+                'severity': 'MEDIUM',
+                'description': f'Max position is {max_position_pct:.1f}%'
+            })
+        
+        # Volatility risk
+        avg_volatility = sum(p.get('volatility', 0.2) for p in positions) / len(positions)
+        if avg_volatility > 0.4:
+            risk_score += 20
+            risk_factors.append({
+                'type': 'VOLATILITY',
+                'severity': 'HIGH',
+                'description': f'High volatility: {avg_volatility:.1%}'
+            })
+        elif avg_volatility > 0.25:
+            risk_score += 10
+            risk_factors.append({
+                'type': 'VOLATILITY',
+                'severity': 'MEDIUM',
+                'description': f'Moderate volatility: {avg_volatility:.1%}'
+            })
+        
+        # Determine risk level
+        if risk_score >= 50:
+            risk_level = 'VERY HIGH'
+        elif risk_score >= 30:
+            risk_level = 'HIGH'
+        elif risk_score >= 15:
+            risk_level = 'MEDIUM'
         else:
-            concentration_score = 5
-            factors.append({'factor': 'Concentration', 'score': 5, 'note': f'Max position {max_position_pct:.1f}% is good'})
-        
-        total_score += concentration_score
-        
-        # 2. Volatility risk (0-25 points)
-        # Simplified - in production, use historical volatility
-        avg_volatility = sum(p.asset.volatility or 0.2 for p in positions) / len(positions) if positions else 0.2
-        volatility_score = min(25, avg_volatility * 100)
-        factors.append({'factor': 'Volatility', 'score': volatility_score, 'note': f'Avg volatility {avg_volatility*100:.1f}%'})
-        total_score += volatility_score
-        
-        # 3. Asset class diversity (0-25 points)
-        asset_classes = set(p.asset.asset_type for p in positions)
-        diversity_score = max(0, 25 - len(asset_classes) * 5)
-        factors.append({'factor': 'Diversity', 'score': diversity_score, 'note': f'{len(asset_classes)} asset classes'})
-        total_score += diversity_score
-        
-        # 4. Leverage risk (0-25 points)
-        # Assuming no leverage for now
-        leverage_score = 0
-        factors.append({'factor': 'Leverage', 'score': 0, 'note': 'No leverage'})
-        total_score += leverage_score
-        
-        # Risk level
-        if total_score < 30:
-            risk_level = "LOW"
-        elif total_score < 60:
-            risk_level = "MODERATE"
-        else:
-            risk_level = "HIGH"
+            risk_level = 'LOW'
         
         return {
-            'risk_score': round(total_score, 2),
+            'risk_score': risk_score,
             'risk_level': risk_level,
-            'factors': factors
-        }
-    
-    def recommend_stop_loss(self, position: PortfolioPosition, method: str = 'percentage') -> Dict:
-        """
-        Recommend stop-loss level for a position
-        
-        Methods:
-        - percentage: Fixed % below entry (e.g., 5%)
-        - atr: Based on Average True Range
-        - support: Below support level
-        
-        Returns:
-            {stop_loss_price, method, reasoning}
-        """
-        entry_price = position.average_cost
-        
-        if method == 'percentage':
-            # Default 5% stop loss
-            stop_loss_pct = Decimal('0.05')
-            stop_loss_price = entry_price * (1 - stop_loss_pct)
-            reasoning = f"5% trailing stop loss"
-        
-        elif method == 'atr':
-            # Calculate ATR (simplified - use historical data in production)
-            # Placeholder: 2x ATR
-            atr = entry_price * Decimal('0.02')  # Assume 2% daily range
-            stop_loss_price = entry_price - (2 * atr)
-            reasoning = f"2x ATR stop loss"
-        
-        elif method == 'support':
-            # Find recent support level (simplified)
-            # In production, query recent lows from price history
-            support_level = entry_price * Decimal('0.95')  # Assume support at 5% below
-            stop_loss_price = support_level
-            reasoning = f"Support level at {support_level:.2f}"
-        
-        else:
-            stop_loss_price = entry_price * Decimal('0.95')
-            reasoning = "Default 5% stop loss"
-        
-        return {
-            'position_id': position.id,
-            'asset_symbol': position.asset.symbol,
-            'entry_price': float(entry_price),
-            'stop_loss_price': float(stop_loss_price),
-            'stop_loss_percentage': float(((entry_price - stop_loss_price) / entry_price * 100)),
-            'method': method,
-            'reasoning': reasoning
+            'factors': risk_factors
         }
 ```
 
 ---
 
-### **Phase 2: API Endpoints** (3-4 hours)
+### STEP 2: Create API Endpoints (2 hours)
 
-**Create `apps/backend/src/api/risk_management.py`:**
+**File:** `apps/backend/src/api/risk_management.py`
 
 ```python
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+from ninja import Router
+from pydantic import BaseModel
 from investments.services.risk_service import RiskManagementService
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def calculate_position_size(request):
-    """
-    POST /api/risk/position-size/
-    Body: {portfolio_value, risk_percentage, stop_loss_pct}
-    Returns position size recommendation
-    """
-    data = request.data
-    service = RiskManagementService()
-    result = service.calculate_position_size(
-        portfolio_value=float(data['portfolio_value']),
-        risk_percentage=float(data['risk_percentage']),
-        stop_loss_pct=float(data['stop_loss_pct'])
+router = Router()
+risk_service = RiskManagementService()
+
+class PositionSizeRequest(BaseModel):
+    portfolio_value: float
+    account_balance: float
+    risk_per_trade: float
+    entry_price: float
+    stop_loss_price: float
+
+@router.post("/risk/position-size")
+def calculate_position_size(request, data: PositionSizeRequest):
+    """Calculate optimal position size."""
+    result = risk_service.calculate_position_size(
+        data.portfolio_value,
+        data.account_balance,
+        data.risk_per_trade,
+        data.entry_price,
+        data.stop_loss_price
     )
-    return Response(result)
+    return result
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def calculate_risk_reward(request):
-    """
-    POST /api/risk/risk-reward/
-    Body: {entry_price, stop_loss, target_price}
-    Returns risk/reward analysis
-    """
-    data = request.data
-    service = RiskManagementService()
-    result = service.calculate_risk_reward_ratio(
-        entry_price=float(data['entry_price']),
-        stop_loss=float(data['stop_loss']),
-        target_price=float(data['target_price'])
-    )
-    return Response(result)
+@router.get("/risk/risk-reward")
+def calculate_risk_reward(request, entry: float, stop: float, target: float):
+    """Calculate risk/reward ratio."""
+    return risk_service.calculate_risk_reward_ratio(entry, stop, target)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def portfolio_risk_score(request, portfolio_id):
-    """
-    GET /api/portfolios/{id}/risk-score/
-    Returns portfolio risk analysis
-    """
-    service = RiskManagementService()
-    result = service.calculate_portfolio_risk_score(portfolio_id)
-    return Response(result)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def stop_loss_recommendation(request, position_id, method='percentage'):
-    """
-    GET /api/positions/{id}/stop-loss/?method=percentage
-    Returns stop-loss recommendation
-    """
-    position = PortfolioPosition.objects.get(id=position_id)
-    service = RiskManagementService()
-    result = service.recommend_stop_loss(position, method)
-    return Response(result)
+@router.post("/risk/portfolio-score")
+def calculate_portfolio_risk(request, positions: list):
+    """Calculate portfolio risk score."""
+    return risk_service.calculate_portfolio_risk_score(positions)
 ```
 
 ---
 
-### **Phase 3: Frontend Components** (2-3 hours)
+## 📚 COMMON MISTAKES TO AVOID
 
-**Create `apps/frontend/src/components/risk/PositionSizeCalculator.tsx`:**
+### ❌ Mistake 1: Not Checking for Zero Risk
+```python
+# WRONG - Division by zero error
+position_size = risk_amount / (entry_price - stop_loss_price)
 
-```typescript
-import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import api from '@/lib/api';
+# CORRECT - Check first
+risk_per_share = entry_price - stop_loss_price
+if risk_per_share == 0:
+    return {'error': 'Invalid stop loss'}
+position_size = risk_amount / risk_per_share
+```
 
-export const PositionSizeCalculator: React.FC = () => {
-  const [portfolioValue, setPortfolioValue] = useState(10000);
-  const [riskPct, setRiskPct] = useState(1);
-  const [stopLossPct, setStopLossPct] = useState(5);
-  
-  const { data: result, mutate: calculate } = useMutation({
-    mutationFn: () => api.post('/api/risk/position-size/', {
-      portfolio_value: portfolioValue,
-      risk_percentage: riskPct / 100,
-      stop_loss_pct: stopLossPct / 100
-    })
-  });
-  
-  return (
-    <div className="position-size-calculator">
-      <h2>Position Size Calculator</h2>
-      
-      <div className="input-group">
-        <label>Portfolio Value ($)</label>
-        <input type="number" value={portfolioValue} onChange={e => setPortfolioValue(Number(e.target.value))} />
-      </div>
-      
-      <div className="input-group">
-        <label>Risk per Trade (%)</label>
-        <input type="number" value={riskPct} onChange={e => setRiskPct(Number(e.target.value))} />
-      </div>
-      
-      <div className="input-group">
-        <label>Stop Loss (%)</label>
-        <input type="number" value={stopLossPct} onChange={e => setStopLossPct(Number(e.target.value))} />
-      </div>
-      
-      <button onClick={() => calculate()}>Calculate</button>
-      
-      {result && (
-        <div className="results">
-          <h3>Results</h3>
-          <p>Position Size: ${result.data.position_size.toFixed(2)}</p>
-          <p>Max Loss: ${result.data.risk_amount.toFixed(2)}</p>
-          <p>Position % of Portfolio: {result.data.position_percentage.toFixed(2)}%</p>
-        </div>
-      )}
-    </div>
-  );
-};
+### ❌ Mistake 2: Risking Too Much Per Trade
+```python
+# WRONG - 5% risk per trade is too high
+risk_per_trade = 0.05  # 5% - WILL BLOW ACCOUNT SOON
+
+# CORRECT - 1% max risk per trade
+risk_per_trade = 0.01  # 1% - PROFESSIONAL STANDARD
+```
+
+### ❌ Mistake 3: Ignoring Position Size Limits
+```python
+# WRONG - Could be 100% of portfolio
+position_shares = risk_amount / risk_per_share
+
+# CORRECT - Limit to 20% max
+position_pct = (position_shares * entry_price) / portfolio_value
+if position_pct > 0.20:
+    position_shares = (portfolio_value * 0.20) / entry_price
+```
+
+### ❌ Mistake 4: Wrong Risk/Reward Interpretation
+```python
+# WRONG - Takes low R/R trades
+if ratio > 0.5:  # This is POOR
+    return 'GOOD'
+
+# CORRECT - Only take 2:1 or better
+if ratio >= 2.0:
+    return 'GOOD'
+elif ratio >= 1.0:
+    return 'FAIR'
+else:
+    return 'POOR'
+```
+
+### ❌ Mistake 5: Not Accounting for Slippage
+```python
+# WRONG - Assumes perfect execution
+stop_loss = entry_price * 0.95
+
+# CORRECT - Add buffer for slippage
+stop_loss = entry_price * 0.94  # Extra 1% buffer
 ```
 
 ---
 
-## 📋 DELIVERABLES
+## ❓ FAQ
 
-- [ ] RiskManagementService with 4 methods
-- [ ] 4 API endpoints
-- [ ] Frontend PositionSizeCalculator component
-- [ ] Frontend RiskRewardAnalyzer component
-- [ ] Unit tests
-- [ ] API documentation
+**Q: What's the ideal risk per trade?**  
+A: 1% of account balance. This is the professional standard. Never exceed 2%.
+
+**Q: What's a good risk/reward ratio?**  
+A: Minimum 2:1. Ideally 3:1 or better. This means you risk $1 to make $2 or $3.
+
+**Q: How much should I allocate to one position?**  
+A: Maximum 20% of portfolio. Ideally 5-10% per position for diversification.
+
+**Q: Where should I set my stop loss?**  
+A: Below a recent swing low (for longs) or above a swing high (for shorts). Use technical levels, not arbitrary percentages.
+
+**Q: What if the position size calculation says 1000 shares but I can only afford 500?**  
+A: Use 500 shares. Never over-leverage. Reduce risk or wait for better entry.
+
+**Q: Should I adjust position size based on volatility?**  
+A: YES! Reduce position size for high-volatility assets, increase for low-volatility.
+
+**Q: How do I calculate risk for crypto?**  
+A: Same formula, but use wider stops (10-20%) due to higher volatility.
 
 ---
 
-## ✅ ACCEPTANCE CRITERIA
+## 📋 CHECKLIST BEFORE SUBMITTING
 
-- [ ] Position size calculator returns correct allocation
-- [ ] Risk/reward ratio calculates properly (reward/risk)
-- [ ] Portfolio risk score returns 0-100 scale
-- [ ] Stop loss recommendations use 3 methods
-- [ ] All tests passing
+- [ ] RiskManagementService created
+- [ ] Position size calculation accurate
+- [ ] Risk/reward calculation working
+- [ ] Portfolio risk score calculation
+- [ ] API endpoints created
+- [ ] Input validation (no zero risk)
+- [ ] Position size limits enforced (max 20%)
+- [ ] Stop loss calculator working
+- [ ] Tests written
+- [ ] Frontend calculator form created
+- [ ] Risk analysis page created
 
 ---
 
-**Task created:** January 30, 2026  
-**Task file:** tasks/coders/015-position-size-calculator.md
+## 🎯 SUCCESS CRITERIA
+
+1. ✅ Position size calculator accurate
+2. ✅ Risk/reward ratio correct
+3. ✅ Portfolio risk score calculated
+4. ✅ Stop loss recommendations provided
+5. ✅ API endpoints working
+6. ✅ Frontend calculator functional
+7. ✅ Risk limits enforced (max 20% per position)
+8. ✅ All edge cases handled
+
+---
+
+**Start with Step 1 (risk service) and work through each step sequentially.**
