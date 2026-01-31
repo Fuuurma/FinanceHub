@@ -121,6 +121,7 @@ find . -type f -perm -o+w
 4. **DOCUMENT** each issue with steps to reproduce
 5. **RECOMMEND** specific fixes
 6. **VERIFY** fixes are effective
+7. **SHOW EVIDENCE** - Include git diffs or test outputs, don't just report
 
 ### For This Migration:
 - ✅ Validate no new vulnerabilities introduced
@@ -129,6 +130,12 @@ find . -type f -perm -o+w
 - ✅ Review file permissions
 - ✅ Scan Docker images
 - ✅ Generate security report
+
+### 🚨 LESSONS FROM PREVIOUS SESSIONS:
+- **Verify Before Marking Complete** - Add verification step before marking done
+- **Limit Parallel Work** - Max 2 active tasks at once
+- **Ask for Feedback Earlier** - Send interim updates, not just final reports
+- **Quantify Progress** - "Fixed 12 print statements in 2 files" vs "Fixed print statements"
 
 ## 🚨 CRITICAL RULES
 

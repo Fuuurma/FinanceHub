@@ -41,11 +41,17 @@ Each task includes:
 3. Plan your approach
 4. Test in safe environment first
 
+# CRITICAL: After failures:
+5. Check migration state FIRST: python manage.py showmigrations
+6. Review generated migrations before applying (especially AlterField)
+7. Check database state: \dt + SELECT * FROM django_migrations;
+8. Verify what actually failed before fixing
+
 # Execute:
-5. Follow the steps precisely
-6. Document what you did
-7. Verify the results
-8. Report back to Architect
+9. Follow the steps precisely
+10. Document what you did
+11. Verify the results
+12. Report back to Architect
 ```
 
 ### 3. Report Your Progress
@@ -129,6 +135,9 @@ cp -r, mv, mkdir -r
 3. **DOCUMENT everything** - Every command, every change
 4. **COMMUNICATE early** - Report blockers immediately
 5. **ASK questions** - If unsure, ask Architect
+6. **CHECK STATE FIRST** - After any failure, check migrations/state before fixing
+7. **REVIEW GENERATED CODE** - Don't apply migrations without reviewing them first
+8. **SMALLER MIGRATIONS** - Create focused migrations, not large autodetected ones
 
 ## 🔧 YOUR TOOLKIT
 
