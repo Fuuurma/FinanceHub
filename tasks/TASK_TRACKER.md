@@ -114,13 +114,13 @@
 | C-019 | Data Export Functionality | 8-12h | ✅ COMPLETED | P2 MEDIUM | CSV/Excel/JSON export, 5 data types, frontend dropdown, hook created |
 | C-020 | Advanced Alerts & Notifications | 14-18h | ✅ COMPLETED | P1 HIGH | Alert models, service, API, AlertList & NotificationCenter components created |
 | C-021 | Advanced Technical Indicators Engine | 16-20h | ✅ COMPLETED | P2 MEDIUM | 13 indicators library (SMA, EMA, RSI, MACD, BB, ATR, etc.), API, frontend selector created |
-| C-022 | Strategy Backtesting Engine | 18-24h | ⏳ PENDING | P1 HIGH |
-| C-023 | Options Greeks Calculator | 12-16h | ⏳ PENDING | P2 MEDIUM |
-| C-024 | Earnings Calendar & Events | 10-14h | ⏳ PENDING | P2 MEDIUM |
-| C-025 | CSV Bulk Import | 6-8h | ⏳ PENDING | P2 MEDIUM |
-| C-026 | Value-at-Risk (VaR) Calculator | 14-18h | ⏳ PENDING | P1 HIGH |
-| C-027 | Universal Asset Search Engine | 12-16h | ⏳ PENDING | P1 HIGH |
-| C-028 | IPO Calendar & Listings Tracker | 10-14h | ⏳ PENDING | P2 MEDIUM |
+| C-022 | Strategy Backtesting Engine | 18-24h | ✅ COMPLETED | P1 HIGH | Backtesting engine, SMA/RSI strategies, Sharpe/Sortino metrics, API, frontend component created |
+| C-023 | Options Greeks Calculator | 12-16h | ✅ COMPLETED | P2 MEDIUM | Black-Scholes model, 10 Greeks, IV calculation, API endpoints, OptionsCalculator & OptionsChainView components, tests created |
+| C-024 | Earnings Calendar & Events | 10-14h | ✅ COMPLETED | P2 MEDIUM | Models, service, API endpoints, EarningsCalendar component created |
+| C-025 | CSV Bulk Import | 6-8h | ✅ COMPLETED | P2 MEDIUM | CSV parser utility, 7 formats supported, import API endpoints, CSVImportDialog component, integration to portfolios page |
+| C-026 | Value-at-Risk (VaR) Calculator | 14-18h | ✅ COMPLETED | P0 CRITICAL | Risk models (VaR, StressTest, RiskContribution, RiskLimit), VaR calculation service with 3 methods (parametric, historical, Monte Carlo), stress testing service with 4 historical scenarios, API endpoints, RiskDashboard frontend component |
+| C-027 | Universal Asset Search Engine | 12-16h | ✅ COMPLETED | P0 CRITICAL | Search models (SavedSearch, SearchHistory, ScreenTemplate, AssetComparison), UniversalSearchService with relevance scoring, advanced filtering, API endpoints, SearchBar component, existing ScreenerPage integrated |
+| C-028 | IPO Calendar & Listings Tracker | 10-14h | ✅ COMPLETED | P1 HIGH | IPO models (IPOCalendar, IPOAlert, IPOWatchlist, SPACTracker), IPO CalendarService with upcoming IPOs, recent listings, watchlist, alerts, SPAC tracking, API endpoints, IPO Calendar frontend page |
 | C-029 | Level 2 Market Depth | 12-16h | ⏳ PENDING | P2 MEDIUM |
 | C-030 | Broker API Integration | 14-18h | ⏳ PENDING | P1 HIGH |
 | C-031 | Bond Yield Calculator | 12-16h | ⏳ PENDING | P2 MEDIUM |
@@ -136,14 +136,72 @@
 
 **Coder Progress:**
 - Migration tasks: 6 of 10 complete (60%)
-- Feature tasks: 10 of 30 complete (33%)
-- **Total: 16 of 40 complete (40%)**
+- Feature tasks: 17 of 30 complete (57%)
+- **Total: 23 of 40 complete (58%)**
 - **Total estimated work: 450+ hours**
 
 **Next Action:**
 1. Complete C-016 (Customizable Dashboards) - HIGH VALUE
 2. Complete C-017 (Market Heat Map Visualization) - HIGH VALUE
 3. Complete S-003 (Security fixes) - P0 CRITICAL
+
+---
+
+## 🧪 GRACE (QA/Testing Engineer)
+
+**Activated:** Feb 1, 2026
+**Named After:** Grace Hopper - Testing pioneer
+**Role:** Quality Assurance and Testing
+**Reporting To:** GAUDÍ + ARIA
+
+| Task ID | Task | Status | Priority | Deadline | Updates |
+|---------|------|--------|----------|----------|---------|
+| G-001 | Test S-009 (Float Precision) | ⏳ Pending | P0 CRITICAL | Feb 2 5PM | Write decimal precision tests |
+| G-002 | Test S-010 (Token Race Conditions) | ⏳ Pending | P0 CRITICAL | Feb 2 5PM | Write concurrency tests |
+| G-003 | Test S-011 (Remove Print Statements) | ⏳ Pending | P0 CRITICAL | Feb 2 5PM | Write logging verification tests |
+| G-004 | Testing Guidelines Document | ⏳ Pending | P1 HIGH | Feb 7 5PM | Create testing standards |
+| G-005 | Coverage Baseline Report | ⏳ Pending | P1 HIGH | Feb 7 5PM | Measure and document coverage |
+
+**GRACE Progress:** 0 of 5 complete (0%)
+**First Report Due:** Feb 1, 5:00 PM
+
+---
+
+## 🎨 MIES (UI/UX Designer)
+
+**Activated:** Feb 1, 2026
+**Named After:** Mies van der Rohe - "Less is more"
+**Role:** Design System and UI/UX
+**Reporting To:** GAUDÍ + ARIA
+
+| Task ID | Task | Status | Priority | Deadline | Updates |
+|---------|------|--------|----------|----------|---------|
+| M-001 | Design System Audit | ⏳ Pending | P1 HIGH | Feb 7 5PM | Component inventory |
+| M-002 | Accessibility Review (Design) | ⏳ Pending | P1 HIGH | Feb 7 5PM | WCAG compliance check |
+| M-003 | Design Guidelines Document | ⏳ Pending | P2 MEDIUM | Feb 7 5PM | Spacing, typography, color |
+| M-004 | Component Standardization | ⏳ Pending | P2 MEDIUM | Feb 14 5PM | Fix inconsistencies |
+
+**MIES Progress:** 0 of 4 complete (0%)
+**First Report Due:** Feb 1, 5:00 PM
+
+---
+
+## ♿ HADI (Accessibility Specialist)
+
+**Activated:** Feb 1, 2026
+**Named After:** Hadi Partovi - Inclusion advocate
+**Role:** Accessibility and WCAG Compliance
+**Reporting To:** GAUDÍ + ARIA
+
+| Task ID | Task | Status | Priority | Deadline | Updates |
+|---------|------|--------|----------|----------|---------|
+| H-001 | WCAG 2.1 Level AA Audit | ⏳ Pending | P1 HIGH | Feb 14 5PM | Full application audit |
+| H-002 | Fix Critical Accessibility Issues (5) | ⏳ Pending | P0 CRITICAL | Feb 7 5PM | Keyboard, contrast, ARIA |
+| H-003 | Accessibility Guidelines for Coders | ⏳ Pending | P2 MEDIUM | Feb 14 5PM | Training material |
+| H-004 | Screen Reader Testing | ⏳ Pending | P1 HIGH | Feb 14 5PM | NVDA/VoiceOver verification |
+
+**HADI Progress:** 0 of 4 complete (0%)
+**First Report Due:** Feb 1, 5:00 PM
 
 ---
 

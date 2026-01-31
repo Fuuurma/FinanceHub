@@ -50,6 +50,11 @@ from api.rate_limit_admin import router as rate_limit_admin_router
 from api.screener_presets import router as screener_presets_router
 from api.portfolio_rebalancing import router as portfolio_rebalancing_router
 from api.ai_news import router as ai_news_router
+from api.imports import router as imports_router
+from api.risk import router as risk_router
+from api.search import router as search_router
+from api.ipo import router as ipo_router
+from api.backtesting import router as backtesting_router
 
 
 # Register API exception handlers
@@ -96,3 +101,8 @@ api.add_router("/admin", rate_limit_admin_router)
 api.add_router("/screener", screener_presets_router)
 api.add_router("/rebalancing", portfolio_rebalancing_router)
 api.add_router("/ai/news", ai_news_router)
+api.add_router("/import", imports_router)
+api.add_router("/risk", risk_router)
+api.add_router("/search", search_router)
+api.add_router("/ipo", ipo_router)
+api.add_router("/backtesting", backtesting_router)

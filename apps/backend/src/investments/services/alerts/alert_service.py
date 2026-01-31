@@ -10,9 +10,15 @@ from django.db.models import Q
 from django.utils import timezone
 from django.db import transaction
 
-from investments.models.alerts import Alert, AlertTrigger, Notification, NotificationPreference
-from investments.models import Asset, AssetPricesHistoric
+from investments.models.alerts import (
+    Alert,
+    AlertTrigger,
+    Notification,
+    NotificationPreference,
+)
 from investments.services.market_data_service import MarketDataService
+from assets.models import Asset
+from assets.models.historic.prices import AssetPricesHistoric
 
 logger = logging.getLogger(__name__)
 
@@ -29,16 +35,16 @@ class AlertService:
         alert_type: str,
         name: str,
         condition_value: float,
-        condition_operator: str = '>=',
+        condition_operator: str = ">=",
         asset_id: Optional[int] = None,
         portfolio_id: Optional[int] = None,
-        frequency: str = 'once',
+        frequency: str = "once",
         expires_at=None,
         send_email: bool = False,
         send_push: bool = True,
         send_sms: bool = False,
         send_in_app: bool = True,
-        custom_message: str = '',
+        custom_message: str = "",
     ) -> Alert:
         """Create a new alert."""
         alert = Alert.objects.create(
@@ -61,7 +67,7 @@ class AlertService:
 
     def get_user_alerts(self, user, status: Optional[str] = None) -> List[Alert]:
         """Get all alerts for a user."""
-        queryset = Alert.objects.filter(user=user, status != 'deleted')
+        queryset = Alert.objects.filter(user=user).exclude(status="deleted")
 
         if status:
             queryset = queryset.filter(status=status)
@@ -73,7 +79,7 @@ class AlertService:
         try:
             alert = Alert.objects.get(id=alert_id, user=user)
             for key, value in kwargs.items():
-                if hasattr(alert, key) and key not in ['id', 'user', 'created_at']:
+                if hasattr(alert, key) and key not in ["id", "user", "created_at"]:
                     setattr(alert, key, value)
             alert.save()
             return alert
@@ -84,7 +90,7 @@ class AlertService:
         """Soft delete an alert."""
         try:
             alert = Alert.objects.get(id=alert_id, user=user)
-            alert.status = 'deleted'
+            alert.status = "deleted"
             alert.save()
             return True
         except Alert.DoesNotExist:
@@ -92,22 +98,24 @@ class AlertService:
 
     def pause_alert(self, alert_id: int, user) -> Optional[Alert]:
         """Pause an alert."""
-        return self.update_alert(alert_id, user, status='paused')
+        return self.update_alert(alert_id, user, status="paused")
 
     def resume_alert(self, alert_id: int, user) -> Optional[Alert]:
         """Resume a paused alert."""
-        return self.update_alert(alert_id, user, status='active')
+        return self.update_alert(alert_id, user, status="active")
 
     @transaction.atomic
     def check_and_trigger_alerts(self) -> List[AlertTrigger]:
         """Check all active alerts and trigger those that match conditions."""
         triggered = []
 
-        active_alerts = Alert.objects.filter(
-            status='active',
-        ).exclude(
-            expires_at__lt=timezone.now()
-        ).select_related('user', 'asset', 'portfolio')
+        active_alerts = (
+            Alert.objects.filter(
+                status="active",
+            )
+            .exclude(expires_at__lt=timezone.now())
+            .select_related("user", "asset", "portfolio")
+        )
 
         for alert in active_alerts:
             if self._check_alert_condition(alert):
@@ -120,13 +128,13 @@ class AlertService:
     def _check_alert_condition(self, alert: Alert) -> bool:
         """Check if an alert's condition is met."""
         try:
-            if alert.alert_type in ['price_above', 'price_below']:
+            if alert.alert_type in ["price_above", "price_below"]:
                 return self._check_price_alert(alert)
-            elif alert.alert_type == 'percent_change':
+            elif alert.alert_type == "percent_change":
                 return self._check_percent_change_alert(alert)
-            elif alert.alert_type == 'volume_above':
+            elif alert.alert_type == "volume_above":
                 return self._check_volume_alert(alert)
-            elif alert.alert_type == 'portfolio_change':
+            elif alert.alert_type == "portfolio_change":
                 return self._check_portfolio_alert(alert)
             else:
                 return False
@@ -146,15 +154,15 @@ class AlertService:
         value = float(alert.condition_value)
         operator = alert.condition_operator
 
-        if operator == '>':
+        if operator == ">":
             return current_price > value
-        elif operator == '>=':
+        elif operator == ">=":
             return current_price >= value
-        elif operator == '<':
+        elif operator == "<":
             return current_price < value
-        elif operator == '<=':
+        elif operator == "<=":
             return current_price <= value
-        elif operator == '==':
+        elif operator == "==":
             return current_price == value
 
         return False
@@ -168,13 +176,13 @@ class AlertService:
         value = float(alert.condition_value)
         operator = alert.condition_operator
 
-        if operator == '>':
+        if operator == ">":
             return change > value
-        elif operator == '>=':
+        elif operator == ">=":
             return change >= value
-        elif operator == '<':
+        elif operator == "<":
             return change < value
-        elif operator == '<=':
+        elif operator == "<=":
             return change <= value
 
         return False
@@ -188,11 +196,11 @@ class AlertService:
         value = float(alert.condition_value)
         operator = alert.condition_operator
 
-        if operator == '>':
+        if operator == ">":
             return volume > value
-        elif operator == '>=':
+        elif operator == ">=":
             return volume >= value
-        elif operator == '<':
+        elif operator == "<":
             return volume < value
 
         return False
@@ -206,11 +214,11 @@ class AlertService:
         value = float(alert.condition_value)
         operator = alert.condition_operator
 
-        if operator == '>':
+        if operator == ">":
             return current_value > value
-        elif operator == '>=':
+        elif operator == ">=":
             return current_value >= value
-        elif operator == '<':
+        elif operator == "<":
             return current_value < value
 
         return False
@@ -226,23 +234,35 @@ class AlertService:
                 alert=alert,
                 trigger_value=alert.condition_value,
                 asset_price=current_price,
-                asset_name=alert.asset.name if alert.asset else '',
+                asset_name=alert.asset.name if alert.asset else "",
             )
 
             alert.last_triggered_at = timezone.now()
             alert.trigger_count += 1
 
-            if alert.frequency == 'once':
-                alert.status = 'triggered'
-            elif alert.frequency in ['daily', 'hourly', 'weekly']:
+            if alert.frequency == "once":
+                alert.status = "triggered"
+            elif alert.frequency in ["daily", "hourly", "weekly"]:
                 last_triggered = alert.last_triggered_at
-                if alert.frequency == 'hourly' and last_triggered and (timezone.now() - last_triggered) < timedelta(hours=1):
+                if (
+                    alert.frequency == "hourly"
+                    and last_triggered
+                    and (timezone.now() - last_triggered) < timedelta(hours=1)
+                ):
                     trigger.delete()
                     return None
-                elif alert.frequency == 'daily' and last_triggered and (timezone.now() - last_triggered) < timedelta(days=1):
+                elif (
+                    alert.frequency == "daily"
+                    and last_triggered
+                    and (timezone.now() - last_triggered) < timedelta(days=1)
+                ):
                     trigger.delete()
                     return None
-                elif alert.frequency == 'weekly' and last_triggered and (timezone.now() - last_triggered) < timedelta(weeks=1):
+                elif (
+                    alert.frequency == "weekly"
+                    and last_triggered
+                    and (timezone.now() - last_triggered) < timedelta(weeks=1)
+                ):
                     trigger.delete()
                     return None
 
@@ -277,13 +297,13 @@ class AlertService:
         if alert.custom_message:
             return alert.custom_message
 
-        asset_name = trigger.asset_name or 'Portfolio'
+        asset_name = trigger.asset_name or "Portfolio"
 
-        if alert.alert_type == 'price_above':
+        if alert.alert_type == "price_above":
             return f"{asset_name} price is above ${float(alert.condition_value):.2f}"
-        elif alert.alert_type == 'price_below':
+        elif alert.alert_type == "price_below":
             return f"{asset_name} price is below ${float(alert.condition_value):.2f}"
-        elif alert.alert_type == 'percent_change':
+        elif alert.alert_type == "percent_change":
             return f"{asset_name} has changed by {float(alert.condition_value):.2f}%"
         else:
             return f"Alert triggered: {alert.name}"
@@ -299,8 +319,10 @@ class AlertService:
             message=message,
             related_asset=alert.asset,
             related_alert_trigger=trigger,
-            priority='high' if alert.alert_type in ['price_above', 'price_below'] else 'normal',
-            action_url=f"/assets/{alert.asset.symbol}" if alert.asset else '/portfolio',
+            priority="high"
+            if alert.alert_type in ["price_above", "price_below"]
+            else "normal",
+            action_url=f"/assets/{alert.asset.symbol}" if alert.asset else "/portfolio",
         )
 
     def _send_email_notification(
@@ -321,9 +343,7 @@ class AlertService:
         trigger.save()
         logger.info(f"Push notification sent for alert {alert.id}")
 
-    def _send_sms_notification(
-        self, alert: Alert, trigger: AlertTrigger, message: str
-    ):
+    def _send_sms_notification(self, alert: Alert, trigger: AlertTrigger, message: str):
         """Send SMS notification."""
         trigger.sms_sent = True
         trigger.sms_sent_at = timezone.now()
@@ -354,9 +374,9 @@ class AlertService:
 
     def mark_all_notifications_read(self, user) -> int:
         """Mark all notifications as read for a user."""
-        updated = Notification.objects.filter(
-            user=user, read=False
-        ).update(read=True, read_at=timezone.now())
+        updated = Notification.objects.filter(user=user, read=False).update(
+            read=True, read_at=timezone.now()
+        )
         return updated
 
     def get_unread_count(self, user) -> int:

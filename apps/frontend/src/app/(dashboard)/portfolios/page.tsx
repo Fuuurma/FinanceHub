@@ -29,6 +29,7 @@ import {
   History,
   DollarSign,
   Settings,
+  Upload,
 } from 'lucide-react'
 import { cn, formatCurrency, formatPercent } from '@/lib/utils'
 import PortfolioOverview from '@/components/portfolio/PortfolioOverview'
@@ -36,6 +37,7 @@ import HoldingsTable from '@/components/portfolio/HoldingsTable'
 import PortfolioPerformance from '@/components/portfolio/PortfolioPerformance'
 import TransactionsList from '@/components/portfolio/TransactionsList'
 import { PortfolioSwitcher } from '@/components/portfolio/PortfolioSwitcher'
+import { CSVImportDialog } from '@/components/portfolio/CSVImportDialog'
 
 export default function PortfoliosPage() {
   const {
@@ -59,6 +61,7 @@ export default function PortfoliosPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [newPortfolioName, setNewPortfolioName] = useState('')
   const [portfolioVisibility, setPortfolioVisibility] = useState<Record<string, boolean>>({})
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
 
   const selectedPortfolio = portfolios.find((p) => p.id === selectedPortfolioId)
 
@@ -121,6 +124,12 @@ export default function PortfoliosPage() {
             <RefreshCw className={cn('w-4 h-4 mr-2', loading && 'animate-spin')} />
             Refresh
           </Button>
+          {selectedPortfolioId && (
+            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import CSV
+            </Button>
+          )}
           {selectedPortfolioId && selectedPortfolio && (
             <ShareDialog
               portfolioId={selectedPortfolioId}
@@ -317,7 +326,21 @@ export default function PortfoliosPage() {
             </TabsContent>
           </Tabs>
         </>
-      )}
+)}
+      </div>
+
+      <CSVImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        portfolioId={selectedPortfolioId || ''}
+        onImportComplete={() => {
+          if (selectedPortfolioId) {
+            fetchHoldings(selectedPortfolioId)
+            fetchTransactions(selectedPortfolioId)
+            fetchPortfolios()
+          }
+        }}
+      />
     </div>
   )
 }

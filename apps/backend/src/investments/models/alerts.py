@@ -14,56 +14,66 @@ class Alert(models.Model):
     """Alert definitions for price movements, portfolio changes, etc."""
 
     ALERT_TYPE_CHOICES = [
-        ('price_above', 'Price Above'),
-        ('price_below', 'Price Below'),
-        ('percent_change', 'Percent Change'),
-        ('volume_above', 'Volume Above'),
-        ('news_mention', 'News Mention'),
-        ('portfolio_change', 'Portfolio Value Change'),
-        ('volatility', 'Volatility Alert'),
-        ('rsi', 'RSI Level'),
-        ('earning_above', 'Earnings Above Estimate'),
-        ('earning_below', 'Earnings Below Estimate'),
-        ('dividend', 'Dividend Announced'),
-        ('custom', 'Custom Condition'),
+        ("price_above", "Price Above"),
+        ("price_below", "Price Below"),
+        ("percent_change", "Percent Change"),
+        ("volume_above", "Volume Above"),
+        ("news_mention", "News Mention"),
+        ("portfolio_change", "Portfolio Value Change"),
+        ("volatility", "Volatility Alert"),
+        ("rsi", "RSI Level"),
+        ("earning_above", "Earnings Above Estimate"),
+        ("earning_below", "Earnings Below Estimate"),
+        ("dividend", "Dividend Announced"),
+        ("custom", "Custom Condition"),
     ]
 
     STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('paused', 'Paused'),
-        ('triggered', 'Triggered'),
-        ('expired', 'Expired'),
-        ('deleted', 'Deleted'),
+        ("active", "Active"),
+        ("paused", "Paused"),
+        ("triggered", "Triggered"),
+        ("expired", "Expired"),
+        ("deleted", "Deleted"),
     ]
 
     FREQUENCY_CHOICES = [
-        ('once', 'One Time'),
-        ('always', 'Every Time'),
-        ('hourly', 'Hourly Max'),
-        ('daily', 'Daily Max'),
-        ('weekly', 'Weekly Max'),
+        ("once", "One Time"),
+        ("always", "Every Time"),
+        ("hourly", "Hourly Max"),
+        ("daily", "Daily Max"),
+        ("weekly", "Weekly Max"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='alerts')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="alerts")
 
     alert_type = models.CharField(max_length=30, choices=ALERT_TYPE_CHOICES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
     name = models.CharField(max_length=200)
 
     asset = models.ForeignKey(
-        'Asset', on_delete=models.CASCADE, null=True, blank=True, related_name='alerts'
+        "assets.Asset",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="alerts",
     )
     portfolio = models.ForeignKey(
-        'Portfolio', on_delete=models.CASCADE, null=True, blank=True, related_name='alerts'
+        "portfolios.Portfolio",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="alerts",
     )
 
     condition_value = models.DecimalField(max_digits=20, decimal_places=4)
-    condition_operator = models.CharField(max_length=5, default='>=')
+    condition_operator = models.CharField(max_length=5, default=">=")
     condition_secondary_value = models.DecimalField(
         max_digits=20, decimal_places=4, null=True, blank=True
     )
 
-    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default='once')
+    frequency = models.CharField(
+        max_length=20, choices=FREQUENCY_CHOICES, default="once"
+    )
     expires_at = models.DateTimeField(null=True, blank=True)
 
     send_email = models.BooleanField(default=False)
@@ -79,12 +89,12 @@ class Alert(models.Model):
     custom_message = models.TextField(blank=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['user', 'status']),
-            models.Index(fields=['alert_type', 'status']),
-            models.Index(fields=['asset', 'status']),
-            models.Index(fields=['user', 'alert_type']),
+            models.Index(fields=["user", "status"]),
+            models.Index(fields=["alert_type", "status"]),
+            models.Index(fields=["asset", "status"]),
+            models.Index(fields=["user", "alert_type"]),
         ]
 
     def __str__(self):
@@ -98,7 +108,7 @@ class Alert(models.Model):
 
     @property
     def can_trigger(self):
-        if self.status != 'active':
+        if self.status != "active":
             return False
         if self.is_expired:
             return False
@@ -108,11 +118,13 @@ class Alert(models.Model):
 class AlertTrigger(models.Model):
     """History of triggered alerts."""
 
-    alert = models.ForeignKey(Alert, on_delete=models.CASCADE, related_name='triggers')
+    alert = models.ForeignKey(Alert, on_delete=models.CASCADE, related_name="triggers")
 
     triggered_at = models.DateTimeField(auto_now_add=True)
     trigger_value = models.DecimalField(max_digits=20, decimal_places=4)
-    asset_price = models.DecimalField(max_digits=20, decimal_places=4, null=True, blank=True)
+    asset_price = models.DecimalField(
+        max_digits=20, decimal_places=4, null=True, blank=True
+    )
     asset_name = models.CharField(max_length=200, blank=True)
 
     email_sent = models.BooleanField(default=False)
@@ -136,10 +148,10 @@ class AlertTrigger(models.Model):
     dismissed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ['-triggered_at']
+        ordering = ["-triggered_at"]
         indexes = [
-            models.Index(fields=['alert', 'triggered_at']),
-            models.Index(fields=['viewed', 'dismissed']),
+            models.Index(fields=["alert", "triggered_at"]),
+            models.Index(fields=["viewed", "dismissed"]),
         ]
 
     def __str__(self):
@@ -150,13 +162,15 @@ class NotificationPreference(models.Model):
     """User notification preferences."""
 
     CHANNEL_CHOICES = [
-        ('email', 'Email'),
-        ('push', 'Push Notification'),
-        ('sms', 'SMS'),
-        ('in_app', 'In-App'),
+        ("email", "Email"),
+        ("push", "Push Notification"),
+        ("sms", "SMS"),
+        ("in_app", "In-App"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notification_preferences')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notification_preferences"
+    )
 
     channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
     alert_type = models.CharField(max_length=30, choices=Alert.ALERT_TYPE_CHOICES)
@@ -166,7 +180,7 @@ class NotificationPreference(models.Model):
     quiet_hours_end = models.TimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = ['user', 'channel', 'alert_type']
+        unique_together = ["user", "channel", "alert_type"]
 
     def __str__(self):
         return f"{self.user.username} - {self.channel} for {self.alert_type}"
@@ -175,20 +189,30 @@ class NotificationPreference(models.Model):
 class Notification(models.Model):
     """In-app notifications."""
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notifications"
+    )
 
     notification_type = models.CharField(max_length=50)
     title = models.CharField(max_length=200)
     message = models.TextField()
 
     related_asset = models.ForeignKey(
-        'Asset', on_delete=models.CASCADE, null=True, blank=True, related_name='notifications'
+        "assets.Asset",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
     )
     related_alert_trigger = models.ForeignKey(
-        AlertTrigger, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications'
+        AlertTrigger,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
     )
 
-    priority = models.CharField(max_length=20, default='normal')
+    priority = models.CharField(max_length=20, default="normal")
     read = models.BooleanField(default=False)
     read_at = models.DateTimeField(null=True, blank=True)
     action_url = models.CharField(max_length=500, blank=True)
@@ -197,10 +221,10 @@ class Notification(models.Model):
     expires_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['user', 'read', 'created_at']),
-            models.Index(fields=['notification_type', 'created_at']),
+            models.Index(fields=["user", "read", "created_at"]),
+            models.Index(fields=["notification_type", "created_at"]),
         ]
 
     def __str__(self):

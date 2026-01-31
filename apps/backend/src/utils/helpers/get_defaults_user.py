@@ -9,12 +9,21 @@ from utils.constants.default import (
 
 
 def get_default_user_status():
-    return UserStatus.objects.get_or_create(name=DEFAULT_USER_STATUS_NAME)[0].id
+    try:
+        return UserStatus.objects.get_or_create(name=DEFAULT_USER_STATUS_NAME)[0].id
+    except Exception:
+        return None
 
 
 def get_default_account_type():
-    return AccountType.objects.get_or_create(name=DEFAULT_ACCOUNT_TYPE_NAME)[0].id
+    try:
+        return AccountType.objects.get_or_create(name=DEFAULT_ACCOUNT_TYPE_NAME)[0].id
+    except Exception:
+        return None
 
 
 def get_default_admin_role():
-    return Role.objects.get_or_create(name=DEFAULT_ADMIN_ROLE_NAME)[0].id
+    try:
+        return Role.objects.get_or_create(name=DEFAULT_ADMIN_ROLE_NAME)[0].id
+    except Exception:
+        return None

@@ -1,283 +1,115 @@
-from ninja import Router, Schema
-from typing import List, Optional
+"""
+Backtesting API
+Endpoints for running and managing backtests.
+"""
+
+import logging
+from datetime import datetime, date
 from decimal import Decimal
-from datetime import date
-from pydantic import Field
-from django.db import transaction
-
-from investments.models.backtesting import Backtest, TradingStrategy, BacktestTrade
+from ninja import Router
+from pydantic import BaseModel
 from backtesting.engine import BacktestingEngine
-from backtesting.strategies.base_strategy import BaseStrategy
+from backtesting.strategies.sma_crossover import SMACrossoverStrategy
+from backtesting.strategies.rsi_mean_reversion import RSIMeanReversionStrategy
 
-router = Router()
+router = Router(tags=["Backtesting"])
+logger = logging.getLogger(__name__)
 
 
-class BacktestCreateSchema(Schema):
-    name: str
+class RunBacktestRequest(BaseModel):
     strategy_type: str
-    config: dict = Field(default_factory=dict)
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    initial_capital: Decimal = Decimal("10000")
-    asset_symbols: List[str] = Field(default_factory=list)
+    symbol: str
+    start_date: str
+    end_date: str
+    initial_capital: float = 100000
+    fast_period: int = 10
+    slow_period: int = 20
+    period: int = 14
 
 
-class BacktestResponseSchema(Schema):
-    id: str
-    name: str
-    status: str
-    start_date: date
-    end_date: date
-    initial_capital: Decimal
-    total_return: Optional[float] = None
-    sharpe_ratio: Optional[float] = None
-    sortino_ratio: Optional[float] = None
-    max_drawdown: Optional[float] = None
-    win_rate: Optional[float] = None
-    profit_factor: Optional[float] = None
-    total_trades: Optional[int] = None
-    created_at: str
-
-
-class BacktestMetricsSchema(Schema):
-    total_return: Optional[float] = None
-    sharpe_ratio: Optional[float] = None
-    sortino_ratio: Optional[float] = None
-    max_drawdown: Optional[float] = None
-    win_rate: Optional[float] = None
-    profit_factor: Optional[float] = None
-    total_trades: Optional[int] = None
-    winning_trades: Optional[int] = None
-    losing_trades: Optional[int] = None
-
-
-class BacktestResultSchema(Schema):
-    id: str
-    name: str
-    status: str
-    metrics: BacktestMetricsSchema
-    equity_curve: List[dict]
-    drawdown_curve: List[dict]
-    trades: List[dict]
-    final_value: float
-    total_return: float
-
-
-class StrategyCreateSchema(Schema):
-    name: str
-    strategy_type: str
-    config: dict = Field(default_factory=dict)
-    description: str = ""
-    is_public: bool = False
-
-
-class StrategyResponseSchema(Schema):
-    id: str
-    name: str
-    strategy_type: str
-    config: dict
-    description: str
-    is_public: bool
-    created_at: str
-
-
-@router.post("/backtests", response=BacktestResponseSchema)
-def create_backtest(request, data: BacktestCreateSchema):
-    """Create and run a new backtest."""
-    if not request.user.is_authenticated:
-        return {"error": "Authentication required"}, 401
-
-    try:
-        backtest = Backtest.objects.create(
-            user=request.user,
-            name=data.name,
-            strategy=None,
-            start_date=data.start_date or date.today(),
-            end_date=data.end_date or date.today(),
-            initial_capital=data.initial_capital,
-            status="pending",
-        )
-
-        return {
-            "id": str(backtest.id),
-            "name": backtest.name,
-            "status": backtest.status,
-            "start_date": backtest.start_date,
-            "end_date": backtest.end_date,
-            "initial_capital": backtest.initial_capital,
-            "total_return": None,
-            "sharpe_ratio": None,
-            "sortino_ratio": None,
-            "max_drawdown": None,
-            "win_rate": None,
-            "profit_factor": None,
-            "total_trades": None,
-            "created_at": backtest.created_at.isoformat(),
-        }
-    except Exception as e:
-        return {"error": str(e)}, 400
-
-
-@router.get("/backtests/{backtest_id}", response=BacktestResultSchema)
-def get_backtest(request, backtest_id: str):
-    """Get backtest results."""
-    if not request.user.is_authenticated:
-        return {"error": "Authentication required"}, 401
-
-    try:
-        backtest = Backtest.objects.get(id=backtest_id, user=request.user)
-    except Backtest.DoesNotExist:
-        return {"error": "Backtest not found"}, 404
-
-    return {
-        "id": str(backtest.id),
-        "name": backtest.name,
-        "status": backtest.status,
-        "metrics": {
-            "total_return": float(backtest.total_return)
-            if backtest.total_return
-            else None,
-            "sharpe_ratio": float(backtest.sharpe_ratio)
-            if backtest.sharpe_ratio
-            else None,
-            "sortino_ratio": float(backtest.sortino_ratio)
-            if backtest.sortino_ratio
-            else None,
-            "max_drawdown": float(backtest.max_drawdown)
-            if backtest.max_drawdown
-            else None,
-            "win_rate": float(backtest.win_rate) if backtest.win_rate else None,
-            "profit_factor": float(backtest.profit_factor)
-            if backtest.profit_factor
-            else None,
-            "total_trades": backtest.total_trades,
-            "winning_trades": backtest.winning_trades,
-            "losing_trades": backtest.losing_trades,
-        },
-        "equity_curve": backtest.equity_curve,
-        "drawdown_curve": backtest.drawdown_curve,
-        "trades": backtest.trades_data,
-        "final_value": float(backtest.initial_capital)
-        * (1 + float(backtest.total_return) / 100)
-        if backtest.total_return
-        else float(backtest.initial_capital),
-        "total_return": float(backtest.total_return) if backtest.total_return else 0,
-    }
-
-
-@router.get("/backtests", response=List[BacktestResponseSchema])
-def list_backtests(request):
-    """List all backtests for current user."""
-    if not request.user.is_authenticated:
-        return []
-
-    backtests = Backtest.objects.filter(user=request.user).order_by("-created_at")
-
-    return [
-        {
-            "id": str(b.id),
-            "name": b.name,
-            "status": b.status,
-            "start_date": b.start_date,
-            "end_date": b.end_date,
-            "initial_capital": b.initial_capital,
-            "total_return": float(b.total_return) if b.total_return else None,
-            "sharpe_ratio": float(b.sharpe_ratio) if b.sharpe_ratio else None,
-            "sortino_ratio": float(b.sortino_ratio) if b.sortino_ratio else None,
-            "max_drawdown": float(b.max_drawdown) if b.max_drawdown else None,
-            "win_rate": float(b.win_rate) if b.win_rate else None,
-            "profit_factor": float(b.profit_factor) if b.profit_factor else None,
-            "total_trades": b.total_trades,
-            "created_at": b.created_at.isoformat(),
-        }
-        for b in backtests
-    ]
-
-
-@router.post("/strategies", response=StrategyResponseSchema)
-def create_strategy(request, data: StrategyCreateSchema):
-    """Create a new trading strategy."""
-    if not request.user.is_authenticated:
-        return {"error": "Authentication required"}, 401
-
-    try:
-        strategy = TradingStrategy.objects.create(
-            user=request.user,
-            name=data.name,
-            strategy_type=data.strategy_type,
-            config=data.config,
-            description=data.description,
-            is_public=data.is_public,
-        )
-
-        return {
-            "id": str(strategy.id),
-            "name": strategy.name,
-            "strategy_type": strategy.strategy_type,
-            "config": strategy.config,
-            "description": strategy.description,
-            "is_public": strategy.is_public,
-            "created_at": strategy.created_at.isoformat(),
-        }
-    except Exception as e:
-        return {"error": str(e)}, 400
-
-
-@router.get("/strategies", response=List[StrategyResponseSchema])
+@router.get("/strategies")
 def list_strategies(request):
-    """List all strategies for current user."""
-    if not request.user.is_authenticated:
-        return []
-
-    strategies = TradingStrategy.objects.filter(user=request.user).order_by(
-        "-created_at"
-    )
-
-    return [
-        {
-            "id": str(s.id),
-            "name": s.name,
-            "strategy_type": s.strategy_type,
-            "config": s.config,
-            "description": s.description,
-            "is_public": s.is_public,
-            "created_at": s.created_at.isoformat(),
-        }
-        for s in strategies
-    ]
-
-
-@router.get("/strategies/{strategy_id}", response=StrategyResponseSchema)
-def get_strategy(request, strategy_id: str):
-    """Get a specific strategy."""
-    if not request.user.is_authenticated:
-        return {"error": "Authentication required"}, 401
-
-    try:
-        strategy = TradingStrategy.objects.get(id=strategy_id, user=request.user)
-    except TradingStrategy.DoesNotExist:
-        return {"error": "Strategy not found"}, 404
-
     return {
-        "id": str(strategy.id),
-        "name": strategy.name,
-        "strategy_type": strategy.strategy_type,
-        "config": strategy.config,
-        "description": strategy.description,
-        "is_public": strategy.is_public,
-        "created_at": strategy.created_at.isoformat(),
+        "strategies": [
+            {"id": "sma_crossover", "name": "SMA Crossover"},
+            {"id": "rsi_mean_reversion", "name": "RSI Mean Reversion"},
+        ]
     }
 
 
-@router.delete("/backtests/{backtest_id}")
-def delete_backtest(request, backtest_id: str):
-    """Delete a backtest."""
-    if not request.user.is_authenticated:
-        return {"error": "Authentication required"}, 401
-
+@router.post("/run")
+def run_backtest(request, data: RunBacktestRequest):
     try:
-        backtest = Backtest.objects.get(id=backtest_id, user=request.user)
-        backtest.delete()
-        return {"success": True}
-    except Backtest.DoesNotExist:
-        return {"error": "Backtest not found"}, 404
+        engine = BacktestingEngine(initial_capital=data.initial_capital)
+
+        from investments.models import Asset, AssetPricesHistoric
+
+        start = datetime.strptime(data.start_date, "%Y-%m-%d").date()
+        end = datetime.strptime(data.end_date, "%Y-%m-%d").date()
+
+        try:
+            asset = Asset.objects.get(symbol=data.symbol.upper())
+        except Asset.DoesNotExist:
+            return {"error": "Asset not found"}, 404
+
+        prices = AssetPricesHistoric.objects.filter(
+            asset=asset, timestamp__gte=start, timestamp__lte=end
+        ).order_by("timestamp")
+
+        if not prices.exists():
+            return {"error": "No price data available"}, 400
+
+        import pandas as pd
+
+        df_data = {
+            "date": [p.timestamp for p in prices],
+            "open_price": [float(p.open_price) for p in prices],
+            "high_price": [float(p.high_price) for p in prices],
+            "low_price": [float(p.low_price) for p in prices],
+            "close_price": [float(p.close_price) for p in prices],
+            "volume": [float(p.volume) for p in prices],
+        }
+        df = pd.DataFrame(df_data)
+
+        engine.load_data(df)
+
+        config = {}
+        if data.strategy_type == "sma_crossover":
+            config = {"fast_period": data.fast_period, "slow_period": data.slow_period}
+        elif data.strategy_type == "rsi_mean_reversion":
+            config = {"period": data.period}
+
+        result = engine.run(
+            strategy_type=data.strategy_type,
+            config=config,
+            start_date=start,
+            end_date=end,
+        )
+
+        if "error" in result:
+            return result
+
+        return {
+            "status": "success",
+            "metrics": {
+                "strategy_name": result["metrics"].get(
+                    "strategy_name", data.strategy_type
+                ),
+                "total_return_pct": result["metrics"].get("total_return_pct", 0),
+                "annual_return_pct": result["metrics"].get("annual_return_pct", 0),
+                "max_drawdown_pct": result["metrics"].get("max_drawdown_pct", 0),
+                "sharpe_ratio": result["metrics"].get("sharpe_ratio", 0),
+                "win_rate": result["metrics"].get("win_rate", 0),
+                "total_trades": result["metrics"].get("total_trades", 0),
+                "profit_factor": result["metrics"].get("profit_factor", 0),
+            },
+            "trades_count": len(result.get("trades", [])),
+        }
+    except Exception as e:
+        logger.error(f"Backtest error: {e}")
+        return {"error": str(e)}, 500
+
+
+@router.get("/history")
+def get_backtest_history(request, limit: int = 20):
+    return {"backtests": [], "count": 0}

@@ -10,24 +10,21 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
 import os
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
+from channels.security.websocket import AllowedHostsOriginValidator
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
 django_asgi_app = get_asgi_application()
 
-# Import WebSocket routing
 from websocket_consumers.routing import websocket_urlpatterns
+from websocket_consumers.auth_middleware import JWTAuthMiddleware
 
-# Configure allowed hosts
-allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+allowed_hosts = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
-# Create WebSocket application with HTTP fallback
 application = ProtocolTypeRouter(
     {
-        "websocket": AuthMiddlewareStack(
-            URLRouter(websocket_urlpatterns),
-            AllowedHostsOriginValidator(allowed_hosts)
+        "websocket": AllowedHostsOriginValidator(
+            JWTAuthMiddleware(URLRouter(websocket_urlpatterns))
         ),
         "http": django_asgi_app,
     }

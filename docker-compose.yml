@@ -68,6 +68,7 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
       DJANGO_SETTINGS_MODULE: core.settings
       PYTHONUNBUFFERED: "1"
+      PYTHONPATH: "/app/src"
     ports:
       - "8000:8000"
     depends_on:
