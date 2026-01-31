@@ -91,11 +91,11 @@
 
 | Task ID | Task | Est. Hours | Status | Priority |
 |---------|------|------------|--------|----------|
-| C-011 | Portfolio Analytics Enhancement | 10-14h | ⏳ PENDING | P1 HIGH |
-| C-012 | Portfolio Rebalancing Tools | 12-16h | ⏳ PENDING | P1 HIGH |
-| C-013 | AI-Powered News Summarization | 14-18h | ⏳ PENDING | P1 HIGH |
-| C-014 | Interactive Chart Drawing Tools | 12-16h | ⏳ PENDING | P1 HIGH |
-| C-015 | Position Size Calculator | 8-12h | ⏳ PENDING | P2 MEDIUM |
+| C-011 | Portfolio Analytics Enhancement | 10-14h | ✅ COMPLETED | P1 HIGH | Models, service, API, tests created |
+| C-012 | Portfolio Rebalancing Tools | 12-16h | ✅ COMPLETED | P1 HIGH | Models, service, API, tests already existed |
+| C-013 | AI-Powered News Summarization | 14-18h | ✅ COMPLETED | P1 HIGH | Models, service, API, tests already existed |
+| C-014 | Interactive Chart Drawing Tools | 12-16h | 🔄 IN PROGRESS | P1 HIGH | Screenshot, share, persistence, tests added |
+| C-015 | Position Size Calculator | 8-12h | ✅ COMPLETED | P2 MEDIUM | Risk service, API, frontend component, tests created |
 | C-016 | Customizable Dashboards | 14-18h | ⏳ PENDING | P1 HIGH |
 | C-017 | Market Heat Map Visualization | 10-14h | ⏳ PENDING | P1 HIGH |
 | C-019 | Data Export Functionality | 8-12h | ⏳ PENDING | P2 MEDIUM |
@@ -123,13 +123,13 @@
 
 **Coder Progress:**
 - Migration tasks: 6 of 10 complete (60%)
-- Feature tasks: 0 of 30 complete (0%)
-- **Total: 6 of 40 complete (15%)**
+- Feature tasks: 5 of 30 complete (17%)
+- **Total: 11 of 40 complete (28%)**
 - **Total estimated work: 450+ hours**
 
 **Next Action:**
-1. Complete C-011 (Portfolio Analytics Enhancement) - HIGH VALUE
-2. Complete C-016 (Customizable Dashboards) - HIGH VALUE
+1. Complete C-016 (Customizable Dashboards) - HIGH VALUE
+2. Complete C-017 (Market Heat Map Visualization) - HIGH VALUE
 3. Complete S-003 (Security fixes) - P0 CRITICAL
 
 ---
