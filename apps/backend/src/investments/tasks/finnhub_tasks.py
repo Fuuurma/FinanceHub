@@ -126,6 +126,8 @@ def fetch_technical_indicators(
                         else None
                     )
 
+                    from utils.financial import to_decimal
+
                     TechnicalIndicator.objects.update_or_create(
                         asset=asset,
                         indicator_type="macd",
@@ -137,8 +139,10 @@ def fetch_technical_indicators(
                             if signal_value and macd_value > signal_value
                             else "sell",
                             "metadata": {
-                                "signal": float(signal_value) if signal_value else None,
-                                "histogram": float(macd_value - signal_value)
+                                "signal": str(to_decimal(signal_value))
+                                if signal_value
+                                else None,
+                                "histogram": str(to_decimal(macd_value - signal_value))
                                 if signal_value
                                 else None,
                             },
@@ -160,6 +164,8 @@ def fetch_technical_indicators(
                     upper_band = Decimal(str(item.get("u", 0)))
                     middle_band = (upper_band + lower_band) / 2
 
+                    from utils.financial import to_decimal
+
                     TechnicalIndicator.objects.update_or_create(
                         asset=asset,
                         indicator_type="bb",
@@ -168,10 +174,10 @@ def fetch_technical_indicators(
                         defaults={
                             "value": middle_band,
                             "metadata": {
-                                "upper": float(upper_band),
-                                "lower": float(lower_band),
-                                "middle": float(middle_band),
-                                "bandwidth": float(upper_band - lower_band),
+                                "upper": str(to_decimal(upper_band)),
+                                "lower": str(to_decimal(lower_band)),
+                                "middle": str(to_decimal(middle_band)),
+                                "bandwidth": str(to_decimal(upper_band - lower_band)),
                             },
                             "source": provider,
                         },

@@ -8,6 +8,7 @@ from .permission import Permission
 from .user_profile import UserProfile
 from .session import LoginHistory
 from .user_session import UserSession
+from .token_blacklist import BlacklistedToken
 
 __all__ = [
     "User",
@@ -18,4 +19,5 @@ __all__ = [
     "UserProfile",
     "LoginHistory",
     "UserSession",
+    "BlacklistedToken",
 ]
