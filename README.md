@@ -36,36 +36,46 @@ A comprehensive financial platform for tracking, analyzing, and managing investm
 
 ```
 FinanceHub/
-├── Backend/                    # Django REST API backend
-│   └── src/
-│       ├── assets/            # Asset models and API
-│       ├── core/             # Core Django settings and configuration
-│       ├── data/             # Data fetching and processing
-│       ├── fundamentals/      # Fundamental analysis
-│       ├── investments/      # Portfolio and transaction management
-│       ├── portfolios/       # Portfolio models and API
-│       ├── screener/         # Stock screening service
-│       ├── search/           # Asset search functionality
-│       ├── tasks/            # Celery background tasks
-│       ├── users/            # User authentication and management
-│       ├── utils/            # Helper utilities
-│       └── websocket_consumers/  # Real-time WebSocket connections
+├── apps/
+│   ├── backend/              # Django REST API backend
+│   │   └── src/
+│   │       ├── api/          # API endpoints (Django Ninja)
+│   │       ├── assets/       # Asset models and API
+│   │       ├── core/         # Core Django settings and configuration
+│   │       ├── data/         # Data fetching and processing
+│   │       ├── fundamentals/  # Fundamental analysis
+│   │       ├── investments/  # Portfolio and transaction management
+│   │       ├── trading/      # Trading models and services
+│   │       ├── tasks/        # Dramatiq background tasks
+│   │       ├── users/        # User authentication and management
+│   │       ├── utils/        # Helper utilities
+│   │       ├── backtesting/  # Strategy backtesting engine
+│   │       └── tests/        # Test suite
+│   │
+│   └── frontend/            # Next.js frontend
+│       └── src/
+│           ├── app/         # Next.js app router pages
+│           ├── components/  # React components
+│           │   ├── alerts/   # Alert system components
+│           │   ├── assets/   # Asset-related components
+│           │   ├── charts/   # Charting components
+│           │   ├── dashboard/# Dashboard widgets
+│           │   ├── layout/   # Layout components
+│           │   ├── paper-trading/ # Paper trading UI
+│           │   ├── risk/     # Risk management tools
+│           │   └── screener/ # Stock screener UI
+│           ├── contexts/    # React contexts
+│           ├── hooks/       # Custom React hooks
+│           ├── lib/         # Libraries and utilities
+│           │   ├── api/      # API clients
+│           │   ├── types/    # TypeScript type definitions
+│           │   └── utils/    # Utility functions
+│           ├── stores/      # Zustand state management
+│           └── middleware.ts # Next.js middleware
 │
-└── Frontend/                 # Next.js frontend
-    └── src/
-        ├── app/             # Next.js app router pages
-        ├── components/      # React components
-        │   ├── analytics/    # Analytics visualization components
-        │   ├── realtime/     # Real-time data components
-        │   ├── layout/       # Layout components
-        │   └── ui/           # shadcn/ui components (60+)
-        ├── contexts/        # React contexts
-        ├── hooks/           # Custom React hooks
-        ├── lib/             # Libraries and utilities
-        │   ├── api/          # API clients
-        │   ├── types/        # TypeScript type definitions
-        │   └── utils/        # Utility functions
-        └── stores/          # Zustand state management
+├── docs/                     # Project documentation
+├── scripts/                  # Utility scripts
+└── tasks/                    # Task assignments and tracking
 ```
 
 ---
@@ -73,9 +83,9 @@ FinanceHub/
 ## Technology Stack
 
 ### Backend
-- **Django 5** + Django Ninja (REST API)
-- **MySQL 8.0** (primary database)
-- **TimescaleDB** (time-series extensions for MySQL/PostgreSQL)
+- **Django 4.2.27** + Django Ninja (REST API)
+- **PostgreSQL 15** (primary database)
+- **TimescaleDB** (time-series extensions for PostgreSQL)
 - **Redis 7** (caching + Celery broker + WebSockets)
 - **Dramatiq** (background task processing)
 - **Daphne** (ASGI server for WebSockets)
@@ -113,7 +123,7 @@ FinanceHub/
 
 ---
 
-## Current Status (January 28, 2026)
+## Current Status (January 31, 2026)
 
 ### Backend Progress: 95% Complete ✅
 
@@ -230,7 +240,7 @@ FinanceHub/
 ### Backend
 
 ```bash
-cd Backend/src
+cd apps/backend/src
 
 # Install dependencies
 pip install -r ../requirements.txt
@@ -252,7 +262,7 @@ python manage.py start_realtime_streams
 ### Frontend
 
 ```bash
-cd Frontend/src
+cd apps/frontend/src
 
 # Install dependencies
 npm install
@@ -466,12 +476,12 @@ Comprehensive documentation is organized in the [docs/](docs/) directory:
 ## Repository Structure
 
 This is a **monorepo** containing:
-- **Backend**: Django/Python REST API (`Backend/`)
-- **Frontend**: Next.js TypeScript UI (`Frontend/`)
+- **Backend**: Django/Python REST API (`apps/backend/`)
+- **Frontend**: Next.js TypeScript UI (`apps/frontend/`)
 
 ---
 
 **Last Updated**: January 30, 2026
 **Monorepo Migration**: ✅ 100% Complete
 **Backend Status**: 95% Complete
-**Frontend Status**: 65% Complete
+**Frontend Status**: 75% Complete

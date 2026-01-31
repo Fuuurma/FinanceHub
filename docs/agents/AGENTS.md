@@ -13,30 +13,29 @@
 ### 0. SECURITY CHECK (🚨 CRITICAL - READ FIRST)
 ```bash
 # 🚨 READ THIS FIRST - Security is our top priority
-cat ~/Desktop/Projects/FinanceHub/CRITICAL_SECURITY_STATUS.md
-cat ~/Desktop/Projects/FinanceHub/SECURITY_TODO.md
+cat ~/Desktop/Projects/FinanceHub/docs/security/FAILURE_POINT_ANALYSIS.md
 
 # 🚨 CRITICAL: Verify you understand:
-# - 30 ACTIVE frontend vulnerabilities (2 CRITICAL, 11 HIGH, 15 MODERATE, 2 LOW)
-# - Backend: 0 vulnerabilities (all fixed) ✅
-# - DO NOT introduce new vulnerable dependencies
-# - ALL non-critical work PAUSED until fixes complete
-# - All PRs subject to security review by CHARO
+# - 23 security failure points identified by CHARO
+# - 3 CRITICAL, 7 HIGH, 8 MEDIUM, 5 LOW severity issues
+# - Token storage in localStorage vulnerable to XSS
+# - DO NOT introduce new security vulnerabilities
+# - ALL security fixes must be reviewed by CHARO
 # - Report security concerns immediately
 
-# 🚨 IF WORKING ON FRONTEND:
-# You must fix CRITICAL vulnerabilities first:
-# cd Frontend && npm install next@15.2.3 jspdf@4.0.0 react@19.0.3 glob@11.1.0 dompurify@3.2.4
+# 🚨 SECURITY TASKS APPROVED:
+# - S-009 through S-016 (8 tasks, 3 CRITICAL due Feb 2)
+# - See: tasks/security/CHARO_SECURITY_TASKS.md
 ```
 
 ### 1. Read This File First
 ```bash
-cat ~/Desktop/Projects/FinanceHub/AGENTS.md
+cat ~/Desktop/Projects/FinanceHub/docs/agents/AGENTS.md
 ```
 
-### 2. Read tasks.md
+### 2. Read TASK_TRACKER.md
 ```bash
-cat ~/Desktop/Projects/FinanceHub/tasks.md
+cat ~/Desktop/Projects/FinanceHub/tasks/TASK_TRACKER.md
 ```
 
 ### 3. Check Current Status
@@ -58,15 +57,15 @@ cat ~/Desktop/Projects/FinanceHub/tasks.md
 **Project:** FinanceHub
 **Type:** Financial platform (Bloomberg Terminal-inspired)
 **Tech Stack:**
-- Frontend: Next.js 14, TypeScript, shadcn/ui, Tailwind CSS
-- Backend: NestJS, TypeScript, Prisma, PostgreSQL
-- Database: PostgreSQL
-- Real-time: WebSocket, Server-Sent Events
+- Frontend: Next.js 16, React 19, TypeScript 5, shadcn/ui, Tailwind CSS 4
+- Backend: Django 4.2.27, Django Ninja (REST API), Python 3.11
+- Database: PostgreSQL 15 + TimescaleDB (time-series), Redis 7 (caching/WebSockets)
+- Real-time: Django Channels (WebSocket), Dramatiq (background tasks)
 
 **Current State:**
 - Backend: ~95% complete
-- Frontend: ~65% complete
-- **Gap:** 30% of frontend needs work
+- Frontend: ~75% complete
+- **Gap:** 25% of frontend needs work
 
 ---
 
@@ -74,11 +73,11 @@ cat ~/Desktop/Projects/FinanceHub/tasks.md
 
 ### Step 1: Understand the Task
 ```bash
-# Read tasks.md to find your task
-cat ~/Desktop/Projects/FinanceHub/tasks.md
+# Read TASK_TRACKER.md to find your task
+cat ~/Desktop/Projects/FinanceHub/tasks/TASK_TRACKER.md
 
 # Find your task number and read the description
-# Check if status is PENDING, EXISTS-ENHANCE, or IN PROGRESS
+# Check if status is PENDING, IN PROGRESS, or COMPLETED
 ```
 
 ### Step 2: Check if Component Exists
@@ -473,7 +472,7 @@ git push
 - ✅ Real-time data
 - ✅ WebSocket connections
 
-### Frontend: 65% Complete
+### Frontend: 75% Complete
 - ✅ Basic components
 - ✅ Layout structure
 - ✅ Some charts
