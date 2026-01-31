@@ -7,6 +7,26 @@
 
 ---
 
+## 📚 MUST READ - YOUR COMPLETE ROLE GUIDE
+
+**Before reading this feedback, you MUST read your role guide:**
+
+📖 **`docs/roles/KAREN_ROLE_GUIDE.md`**
+
+This guide contains:
+- ✅ Your daily routine (morning + evening)
+- ✅ Communication protocol (how to respond)
+- ✅ Priority system (P0 > P1 > P2 > P3)
+- ✅ Project standards (Docker, docker-compose, .env.example)
+- ✅ Quality checklist (before committing)
+- ✅ Success metrics (how you're measured)
+
+**Read this guide NOW. It will take you 30 minutes.**
+
+**Then return to this feedback.**
+
+---
+
 ## ⚠️ CRITICAL ISSUES - UNACCEPTABLE
 
 ### **1. D-001 Security Fixes - INCOMPLETE** 🚨

@@ -7,6 +7,24 @@
 
 ---
 
+## 📚 MUST READ - YOUR COMPLETE ROLE GUIDE
+
+**Before reading this review, please review your role guide:**
+
+📖 **`docs/roles/CHARO_ROLE_GUIDE.md`**
+
+This guide contains:
+- ✅ Your daily routine (morning + evening)
+- ✅ Communication protocol (how to report vulnerabilities)
+- ✅ Priority system (P0 > P1 > P2 > P3)
+- ✅ Security review checklist
+- ✅ Tools you should use
+- ✅ Success metrics (how you're measured)
+
+**You're already doing excellent work, so this is just documentation of what you're already doing right.**
+
+---
+
 ## ⭐ PERFORMANCE RATING: 10/10 - WORLD-CLASS
 
 **Charo, you are EXCEPTIONAL.**
