@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: finance_hub
       POSTGRES_USER: financehub
-      POSTGRES_PASSWORD: financehub_dev_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     ports:
       - "5432:5432"
     volumes:
@@ -20,6 +20,14 @@ services:
       retries: 5
     networks:
       - financehub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   # Redis Cache
   redis:
@@ -37,17 +45,27 @@ services:
       retries: 5
     networks:
       - financehub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
 
   # Backend API
   backend:
     build:
       context: ./apps/backend
       dockerfile: Dockerfile
+      cache_from:
+        - financehub-backend:latest
     container_name: financehub-backend
     environment:
-      DATABASE_URL: postgres://financehub:financehub_dev_password@postgres:5432/finance_hub
+      DATABASE_URL: postgres://financehub:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/finance_hub
       REDIS_URL: redis://redis:6379/0
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-django-insecure-dev-key-change-in-production}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
       DJANGO_SETTINGS_MODULE: core.settings
       PYTHONUNBUFFERED: "1"
     ports:
@@ -68,12 +86,22 @@ services:
       start_period: 40s
     networks:
       - financehub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   # Frontend (Next.js)
   frontend:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
+      cache_from:
+        - financehub-frontend:latest
     container_name: financehub-frontend
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
@@ -95,18 +123,28 @@ services:
       start_period: 40s
     networks:
       - financehub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # Dramatiq Worker (Background Jobs)
   worker:
     build:
       context: ./apps/backend
       dockerfile: Dockerfile
+      cache_from:
+        - financehub-backend:latest
     container_name: financehub-worker
     command: python start_dramatiq_worker.py
     environment:
-      DATABASE_URL: postgres://financehub:financehub_dev_password@postgres:5432/finance_hub
+      DATABASE_URL: postgres://financehub:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/finance_hub
       REDIS_URL: redis://redis:6379/0
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-django-insecure-dev-key-change-in-production}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
       DJANGO_SETTINGS_MODULE: core.settings
     depends_on:
       postgres:
@@ -119,6 +157,14 @@ services:
     networks:
       - financehub-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # Nginx Reverse Proxy (Optional)
   nginx:
