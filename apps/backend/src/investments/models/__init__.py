@@ -17,6 +17,13 @@ from .portfolio_analytics import (
     PortfolioRiskMetrics,
 )
 from .dashboard import DashboardLayout, DashboardWidget
+from .market_depth import (
+    OrderBookLevel,
+    OrderBookSnapshot,
+    TimeAndSales,
+    MarketDepthSummary,
+    LargeOrders,
+)
 
 __all__ = [
     "DataProvider",
@@ -42,4 +49,9 @@ __all__ = [
     "PortfolioRiskMetrics",
     "DashboardLayout",
     "DashboardWidget",
+    "OrderBookLevel",
+    "OrderBookSnapshot",
+    "TimeAndSales",
+    "MarketDepthSummary",
+    "LargeOrders",
 ]

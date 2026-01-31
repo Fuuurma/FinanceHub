@@ -40,21 +40,22 @@ def list_strategies(request):
 @router.post("/run")
 def run_backtest(request, data: RunBacktestRequest):
     try:
-        engine = BacktestingEngine(initial_capital=data.initial_capital)
+        engine = BacktestingEngine(initial_capital=Decimal(str(data.initial_capital)))
 
-        from investments.models import Asset, AssetPricesHistoric
+        from assets.models.asset import Asset
+        from assets.models.historic.prices import AssetPricesHistoric
 
         start = datetime.strptime(data.start_date, "%Y-%m-%d").date()
         end = datetime.strptime(data.end_date, "%Y-%m-%d").date()
 
         try:
-            asset = Asset.objects.get(symbol=data.symbol.upper())
+            asset = Asset.objects.get(ticker_symbol=data.symbol.upper())
         except Asset.DoesNotExist:
             return {"error": "Asset not found"}, 404
 
         prices = AssetPricesHistoric.objects.filter(
-            asset=asset, timestamp__gte=start, timestamp__lte=end
-        ).order_by("timestamp")
+            asset=asset, date__gte=start, date__lte=end
+        ).order_by("date")
 
         if not prices.exists():
             return {"error": "No price data available"}, 400
@@ -62,12 +63,14 @@ def run_backtest(request, data: RunBacktestRequest):
         import pandas as pd
 
         df_data = {
-            "date": [p.timestamp for p in prices],
-            "open_price": [float(p.open_price) for p in prices],
-            "high_price": [float(p.high_price) for p in prices],
-            "low_price": [float(p.low_price) for p in prices],
-            "close_price": [float(p.close_price) for p in prices],
-            "volume": [float(p.volume) for p in prices],
+            "date": [p.date for p in prices],
+            "open_price": [float(p.open) for p in prices],
+            "high_price": [float(p.high) for p in prices],
+            "low_price": [float(p.low) for p in prices],
+            "close_price": [float(p.close) for p in prices],
+            "volume": [float(p.volume) for p in prices]
+            if hasattr(p, "volume") and p.volume
+            else [0] * prices.count(),
         }
         df = pd.DataFrame(df_data)
 

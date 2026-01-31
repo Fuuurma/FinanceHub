@@ -55,6 +55,7 @@ from api.risk import router as risk_router
 from api.search import router as search_router
 from api.ipo import router as ipo_router
 from api.backtesting import router as backtesting_router
+from api.market_depth import router as market_depth_router
 
 
 # Register API exception handlers
@@ -106,3 +107,4 @@ api.add_router("/risk", risk_router)
 api.add_router("/search", search_router)
 api.add_router("/ipo", ipo_router)
 api.add_router("/backtesting", backtesting_router)
+api.add_router("/market-depth", market_depth_router)
