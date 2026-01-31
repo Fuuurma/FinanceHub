@@ -1,9 +1,10 @@
 from django.db import models
 from utils.helpers.uuid_model import UUIDModel
 from utils.helpers.timestamped_model import TimestampedModel
+from utils.helpers.soft_delete_model import SoftDeleteModel
 
 
-class Sector(UUIDModel, TimestampedModel):
+class Sector(UUIDModel, TimestampedModel, SoftDeleteModel):
     """
     GICS Sector classification for stocks and ETFs.
     11 primary sectors in GICS taxonomy.

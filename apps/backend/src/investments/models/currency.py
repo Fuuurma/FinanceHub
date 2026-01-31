@@ -2,9 +2,10 @@ from django.db import models
 
 from utils.helpers.timestamped_model import TimestampedModel
 from utils.helpers.uuid_model import UUIDModel
+from utils.helpers.soft_delete_model import SoftDeleteModel
 
 
-class Currency(UUIDModel, TimestampedModel):
+class Currency(UUIDModel, TimestampedModel, SoftDeleteModel):
     code = models.CharField(
         max_length=10, unique=True
     )  # ISO 4217 code or crypto symbol e.g., "USD", "BTC", "USDT"

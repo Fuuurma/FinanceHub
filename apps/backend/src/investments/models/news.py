@@ -8,9 +8,10 @@ from django.core.validators import URLValidator
 from assets.models.asset import Asset
 from utils.helpers.uuid_model import UUIDModel
 from utils.helpers.timestamped_model import TimestampedModel
+from utils.helpers.soft_delete_model import SoftDeleteModel
 
 
-class NewsArticle(UUIDModel, TimestampedModel):
+class NewsArticle(UUIDModel, TimestampedModel, SoftDeleteModel):
     """News article with sentiment analysis"""
 
     class Sentiment(models.TextChoices):
@@ -51,6 +52,33 @@ class NewsArticle(UUIDModel, TimestampedModel):
         max_length=50,
         blank=True,
         help_text="News category (e.g., 'technology', 'finance')",
+    )
+
+    # AI-generated content
+    summary = models.TextField(
+        blank=True,
+        null=True,
+        help_text="AI-generated summary of the article",
+    )
+    summary_generated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the summary was generated",
+    )
+    impact_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="News impact score on assets (0-100)",
+    )
+
+    # Related assets (explicit many-to-many for better querying)
+    mentioned_assets = models.ManyToManyField(
+        Asset,
+        related_name="news_mentions",
+        blank=True,
+        help_text="Assets explicitly mentioned in the article",
     )
 
     # Images

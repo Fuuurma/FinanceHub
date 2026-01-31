@@ -1,9 +1,10 @@
 from django.db import models
 from utils.helpers.uuid_model import UUIDModel
 from utils.helpers.timestamped_model import TimestampedModel
+from utils.helpers.soft_delete_model import SoftDeleteModel
 
 
-class Country(UUIDModel, TimestampedModel):
+class Country(UUIDModel, TimestampedModel, SoftDeleteModel):
     code = models.CharField(max_length=2, unique=True)  # ISO2 e.g., "US"
     name = models.CharField(max_length=100, unique=True)
     alpha_3 = models.CharField(
