@@ -135,20 +135,21 @@ function SidebarNavGroup({ items, title, shortcutHint }: { items: NavItem[]; tit
       <SidebarMenu className="px-2 gap-1">
         {items.map((item) => (
           <React.Fragment key={item.title}>
-            {item.submenu && item.submenu.length > 0 ? (
+              {item.submenu && item.submenu.length > 0 ? (
               <SidebarMenuItem>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
                       isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
                       className={cn(
-                        "w-full rounded-none border-2 border-transparent data-[active=true]:border-foreground data-[active=true]:bg-primary/10 hover:bg-muted h-10 px-3 transition-all cursor-pointer",
+                        "w-full rounded-none border-2 border-transparent data-[active=true]:border-foreground data-[active=true]:bg-primary/10 hover:bg-muted h-12 md:h-10 px-3 transition-all cursor-pointer",
                         "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
                         pathname === item.href || pathname.startsWith(item.href + '/') ? "border-foreground bg-primary/10" : ""
                       )}
                       tooltip={item.description}
+                      aria-label={item.description}
                     >
-                      <item.icon className="h-4 w-4 shrink-0" />
+                      <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" />
                       <span className="font-black uppercase text-[11px] tracking-tight group-data-[collapsible=icon]:hidden">{item.title}</span>
                       <ChevronUp className="ml-auto h-3 w-3 rotate-180 transition-transform group-data-[collapsible=icon]:hidden" />
                       {item.badge && (
@@ -192,13 +193,14 @@ function SidebarNavGroup({ items, title, shortcutHint }: { items: NavItem[]; tit
                   asChild
                   isActive={pathname === item.href}
                   className={cn(
-                    "rounded-none border-2 border-transparent data-[active=true]:border-foreground data-[active=true]:bg-primary/10 hover:bg-muted h-10 px-3 transition-all",
+                    "rounded-none border-2 border-transparent data-[active=true]:border-foreground data-[active=true]:bg-primary/10 hover:bg-muted h-12 md:h-10 px-3 transition-all",
                     "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                   )}
                   tooltip={item.description}
+                  aria-label={item.description}
                 >
                   <Link href={item.href} className="flex items-center gap-3 w-full">
-                    <item.icon className="h-4 w-4 shrink-0" />
+                    <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" />
                     <span className="font-black uppercase text-[11px] tracking-tight group-data-[collapsible=icon]:hidden">{item.title}</span>
                     <kbd className="ml-auto h-5 min-w-5 px-1 border border-foreground/20 text-[9px] font-mono flex items-center justify-center rounded-none group-data-[collapsible=icon]:hidden">
                       {item.shortcut}

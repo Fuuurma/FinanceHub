@@ -1,28 +1,34 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  experimental: {
-    optimizePackageImports: ['lucide-react'],
-  },
-  assetPrefix: process.env.NODE_ENV === 'production'
-    ? process.env.NEXT_PUBLIC_CDN_URL || 'https://assets.financehub.app'
-    : undefined,
-  serverExternalPackages: ['jspdf'],
+ /** @type {import('next').NextConfig} */
+  const nextConfig = {
+    reactStrictMode: true,
+    output: 'standalone',
+   experimental: {
+     optimizePackageImports: ['lucide-react'],
+   },
+   assetPrefix: process.env.NODE_ENV === 'production'
+     ? process.env.NEXT_PUBLIC_CDN_URL || 'https://assets.financehub.app'
+     : undefined,
+   serverExternalPackages: ['jspdf'],
 
-  // Production optimizations
-  swcMinify: true,
-  compress: true,
-  productionBrowserSourceMaps: false,
+   // Production optimizations
+   compress: true,
+   productionBrowserSourceMaps: false,
 
-  // Image optimization
-  images: {
-    formats: ['image/webp', 'image/avif'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
-  },
+   // Image optimization
+   images: {
+     formats: ['image/webp', 'image/avif'],
+     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+     imageSizes: [16, 32, 48, 64, 96, 128, 256],
+   },
 
-  // Bundle optimization with code splitting
-  webpack: (config, { dev, isServer }) => {
+   // Turbopack configuration (Next.js 16+)
+   turbopack: {
+     // Webpack config will be migrated here in the future
+     // For now, use empty config to enable Turbopack
+   },
+
+   // Bundle optimization with code splitting (legacy webpack support)
+   webpack: (config, { dev, isServer }) => {
     // Production-only optimizations
     if (!dev && !isServer) {
       // Split chunks for better caching

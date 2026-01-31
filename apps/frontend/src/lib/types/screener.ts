@@ -80,6 +80,15 @@ export interface ScreenerPreset {
   filters: Partial<ScreenerRequest>
 }
 
+export interface UserScreenerPreset {
+  id: string
+  name: string
+  filters: Partial<ScreenerRequest>
+  is_public: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface FilterCategory {
   label: string
   filters: string[]

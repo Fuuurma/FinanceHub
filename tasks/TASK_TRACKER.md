@@ -113,7 +113,7 @@
 | C-017 | Market Heat Map Visualization | 10-14h | ✅ COMPLETED | P1 HIGH | Treemap visualization, 5 views, drill-down, API, tests created |
 | C-019 | Data Export Functionality | 8-12h | ✅ COMPLETED | P2 MEDIUM | CSV/Excel/JSON export, 5 data types, frontend dropdown, hook created |
 | C-020 | Advanced Alerts & Notifications | 14-18h | ✅ COMPLETED | P1 HIGH | Alert models, service, API, AlertList & NotificationCenter components created |
-| C-021 | Advanced Technical Indicators Engine | 16-20h | ⏳ PENDING | P2 MEDIUM |
+| C-021 | Advanced Technical Indicators Engine | 16-20h | ✅ COMPLETED | P2 MEDIUM | 13 indicators library (SMA, EMA, RSI, MACD, BB, ATR, etc.), API, frontend selector created |
 | C-022 | Strategy Backtesting Engine | 18-24h | ⏳ PENDING | P1 HIGH |
 | C-023 | Options Greeks Calculator | 12-16h | ⏳ PENDING | P2 MEDIUM |
 | C-024 | Earnings Calendar & Events | 10-14h | ⏳ PENDING | P2 MEDIUM |
@@ -136,8 +136,8 @@
 
 **Coder Progress:**
 - Migration tasks: 6 of 10 complete (60%)
-- Feature tasks: 9 of 30 complete (30%)
-- **Total: 15 of 40 complete (38%)**
+- Feature tasks: 10 of 30 complete (33%)
+- **Total: 16 of 40 complete (40%)**
 - **Total estimated work: 450+ hours**
 
 **Next Action:**

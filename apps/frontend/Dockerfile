@@ -1,51 +1,53 @@
-# Multi-stage build for FinanceHub Frontend
-FROM node:20-alpine AS builder
+# =============================================================================
+# Stage 1: Dependencies
+# =============================================================================
+FROM node:20-alpine as deps
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY src/package*.json ./
+COPY package*.json ./
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
+RUN npm ci --ignore-scripts && \
+    npm cache clean --force
 
-# Copy source code
-COPY src/ ./src/
+# =============================================================================
+# Stage 2: Builder
+# =============================================================================
+FROM node:20-alpine as builder
 
-# Build application
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine
+# =============================================================================
+# Stage 3: Runner
+# =============================================================================
+FROM node:20-alpine as runner
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init curl
+WORKDIR /app
 
-# Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
-# Set working directory
-WORKDIR /app
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy built application from builder
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/next.config.js ./
-
-# Switch to non-root user
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
 
-# Start application
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["npm", "start"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+
+CMD ["node", "server.js"]

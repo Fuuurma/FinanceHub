@@ -55,7 +55,7 @@ mockUseScreenerStore.mockReturnValue({
   error: null,
   searchTerm: '',
   sortBy: 'relevance',
-  sortOrder: 'desc' as const,
+  sortOrder: 'desc',
   limit: 20,
   currentPage: 1,
   autoRefresh: false,

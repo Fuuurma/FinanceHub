@@ -34,10 +34,10 @@ class TimescaleMigration:
         """Log a migration step."""
         timestamp = datetime.now().isoformat()
         entry = {
-            'timestamp': timestamp,
-            'action': action,
-            'details': details,
-            'success': success
+            "timestamp": timestamp,
+            "action": action,
+            "details": details,
+            "success": success,
         }
         self.migration_log.append(entry)
         status = "✓" if success else "✗"
@@ -70,7 +70,9 @@ class TimescaleMigration:
         try:
             with connection.cursor() as cur:
                 cur.execute("CREATE EXTENSION IF NOT EXISTS timescaledb;")
-            self.log_migration("Create TimescaleDB extension", "Extension created or already exists")
+            self.log_migration(
+                "Create TimescaleDB extension", "Extension created or already exists"
+            )
             return True
         except Exception as e:
             self.log_migration("Create TimescaleDB extension", str(e), success=False)
@@ -80,7 +82,8 @@ class TimescaleMigration:
         """Get information about an existing table."""
         try:
             with connection.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT
                         c.relname AS table_name,
                         c.reltuples AS row_count,
@@ -88,14 +91,16 @@ class TimescaleMigration:
                     FROM pg_class c
                     JOIN pg_namespace n ON n.oid = c.relnamespace
                     WHERE c.relname = %s AND n.nspname = 'public'
-                """, (table_name,))
+                """,
+                    (table_name,),
+                )
 
                 result = cur.fetchone()
                 if result:
                     return {
-                        'table_name': result[0],
-                        'row_count': result[1],
-                        'size_bytes': result[2]
+                        "table_name": result[0],
+                        "row_count": result[1],
+                        "size_bytes": result[2],
                     }
         except Exception as e:
             logger.error(f"Failed to get table info for {table_name}: {e}")
@@ -130,13 +135,12 @@ class TimescaleMigration:
                 time_column="date",
                 chunk_time_interval="7 days",
                 migrate_data=True,
-                if_not_exists=True
+                if_not_exists=True,
             )
 
             if success:
                 timescale_manager.set_retention_policy(
-                    table_name=table_name,
-                    drop_after="2 years"
+                    table_name=table_name, drop_after="2 years"
                 )
 
                 timescale_manager.enable_auto_compression(table_name)
@@ -146,7 +150,7 @@ class TimescaleMigration:
                     source_table=table_name,
                     time_bucket="1 hour",
                     columns=["open", "high", "low", "close", "volume"],
-                    group_by_columns=["asset_id"]
+                    group_by_columns=["asset_id"],
                 )
 
                 timescale_manager.create_continuous_aggregate(
@@ -154,13 +158,19 @@ class TimescaleMigration:
                     source_table=table_name,
                     time_bucket="1 day",
                     columns=["open", "high", "low", "close", "volume"],
-                    group_by_columns=["asset_id"]
+                    group_by_columns=["asset_id"],
                 )
 
-                self.log_migration("Complete migration", f"Table {table_name} converted to hypertable")
+                self.log_migration(
+                    "Complete migration", f"Table {table_name} converted to hypertable"
+                )
                 return True
             else:
-                self.log_migration("Migration failed", f"Failed to create hypertable for {table_name}", success=False)
+                self.log_migration(
+                    "Migration failed",
+                    f"Failed to create hypertable for {table_name}",
+                    success=False,
+                )
                 return False
 
         except ImportError as e:
@@ -176,35 +186,41 @@ class TimescaleMigration:
 
         try:
             with connection.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT EXISTS (
                         SELECT FROM information_schema.tables
                         WHERE table_name = %s
                     );
-                """, (table_name,))
+                """,
+                    (table_name,),
+                )
 
                 if not cur.fetchone()[0]:
-                    self.log_migration("Skip hypertable", f"Table {table_name} does not exist")
+                    self.log_migration(
+                        "Skip hypertable", f"Table {table_name} does not exist"
+                    )
                     return True
 
             success = timescale_manager.create_hypertable(
                 table_name=table_name,
                 time_column="created_at",
                 chunk_time_interval="1 day",
-                migrate_data=True
+                migrate_data=True,
             )
 
             if success:
                 timescale_manager.set_retention_policy(
-                    table_name=table_name,
-                    drop_after="30 days"
+                    table_name=table_name, drop_after="30 days"
                 )
 
                 self.log_migration("Create performance metrics hypertable", "Success")
                 return True
 
         except Exception as e:
-            self.log_migration("Create performance metrics hypertable", str(e), success=False)
+            self.log_migration(
+                "Create performance metrics hypertable", str(e), success=False
+            )
             return False
 
         return False
@@ -215,28 +231,32 @@ class TimescaleMigration:
 
         try:
             with connection.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT EXISTS (
                         SELECT FROM information_schema.tables
                         WHERE table_name = %s
                     );
-                """, (table_name,))
+                """,
+                    (table_name,),
+                )
 
                 if not cur.fetchone()[0]:
-                    self.log_migration("Skip hypertable", f"Table {table_name} does not exist")
+                    self.log_migration(
+                        "Skip hypertable", f"Table {table_name} does not exist"
+                    )
                     return True
 
             success = timescale_manager.create_hypertable(
                 table_name=table_name,
                 time_column="created_at",
                 chunk_time_interval="1 hour",
-                migrate_data=True
+                migrate_data=True,
             )
 
             if success:
                 timescale_manager.set_retention_policy(
-                    table_name=table_name,
-                    drop_after="7 days"
+                    table_name=table_name, drop_after="7 days"
                 )
 
                 self.log_migration("Create API usage hypertable", "Success")
@@ -251,40 +271,40 @@ class TimescaleMigration:
     def validate_migration(self) -> Dict:
         """Validate the migration was successful."""
         validation = {
-            'timescaledb_available': False,
-            'hypertables_created': [],
-            'continuous_aggregates': [],
-            'retention_policies': [],
-            'errors': []
+            "timescaledb_available": False,
+            "hypertables_created": [],
+            "continuous_aggregates": [],
+            "retention_policies": [],
+            "errors": [],
         }
 
         try:
-            validation['timescaledb_available'] = timescale_manager.is_available
+            validation["timescaledb_available"] = timescale_manager.is_available
 
             with connection.cursor() as cur:
                 cur.execute("""
                     SELECT hypertable_name
                     FROM timescaledb_information.hypertables;
                 """)
-                validation['hypertables_created'] = [row[0] for row in cur.fetchall()]
+                validation["hypertables_created"] = [row[0] for row in cur.fetchall()]
 
                 cur.execute("""
                     SELECT view_name
                     FROM timescaledb_information.continuous_aggregates;
                 """)
-                validation['continuous_aggregates'] = [row[0] for row in cur.fetchall()]
+                validation["continuous_aggregates"] = [row[0] for row in cur.fetchall()]
 
                 cur.execute("""
                     SELECT hypertable_name, drop_after
                     FROM timescaledb_information.retention_policies;
                 """)
-                validation['retention_policies'] = [
-                    {'table': row[0], 'drop_after': str(row[1])}
+                validation["retention_policies"] = [
+                    {"table": row[0], "drop_after": str(row[1])}
                     for row in cur.fetchall()
                 ]
 
         except Exception as e:
-            validation['errors'].append(str(e))
+            validation["errors"].append(str(e))
 
         return validation
 
@@ -306,27 +326,29 @@ class TimescaleMigration:
         prerequisites_ok, missing = self.check_prerequisites()
 
         if not prerequisites_ok:
-            self.log_migration("Prerequisites check", f"Missing: {missing}", success=False)
+            self.log_migration(
+                "Prerequisites check", f"Missing: {missing}", success=False
+            )
             return {
-                'success': False,
-                'error': f"Missing prerequisites: {missing}",
-                'log': self.migration_log
+                "success": False,
+                "error": f"Missing prerequisites: {missing}",
+                "log": self.migration_log,
             }
 
         self.log_migration("Prerequisites check", "All prerequisites met")
 
         if not self.create_timescale_extensions():
             return {
-                'success': False,
-                'error': "Failed to create TimescaleDB extension",
-                'log': self.migration_log
+                "success": False,
+                "error": "Failed to create TimescaleDB extension",
+                "log": self.migration_log,
             }
 
         if not self.migrate_asset_prices_historic():
             return {
-                'success': False,
-                'error': "Failed to migrate asset_prices_historic",
-                'log': self.migration_log
+                "success": False,
+                "error": "Failed to migrate asset_prices_historic",
+                "log": self.migration_log,
             }
 
         if migrate_all:
@@ -339,14 +361,14 @@ class TimescaleMigration:
 
         self.log_migration(
             "Migration complete",
-            f"Elapsed: {elapsed:.2f}s, Hypertables: {len(validation['hypertables_created'])}"
+            f"Elapsed: {elapsed:.2f}s, Hypertables: {len(validation['hypertables_created'])}",
         )
 
         return {
-            'success': True,
-            'elapsed_seconds': elapsed,
-            'validation': validation,
-            'log': self.migration_log
+            "success": True,
+            "elapsed_seconds": elapsed,
+            "validation": validation,
+            "log": self.migration_log,
         }
 
     def rollback_migration(self, table_name: str) -> bool:
@@ -373,33 +395,39 @@ class TimescaleMigration:
         validation = self.validate_migration()
 
         return {
-            'is_timescaledb_available': validation['timescaledb_available'],
-            'hypertables': validation['hypertables_created'],
-            'aggregates': validation['continuous_aggregates'],
-            'retention_policies': validation['retention_policies'],
-            'migration_log': self.migration_log[-10:]
+            "is_timescaledb_available": validation["timescaledb_available"],
+            "hypertables": validation["hypertables_created"],
+            "aggregates": validation["continuous_aggregates"],
+            "retention_policies": validation["retention_policies"],
+            "migration_log": self.migration_log[-10:],
         }
 
 
 def run_migration():
     """Entry point for running the TimescaleDB migration."""
     import django
+
     django.setup()
 
     migration = TimescaleMigration()
     result = migration.run_migration()
 
-    if result['success']:
-        print("\n✓ Migration completed successfully!")
-        print(f"  - Hypertables created: {len(result['validation']['hypertables_created'])}")
-        print(f"  - Continuous aggregates: {len(result['validation']['continuous_aggregates'])}")
-        print(f"  - Elapsed time: {result['elapsed_seconds']:.2f}s")
+    if result["success"]:
+        logger.info("Migration completed successfully")
+        logger.info(
+            "Hypertables created: %d", len(result["validation"]["hypertables_created"])
+        )
+        logger.info(
+            "Continuous aggregates: %d",
+            len(result["validation"]["continuous_aggregates"]),
+        )
+        logger.info("Elapsed time: %.2fs", result["elapsed_seconds"])
     else:
-        print(f"\n✗ Migration failed: {result['error']}")
-        print("\nMigration log:")
-        for entry in result['log']:
-            status = "✓" if entry['success'] else "✗"
-            print(f"  {status} {entry['action']}: {entry['details']}")
+        logger.error("Migration failed: %s", result["error"])
+        logger.info("Migration log:")
+        for entry in result["log"]:
+            status = "SUCCESS" if entry["success"] else "FAILED"
+            logger.info("%s %s: %s", status, entry["action"], entry["details"])
 
     return result
 
@@ -407,19 +435,23 @@ def run_migration():
 def check_status():
     """Entry point for checking migration status."""
     import django
+
     django.setup()
 
     migration = TimescaleMigration()
     status = migration.get_migration_status()
 
-    print("\nTimescaleDB Migration Status")
-    print("=" * 40)
-    print(f"TimescaleDB Available: {'Yes' if status['is_timescaledb_available'] else 'No'}")
-    print(f"Hypertables: {', '.join(status['hypertables']) or 'None'}")
-    print(f"Continuous Aggregates: {', '.join(status['aggregates']) or 'None'}")
-    print("\nRetention Policies:")
-    for policy in status['retention_policies']:
-        print(f"  - {policy['table']}: drop after {policy['drop_after']}")
+    logger.info("TimescaleDB Migration Status")
+    logger.info("========================================")
+    logger.info(
+        "TimescaleDB Available: %s",
+        "Yes" if status["is_timescaledb_available"] else "No",
+    )
+    logger.info("Hypertables: %s", ", ".join(status["hypertables"]) or "None")
+    logger.info("Continuous Aggregates: %s", ", ".join(status["aggregates"]) or "None")
+    logger.info("Retention Policies:")
+    for policy in status["retention_policies"]:
+        logger.info("  - %s: drop after %s", policy["table"], policy["drop_after"])
 
     return status
 

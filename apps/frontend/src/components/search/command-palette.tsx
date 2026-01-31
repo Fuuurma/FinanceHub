@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   CommandDialog, CommandEmpty, CommandGroup, CommandInput,
   CommandItem, CommandList, CommandSeparator,
 } from '@/components/ui/command'
-import { 
-  Bitcoin, DollarSign, Newspaper, BarChart3, 
-  Clock, Star, Search, ArrowRight, Zap 
+import {
+  Bitcoin, DollarSign, Newspaper, BarChart3,
+  Clock, Star, Search, ArrowRight, Zap
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { useDebounce } from '@/hooks/useDebounce'
 
 const mockAssets = [
   { symbol: 'BTC', name: 'Bitcoin', price: 64250, change: 2.98, type: 'crypto' },
@@ -19,13 +20,22 @@ const mockAssets = [
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean, onOpenChange: (o: boolean) => void }) {
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  // Debounce search input to reduce API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <div className="border-b-4 border-foreground p-2 bg-primary">
-         <CommandInput 
-            placeholder="EXECUTE_COMMAND_OR_SEARCH..." 
-            value={search} 
+         <CommandInput
+            placeholder="EXECUTE_COMMAND_OR_SEARCH..."
+            value={search}
             onValueChange={setSearch}
             className="border-none focus:ring-0 placeholder:text-primary-foreground/50 text-primary-foreground font-black uppercase"
          />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Minus,
   TrendingUp,
@@ -18,6 +19,11 @@ import {
   Trash2,
   Save,
   Undo,
+  Camera,
+  Share2,
+  Download,
+  Link,
+  Loader2,
 } from 'lucide-react'
 import { DRAWING_TOOLS, FIBONACCI_LEVELS } from '@/lib/constants/indicators'
 import { cn } from '@/lib/utils'
@@ -55,6 +61,8 @@ interface DrawingToolsProps {
   onDrawingsChange: (drawings: Drawing[]) => void
   onToolSelect?: (tool: DrawingType | null) => void
   selectedTool?: DrawingType | null
+  onScreenshot?: () => Promise<string>
+  onShare?: () => Promise<string>
   className?: string
 }
 
@@ -65,9 +73,16 @@ export function DrawingTools({
   onDrawingsChange,
   onToolSelect,
   selectedTool,
+  onScreenshot,
+  onShare,
   className,
 }: DrawingToolsProps) {
   const [activeTab, setActiveTab] = useState<'tools' | 'manage'>('tools')
+  const [isTakingScreenshot, setIsTakingScreenshot] = useState(false)
+  const [isSharing, setIsSharing] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleSelectTool = (type: DrawingType) => {
     if (selectedTool === type) {
@@ -94,6 +109,49 @@ export function DrawingTools({
     const newDrawings = drawings.filter((d) => d.id !== drawingId)
     onDrawingsChange(newDrawings)
   }
+
+  const handleScreenshot = useCallback(async () => {
+    if (!onScreenshot) {
+      return
+    }
+
+    setIsTakingScreenshot(true)
+    try {
+      const dataUrl = await onScreenshot()
+      const link = document.createElement('a')
+      link.download = `chart-${symbol}-${Date.now()}.png`
+      link.href = dataUrl
+      link.click()
+    } catch (error) {
+      console.error('Failed to take screenshot:', error)
+    } finally {
+      setIsTakingScreenshot(false)
+    }
+  }, [onScreenshot, symbol])
+
+  const handleShare = useCallback(async () => {
+    if (!onShare) {
+      return
+    }
+
+    setIsSharing(true)
+    setShareUrl(null)
+    try {
+      const url = await onShare()
+      setShareUrl(url)
+      setShowShareModal(true)
+    } catch (error) {
+      console.error('Failed to share:', error)
+    } finally {
+      setIsSharing(false)
+    }
+  }, [onShare])
+
+  const copyShareUrl = useCallback(async () => {
+    if (shareUrl) {
+      await navigator.clipboard.writeText(shareUrl)
+    }
+  }, [shareUrl])
 
   const getToolIcon = (type: DrawingType) => {
     switch (type) {
@@ -191,6 +249,40 @@ export function DrawingTools({
                   <strong>Tip:</strong> Select a drawing tool, then click and drag on the chart to create. Drawings are saved per symbol and timeframe.
                 </p>
               </div>
+
+              <div className="border-t pt-4">
+                <Label className="text-xs font-medium text-muted-foreground mb-2 block">
+                  Export & Share
+                </Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleScreenshot}
+                    disabled={isTakingScreenshot || !onScreenshot}
+                  >
+                    {isTakingScreenshot ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Camera className="h-4 w-4" />
+                    )}
+                    <span className="ml-2">Screenshot</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShare}
+                    disabled={isSharing || !onShare}
+                  >
+                    {isSharing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Share2 className="h-4 w-4" />
+                    )}
+                    <span className="ml-2">Share</span>
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="manage" className="space-y-4 mt-4">
@@ -253,6 +345,60 @@ export function DrawingTools({
           </Tabs>
         </CardContent>
       </Card>
+
+      <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="h-5 w-5" />
+              Share Chart
+            </DialogTitle>
+            <DialogDescription>
+              Share your chart with drawings and annotations.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {shareUrl ? (
+              <>
+                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                  <Link className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <code className="text-sm flex-1 break-all">{shareUrl}</code>
+                  <Button variant="ghost" size="sm" onClick={copyShareUrl}>
+                    Copy
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => window.open(shareUrl, '_blank')}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Open Link
+                  </Button>
+                  <Button className="flex-1" onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: `Chart: ${symbol}`,
+                        text: 'Check out this chart on FinanceHub',
+                        url: shareUrl,
+                      })
+                    }
+                  }}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share Via...
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowShareModal(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

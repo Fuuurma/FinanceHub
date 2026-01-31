@@ -158,7 +158,6 @@ DATABASES = {
         "HOST": os.getenv("DB_HOST", "127.0.0.1"),
         "PORT": os.getenv("DB_PORT", "5432"),
         "OPTIONS": {
-            "charset": "utf8mb4",
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     },
@@ -229,8 +228,18 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "LOCATION": os.getenv("REDIS_URL", "redis://redis:6379/0"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 50,
+                "retry_on_timeout": True,
+            },
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            "SOCKET_TIMEOUT": 5,
+        },
+        "KEY_PREFIX": "financehub",
+        "TIMEOUT": 300,  # Default 5 minutes
     }
 }
 
@@ -271,3 +280,32 @@ RATELIMIT_AUTHENTICATED_RATE = "1000/hour"
 RATELIMIT_ANON_RATE = "100/hour"
 RATELIMIT_USE_REDIS = True
 RATELIMIT_KEY_PREFIX = "ratelimit"
+
+
+# Slow Query Logging
+# Enable DEBUG logging to capture slow queries
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs" / "slow_queries.log",
+            "formatter": "simple",
+        },
+    },
+    "formatters": {
+        "simple": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"},
+    },
+    "loggers": {
+        "django.db.backends": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}

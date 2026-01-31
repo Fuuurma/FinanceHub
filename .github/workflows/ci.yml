@@ -98,21 +98,21 @@ jobs:
           pytest --cov=. --cov-report=xml --cov-report=html --junitxml=test-results.xml -v
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./apps/backend/src/coverage.xml
           flags: backend
           fail_ci_if_error: false
 
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backend-test-results
           path: apps/backend/src/test-results.xml
 
       - name: Upload coverage HTML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backend-coverage-html
@@ -172,14 +172,14 @@ jobs:
           npm test -- --coverage --maxWorkers=2
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./apps/frontend/coverage/lcov.info
           flags: frontend
           fail_ci_if_error: false
 
       - name: Upload coverage HTML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: frontend-coverage-html
@@ -201,7 +201,7 @@ jobs:
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
@@ -218,7 +218,7 @@ jobs:
           npm audit --json > ../npm-audit-results.json || true
 
       - name: Upload audit results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-audit-results
@@ -250,7 +250,13 @@ jobs:
       - name: Check bundle size
         run: |
           cd apps/frontend
-          du -sh .next
+          SIZE=$(du -sh .next | cut -f1)
+          echo "Bundle size: $SIZE"
+          if [ $(echo "$SIZE > 200M" | bc -l) -eq 1 ]; then
+            echo "Bundle size exceeds 200M threshold"
+            exit 1
+          fi
+          echo "Bundle size check passed"
 
   notify:
     name: Notify

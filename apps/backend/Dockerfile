@@ -1,68 +1,52 @@
-# Multi-stage build for FinanceHub Backend
+# =============================================================================
+# Stage 1: Builder
+# =============================================================================
 FROM python:3.11-slim as builder
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
     libpq-dev \
+    libmariadb-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Set work directory
-WORKDIR /app
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Production stage
-FROM python:3.11-slim
+# =============================================================================
+# Stage 2: Runtime
+# =============================================================================
+FROM python:3.11-slim as runtime
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    DEBIAN_FRONTEND=noninteractive
+RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    libmariadb3 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Set work directory
 WORKDIR /app
 
-# Set work directory
-WORKDIR /app/src
+COPY --chown=appuser:appuser . .
 
-# Copy Python dependencies from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+RUN mkdir -p /app/logs && chown -R appuser:appuser /app/logs
 
-# Copy application code
-COPY src/ ./
-
-# Change ownership
-RUN chown -R appuser:appuser /app
-
-# Switch to non-root user
 USER appuser
 
-# Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/api/health/ || exit 1
 
-# Run application
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "120", "--access-logfile", "-"]
+CMD ["gunicorn", "core.asgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]

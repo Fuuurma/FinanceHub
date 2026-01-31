@@ -18,6 +18,7 @@ import { PageErrorBoundary } from '@/components/ui/PageErrorBoundary'
 import { TradingViewChart, ChartControls } from '@/components/charts'
 import { OrderBook } from '@/components/realtime/OrderBook'
 import { TradeFeed } from '@/components/realtime/TradeFeed'
+import { SimilarAssetsCard, NewsWithSentiment } from '@/components/assets'
 import { useRealtimeStore } from '@/stores/realtimeStore'
 import type { ChartType, Timeframe } from '@/components/charts'
 
@@ -52,18 +53,20 @@ function CollapsibleSection({ section }: CollapsibleSectionProps) {
     <div className="border rounded-lg overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
+        aria-controls={`section-${section.id}`}
         className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
       >
         <div className="flex items-center gap-2">
-          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {isExpanded ? <ChevronDown className="h-4 w-4" aria-hidden="true" /> : <ChevronRight className="h-4 w-4" aria-hidden="true" />}
           <span className="text-sm font-semibold">{section.title}</span>
         </div>
         <span className="text-xs text-muted-foreground">{section.items.length} metrics</span>
       </button>
       {isExpanded && (
-        <div className="border-t p-3 grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div id={`section-${section.id}`} className="border-t p-3 grid grid-cols-2 md:grid-cols-4 gap-2">
           {section.items.map((item, idx) => (
-            <div key={idx} className="space-y-1">
+            <div key={idx} className="space-y-1" role="listitem">
               <p className="text-[10px] text-muted-foreground uppercase">{item.label}</p>
               <p className={`text-sm font-semibold ${item.good ? 'text-green-600' : 'text-red-600'}`}>
                 {item.value}
@@ -336,35 +339,35 @@ function AssetDetailPageContent() {
     <div className="space-y-6 p-6">
       {/* Header - Symbol Prominent */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-baseline gap-4 mb-2">
-                <h1 className="text-6xl font-bold tracking-tight">{assetData.symbol}</h1>
-                <span className="text-2xl text-muted-foreground font-light">{assetData.name}</span>
+        <CardContent className="pt-4 md:pt-6">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-3">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight truncate">{assetData.symbol}</h1>
+                <span className="text-lg sm:text-xl md:text-2xl text-muted-foreground font-light truncate">{assetData.name}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="text-sm px-3 py-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="text-xs sm:text-sm px-2 py-0.5 sm:px-3 sm:py-1">
                   {assetData.type.toUpperCase()}
                 </Badge>
                 {assetData.fundamentals?.sector && (
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                  <Badge variant="secondary" className="text-xs sm:text-sm px-2 py-0.5 sm:px-3 sm:py-1">
                     {assetData.fundamentals.sector}
                   </Badge>
                 )}
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground truncate">
                   {assetData.fundamentals?.industry}
                 </span>
               </div>
             </div>
-            
-            <div className="text-right space-y-1">
-              <div className="text-5xl font-bold tracking-tight">
+
+            <div className="text-left md:text-right space-y-1 shrink-0">
+              <div className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
                 {currentPrice ? `$${currentPrice.price.toFixed(2)}` : `$${assetData.price.toFixed(2)}`}
               </div>
-              <div className={`flex items-center gap-2 justify-end text-lg ${assetData.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {assetData.change >= 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
-                <span className="font-semibold">
+              <div className={`flex items-center gap-2 ${assetData.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {assetData.change >= 0 ? <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" /> : <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5" />}
+                <span className="font-semibold text-sm sm:text-base">
                   {assetData.change >= 0 ? '+' : ''}{assetData.change.toFixed(2)} ({assetData.changePercent >= 0 ? '+' : ''}{assetData.changePercent.toFixed(2)}%)
                 </span>
               </div>
@@ -929,7 +932,7 @@ function AssetDetailPageContent() {
             symbol={assetId.toUpperCase()}
             chartType="candlestick"
             timeframe={getChartTimeframe(selectedTimeFrame) || '1d'}
-            height={500}
+            height={350}
             showVolume={true}
           />
         </CardContent>
@@ -937,19 +940,19 @@ function AssetDetailPageContent() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-12">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="stats">Stats</TabsTrigger>
-          <TabsTrigger value="fundamentals">Fundamentals</TabsTrigger>
-          <TabsTrigger value="technicals">Technicals</TabsTrigger>
-          <TabsTrigger value="financials">Financials</TabsTrigger>
-          <TabsTrigger value="valuation">Valuation</TabsTrigger>
-          <TabsTrigger value="ownership">Ownership</TabsTrigger>
-          <TabsTrigger value="earnings">Earnings</TabsTrigger>
-          <TabsTrigger value="news">News</TabsTrigger>
-          <TabsTrigger value="filings">Filings</TabsTrigger>
-          <TabsTrigger value="dividends">Dividends</TabsTrigger>
-          <TabsTrigger value="analysts">Analysts</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 overflow-x-auto">
+          <TabsTrigger value="overview" className="whitespace-nowrap">Overview</TabsTrigger>
+          <TabsTrigger value="stats" className="whitespace-nowrap">Stats</TabsTrigger>
+          <TabsTrigger value="fundamentals" className="whitespace-nowrap">Fundamentals</TabsTrigger>
+          <TabsTrigger value="technicals" className="whitespace-nowrap">Technicals</TabsTrigger>
+          <TabsTrigger value="financials" className="whitespace-nowrap hidden sm:inline">Financials</TabsTrigger>
+          <TabsTrigger value="valuation" className="whitespace-nowrap hidden md:inline">Valuation</TabsTrigger>
+          <TabsTrigger value="ownership" className="whitespace-nowrap hidden md:inline">Ownership</TabsTrigger>
+          <TabsTrigger value="earnings" className="whitespace-nowrap hidden lg:inline">Earnings</TabsTrigger>
+          <TabsTrigger value="news" className="whitespace-nowrap hidden lg:inline">News</TabsTrigger>
+          <TabsTrigger value="filings" className="whitespace-nowrap hidden xl:inline">Filings</TabsTrigger>
+          <TabsTrigger value="dividends" className="whitespace-nowrap hidden xl:inline">Dividends</TabsTrigger>
+          <TabsTrigger value="analysts" className="whitespace-nowrap hidden xl:inline">Analysts</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -1017,6 +1020,14 @@ function AssetDetailPageContent() {
             <OrderBook symbol={assetId} />
             <TradeFeed symbol={assetId} />
           </div>
+
+          {/* Similar Assets Section */}
+          {assetData.similarAssets && assetData.similarAssets.length > 0 && (
+            <SimilarAssetsCard 
+              assets={assetData.similarAssets}
+              currentAssetSymbol={assetData.symbol}
+            />
+          )}
         </TabsContent>
 
         {/* Technicals Tab */}
@@ -1180,43 +1191,7 @@ function AssetDetailPageContent() {
         </TabsContent>
 
         <TabsContent value="news">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Latest News</CardTitle>
-                  <CardDescription>Recent news and sentiment analysis</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="/sentiment">View All News →</a>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {assetData.news?.map((article) => (
-                  <div key={article.id} className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex-1">
-                      <h4 className="font-semibold mb-1">{article.title}</h4>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{article.source}</span>
-                        <span>•</span>
-                        <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <Badge
-                      variant={
-                        article.sentiment === 'positive' ? 'default' :
-                        article.sentiment === 'negative' ? 'destructive' : 'secondary'
-                      }
-                    >
-                      {article.sentiment}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <NewsWithSentiment news={assetData.news || []} />
         </TabsContent>
 
         <TabsContent value="dividends">

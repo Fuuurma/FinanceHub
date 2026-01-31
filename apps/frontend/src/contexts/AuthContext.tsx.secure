@@ -1,0 +1,390 @@
+'use client'
+
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+
+interface AuthContextType {
+  user: User | null
+  token: string | null
+  refreshToken: string | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+}
+
+interface User {
+  id: string
+  username: string
+  email: string
+  first_name?: string
+  last_name?: string
+  full_name: string
+  is_active: boolean
+  is_staff: boolean
+  date_joined: string
+  roles: string[]
+}
+
+interface AuthContextValue extends AuthContextType {
+  login: (username: string, password: string) => Promise<void>
+  register: (data: any) => Promise<void>
+  logout: () => Promise<void>
+  refreshTokens: () => Promise<void>
+  getMe: () => Promise<void | null | undefined>
+  clearError: () => void
+  setError: (error: string | null) => void
+  checkAuthStatus: () => boolean
+  updateUser: (data: any) => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+
+const TOKEN_KEY = 'access_token'
+const REFRESH_TOKEN_KEY = 'refresh_token'
+const USER_KEY = 'user_data'
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null
+  return null
+}
+
+function setCookie(name: string, value: string, maxAgeSeconds: number, secure: boolean = true): void {
+  if (typeof document === 'undefined') return
+  const expires = new Date(Date.now() + maxAgeSeconds * 1000).toUTCString()
+  const cookieValue = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax${secure ? '; Secure' : ''}`
+  document.cookie = cookieValue
+}
+
+function deleteCookie(name: string): void {
+  if (typeof document === 'undefined') return
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = useState<AuthContextType>({
+    user: null,
+    token: null,
+    refreshToken: null,
+    isAuthenticated: false,
+    isLoading: true,
+    error: null
+  })
+
+  const getTokens = useCallback((): { token: string | null; refreshToken: string | null } => {
+    return {
+      token: getCookie(TOKEN_KEY),
+      refreshToken: getCookie(REFRESH_TOKEN_KEY)
+    }
+  }, [])
+
+  const getStoredUser = useCallback((): User | null => {
+    const userCookie = getCookie(USER_KEY)
+    if (!userCookie) return null
+    try {
+      return JSON.parse(userCookie)
+    } catch {
+      return null
+    }
+  }, [])
+
+  const checkAuthStatus = useCallback(() => {
+    const { token } = getTokens()
+    const user = getStoredUser()
+    
+    if (token && user) {
+      setState(prev => ({
+        ...prev,
+        user,
+        token,
+        refreshToken: getCookie(REFRESH_TOKEN_KEY),
+        isAuthenticated: true,
+        isLoading: false
+      }))
+      return true
+    }
+    
+    setState(prev => ({
+      ...prev,
+      isLoading: false,
+      isAuthenticated: false
+    }))
+    return false
+  }, [getTokens, getStoredUser])
+
+  useEffect(() => {
+    checkAuthStatus()
+  }, [checkAuthStatus])
+
+  const login = useCallback(async (username: string, password: string) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
+
+    try {
+      const response = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Login failed')
+      }
+
+      const data = await response.json()
+
+      if (data.access && data.refresh) {
+        const isProduction = typeof window !== 'undefined' && window.location.protocol === 'https:'
+        
+        setCookie(TOKEN_KEY, data.access, 15 * 60, isProduction)
+        setCookie(REFRESH_TOKEN_KEY, data.refresh, 7 * 24 * 60 * 60, isProduction)
+        setCookie(USER_KEY, JSON.stringify(data.user), 7 * 24 * 60 * 60, isProduction)
+      }
+
+      setState(prev => ({
+        ...prev,
+        user: data.user,
+        token: data.access,
+        refreshToken: data.refresh,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null
+      }))
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Login failed'
+      }))
+    }
+  }, [])
+
+  const register = useCallback(async (data: any) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
+
+    try {
+      const response = await fetch('/api/v1/users/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Registration failed')
+      }
+
+      const responseData = await response.json()
+
+      if (responseData.access && responseResponse.refresh && responseData.user) {
+        const isProduction = typeof window !== 'undefined' && window.location.protocol === 'https:'
+        
+        setCookie(TOKEN_KEY, responseData.access, 15 * 60, isProduction)
+        setCookie(REFRESH_TOKEN_KEY, responseData.refresh, 7 * 24 * 60 * 60, isProduction)
+        setCookie(USER_KEY, JSON.stringify(responseData.user), 7 * 24 * 60 * 60, isProduction)
+      }
+
+      setState(prev => ({
+        ...prev,
+        user: responseData.user,
+        token: responseData.access,
+        refreshToken: responseData.refresh,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null
+      }))
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Registration failed'
+      }))
+    }
+  }, [])
+
+  const logout = useCallback(async () => {
+    const refreshToken = getCookie(REFRESH_TOKEN_KEY)
+
+    try {
+      if (refreshToken) {
+        await fetch('/api/v1/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ refreshToken })
+        })
+      }
+    } catch {
+      // Continue with logout even if server call fails
+    }
+
+    deleteCookie(TOKEN_KEY)
+    deleteCookie(REFRESH_TOKEN_KEY)
+    deleteCookie(USER_KEY)
+
+    setState(prev => ({
+      ...prev,
+      user: null,
+      token: null,
+      refreshToken: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: null
+    }))
+  }, [])
+
+  const refreshTokens = useCallback(async () => {
+    const refreshToken = getCookie(REFRESH_TOKEN_KEY)
+
+    if (!refreshToken) {
+      logout()
+      return
+    }
+
+    try {
+      const response = await fetch('/api/v1/auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ refreshToken })
+      })
+
+      if (!response.ok) {
+        logout()
+        throw new Error('Token refresh failed')
+      }
+
+      const data = await response.json()
+
+      if (data.access && data.refresh) {
+        const isProduction = typeof window !== 'undefined' && window.location.protocol === 'https:'
+        
+        setCookie(TOKEN_KEY, data.access, 15 * 60, isProduction)
+        setCookie(REFRESH_TOKEN_KEY, data.refresh, 7 * 24 * 60 * 60, isProduction)
+      }
+
+      setState(prev => ({
+        ...prev,
+        token: data.access,
+        refreshToken: data.refresh,
+        isAuthenticated: !!data.access,
+        isLoading: false,
+        error: null
+      }))
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Token refresh failed'
+      }))
+      logout()
+    }
+  }, [logout])
+
+  const getMe = useCallback(async () => {
+    const { token } = getTokens()
+
+    if (!token) {
+      return null
+    }
+
+    try {
+      const response = await fetch('/api/v1/auth/me', {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          await refreshTokens()
+          return
+        }
+        throw new Error('Failed to fetch user data')
+      }
+
+      const data = await response.json()
+
+      setState(prev => ({
+        ...prev,
+        user: data,
+        isAuthenticated: !!data,
+        isLoading: false,
+        error: null
+      }))
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch user data'
+      }))
+    }
+  }, [getTokens, refreshTokens])
+
+  const clearError = useCallback(() => {
+    setState(prev => ({ ...prev, error: null }))
+  }, [])
+
+  const setError = useCallback((error: string | null) => {
+    setState(prev => ({ ...prev, error }))
+  }, [])
+
+  const updateUser = useCallback(async (data: any) => {
+    try {
+      const response = await fetch('/api/v1/users/me/', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update user')
+      }
+
+      const updatedUser = await response.json()
+      const isProduction = typeof window !== 'undefined' && window.location.protocol === 'https:'
+      setCookie(USER_KEY, JSON.stringify(updatedUser), 7 * 24 * 60 * 60, isProduction)
+      
+      setState(prev => ({ ...prev, user: updatedUser }))
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Update failed'
+      }))
+    }
+  }, [])
+
+  return (
+    <AuthContext.Provider value={{
+      ...state,
+      login,
+      register,
+      logout,
+      refreshTokens,
+      getMe,
+      clearError,
+      setError,
+      checkAuthStatus,
+      updateUser
+    }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}

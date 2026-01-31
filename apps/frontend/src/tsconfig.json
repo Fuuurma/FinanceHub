@@ -18,6 +18,14 @@
     "jsx": "react-jsx",
     "incremental": true,
     "downlevelIteration": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
+    ],
+    "types": [
+      "jest",
+      "@testing-library/jest-dom"
+    ],
     "plugins": [
       {
         "name": "next"
@@ -36,7 +44,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules"

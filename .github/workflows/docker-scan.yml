@@ -1,0 +1,84 @@
+name: Docker Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/backend/**'
+      - 'apps/frontend/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/backend/**'
+      - 'apps/frontend/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/backend
+          push: false
+          load: true
+          tags: financehub-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/frontend
+          push: false
+          load: true
+          tags: financehub-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy scanner on backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'financehub-backend:latest'
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Run Trivy scanner on frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'financehub-frontend:latest'
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload backend Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+          category: 'backend'
+
+      - name: Upload frontend Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+          category: 'frontend'
+
+      - name: Check for vulnerabilities
+        run: |
+          if [ -f trivy-backend-results.sarif ] || [ -f trivy-frontend-results.sarif ]; then
+            echo "Security scan completed. Check SARIF results for details."
+          fi

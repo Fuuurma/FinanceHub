@@ -1,5 +1,6 @@
 from .order import Order, OrderType, OrderSide, OrderStatus
 from .position import Position
+from .paper_trading import PaperTradingAccount, PaperTrade
 
 __all__ = [
     "Order",
@@ -7,4 +8,6 @@ __all__ = [
     "OrderSide",
     "OrderStatus",
     "Position",
+    "PaperTradingAccount",
+    "PaperTrade",
 ]

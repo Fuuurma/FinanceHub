@@ -1,14 +1,17 @@
-/** @type {import('jest').Config} */
-const config = {
+const nextJest = require('next/jest')
+
+const createJestConfig = nextJest({
+  dir: './',
+})
+
+const customJestConfig = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  moduleDirectories: ['node_modules', '<rootDir>'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    '^@/(.*)': '<rootDir>/$1',
   },
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': '<rootDir>/jest-transformer.js',
-  },
-  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx'],
   collectCoverageFrom: [
     '**/*.{ts,tsx}',
     '!**/*.d.ts',
@@ -21,4 +24,4 @@ const config = {
   roots: ['<rootDir>'],
 }
 
-module.exports = config
+module.exports = createJestConfig(customJestConfig)

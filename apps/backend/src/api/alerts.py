@@ -1,371 +1,284 @@
-from typing import List, Optional
-from datetime import datetime
-from ninja import Router, Schema, Query
-from django.http import Http404
-from django.db import transaction
+"""
+Alerts API
+Endpoints for managing alerts and notifications.
+"""
 
-from utils.helpers.logger.logger import get_logger
-from utils.services.alert_engine import get_alert_engine
-from investments.models.alert import (
-    Alert, AlertHistory, AlertNotification,
-    AlertType, AlertStatus, DeliveryChannel
-)
-from users.models.user import User
-from utils.constants.api import (
-    ALERT_LIST_LIMIT,
-    ALERT_HISTORY_LIMIT,
-    ALERT_COOLDOWN_SECONDS,
-    RATE_LIMITS,
-    CACHE_TTLS,
-)
-from utils.api.decorators import api_endpoint
-from core.exceptions import (
-    NotFoundException,
-    ValidationException,
-    DatabaseException,
-)
+import logging
+from datetime import timedelta
+from typing import Optional
+from ninja import Router, Query
+from pydantic import BaseModel
+from django.http import HttpResponse
+from django.utils import timezone
 
-logger = get_logger(__name__)
+from investments.models.alerts import Alert, AlertTrigger, Notification, NotificationPreference
+from investments.services.alerts.alert_service import AlertService
+from investments.models import Asset
 
 router = Router(tags=["Alerts"])
+logger = logging.getLogger(__name__)
+
+alert_service = AlertService()
 
 
-class AlertCreateIn(Schema):
-    name: str
+class CreateAlertRequest(BaseModel):
     alert_type: str
-    symbol: str
+    name: str
+    asset_id: Optional[int] = None
+    portfolio_id: Optional[int] = None
     condition_value: float
     condition_operator: str = '>='
-    delivery_channels: Optional[List[str]] = None
-    priority: int = 5
-    cooldown_seconds: int = ALERT_COOLDOWN_SECONDS
-    valid_until: Optional[datetime] = None
-    description: Optional[str] = None
+    frequency: str = 'once'
+    expires_at: Optional[str] = None
+    send_email: bool = False
+    send_push: bool = True
+    send_sms: bool = False
+    send_in_app: bool = True
+    custom_message: str = ''
 
 
-class AlertUpdateIn(Schema):
+class UpdateAlertRequest(BaseModel):
     name: Optional[str] = None
     condition_value: Optional[float] = None
     condition_operator: Optional[str] = None
-    delivery_channels: Optional[List[str]] = None
-    priority: Optional[int] = None
-    cooldown_seconds: Optional[int] = None
-    valid_until: Optional[datetime] = None
-    description: Optional[str] = None
+    frequency: Optional[str] = None
+    send_email: Optional[bool] = None
+    send_push: Optional[bool] = None
+    send_sms: Optional[bool] = None
+    send_in_app: Optional[bool] = None
+    custom_message: Optional[str] = None
 
 
-class AlertOut(Schema):
-    id: str
-    name: str
-    alert_type: str
-    symbol: str
-    condition_value: float
-    condition_operator: str
-    status: str
-    priority: int
-    triggered_count: int
-    delivery_channels: List[str]
-    cooldown_seconds: int
-    valid_from: datetime
-    valid_until: Optional[datetime]
-    created_at: datetime
-    last_triggered_at: Optional[datetime]
-    
-    class Config:
-        from_attributes = True
-
-
-class AlertHistoryOut(Schema):
-    id: str
-    triggered_at: datetime
-    trigger_value: float
-    condition_met: bool
-    notification_sent: bool
-    notification_channels: List[str]
-
-
-class AlertStatsOut(Schema):
-    total_alerts: int
-    active_alerts: int
-    triggered_today: int
-    type_distribution: dict
-
-
-@router.get("/", response=List[AlertOut])
-@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="alerts")
-async def list_alerts(
+@router.get("/alerts/")
+def list_alerts(
     request,
     status: Optional[str] = None,
-    symbol: Optional[str] = None,
     alert_type: Optional[str] = None,
-    limit: int = Query(default=ALERT_LIST_LIMIT, ge=1, le=100),
-    offset: int = Query(default=0, ge=0)
 ):
-    """List user's alerts with optional filters."""
-    user_id = str(request.user.id)
-    
-    queryset = Alert.objects.filter(user_id=user_id)
-    
-    if status:
-        queryset = queryset.filter(status=status)
-    if symbol:
-        queryset = queryset.filter(symbol__iexact=symbol)
+    """List all alerts for the current user."""
+    alerts = alert_service.get_user_alerts(request.user, status=status)
+
     if alert_type:
-        queryset = queryset.filter(alert_type=alert_type)
-    
-    alerts = list(queryset.order_by('-priority', '-created_at')[offset:offset + limit])
-    
-    return [
-        {
-            'id': str(alert.id),
-            'name': alert.name,
-            'alert_type': alert.alert_type,
-            'symbol': alert.symbol,
-            'condition_value': float(alert.condition_value),
-            'condition_operator': alert.condition_operator,
-            'status': alert.status,
-            'priority': alert.priority,
-            'triggered_count': alert.triggered_count,
-            'delivery_channels': alert.delivery_channels,
-            'cooldown_seconds': alert.cooldown_seconds,
-            'valid_from': alert.valid_from,
-            'valid_until': alert.valid_until,
-            'created_at': alert.created_at,
-            'last_triggered_at': alert.last_triggered_at
-        }
-        for alert in alerts
-    ]
+        alerts = [a for a in alerts if a.alert_type == alert_type]
 
-
-@router.post("/")
-@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['write'], key_prefix="alerts")
-async def create_alert(request, payload: AlertCreateIn):
-    """Create a new alert."""
-    alert_engine = get_alert_engine()
-    user_id = str(request.user.id)
-    
-    if payload.alert_type not in AlertType.values:
-        raise ValidationException(
-            f"Invalid alert type. Must be one of: {', '.join(AlertType.values)}",
-            {"valid_types": AlertType.values}
-        )
-    
-    if payload.delivery_channels:
-        for channel in payload.delivery_channels:
-            if channel not in DeliveryChannel.values:
-                raise ValidationException(
-                    f"Invalid delivery channel: {channel}",
-                    {"valid_channels": DeliveryChannel.values, "provided": channel}
-                )
-    
-    alert = await alert_engine.create_alert(
-        user_id=user_id,
-        name=payload.name,
-        alert_type=payload.alert_type,
-        symbol=payload.symbol,
-        condition_value=payload.condition_value,
-        condition_operator=payload.condition_operator,
-        delivery_channels=payload.delivery_channels,
-        priority=payload.priority,
-        cooldown_seconds=payload.cooldown_seconds,
-        valid_until=payload.valid_until,
-        description=payload.description
-    )
-    
     return {
-        "id": str(alert.id),
-        "name": alert.name,
-        "alert_type": alert.alert_type,
-        "symbol": alert.symbol,
-        "status": alert.status,
-        "message": "Alert created successfully"
+        'alerts': [
+            {
+                'id': a.id,
+                'name': a.name,
+                'alert_type': a.alert_type,
+                'status': a.status,
+                'asset_symbol': a.asset.symbol if a.asset else None,
+                'condition_value': float(a.condition_value),
+                'condition_operator': a.condition_operator,
+                'frequency': a.frequency,
+                'send_email': a.send_email,
+                'send_push': a.send_push,
+                'send_sms': a.send_sms,
+                'send_in_app': a.send_in_app,
+                'created_at': a.created_at.isoformat(),
+                'last_triggered_at': a.last_triggered_at.isoformat() if a.last_triggered_at else None,
+                'trigger_count': a.trigger_count,
+            }
+            for a in alerts
+        ]
     }
 
 
-@router.get("/{alert_id}", response=AlertOut)
-@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="alerts")
-async def get_alert(request, alert_id: str):
+@router.post("/alerts/")
+def create_alert(request, data: CreateAlertRequest):
+    """Create a new alert."""
+    try:
+        alert = alert_service.create_alert(
+            user=request.user,
+            alert_type=data.alert_type,
+            name=data.name,
+            asset_id=data.asset_id,
+            portfolio_id=data.portfolio_id,
+            condition_value=data.condition_value,
+            condition_operator=data.condition_operator,
+            frequency=data.frequency,
+            expires_at=data.expires_at,
+            send_email=data.send_email,
+            send_push=data.send_push,
+            send_sms=data.send_sms,
+            send_in_app=data.send_in_app,
+            custom_message=data.custom_message,
+        )
+
+        return {
+            'id': alert.id,
+            'status': 'created',
+            'message': 'Alert created successfully'
+        }
+    except Exception as e:
+        logger.error(f"Error creating alert: {e}")
+        return {'error': str(e)}, 400
+
+
+@router.get("/alerts/{alert_id}")
+def get_alert(request, alert_id: int):
     """Get a specific alert."""
-    alert = await Alert.objects.filter(
-        id=alert_id,
-        user_id=str(request.user.id)
-    ).afirst()
-    
+    alerts = alert_service.get_user_alerts(request.user)
+    alert = next((a for a in alerts if a.id == alert_id), None)
+
     if not alert:
-        raise NotFoundException("Alert not found", alert_id=alert_id)
-    
+        return {'error': 'Alert not found'}, 404
+
     return {
-        'id': str(alert.id),
+        'id': alert.id,
         'name': alert.name,
         'alert_type': alert.alert_type,
-        'symbol': alert.symbol,
+        'status': alert.status,
+        'asset_id': alert.asset_id,
+        'asset_symbol': alert.asset.symbol if alert.asset else None,
         'condition_value': float(alert.condition_value),
         'condition_operator': alert.condition_operator,
-        'status': alert.status,
-        'priority': alert.priority,
-        'triggered_count': alert.triggered_count,
-        'delivery_channels': alert.delivery_channels,
-        'cooldown_seconds': alert.cooldown_seconds,
-        'valid_from': alert.valid_from,
-        'valid_until': alert.valid_until,
-        'created_at': alert.created_at,
-        'last_triggered_at': alert.last_triggered_at
+        'frequency': alert.frequency,
+        'expires_at': alert.expires_at.isoformat() if alert.expires_at else None,
+        'send_email': alert.send_email,
+        'send_push': alert.send_push,
+        'send_sms': alert.send_sms,
+        'send_in_app': alert.send_in_app,
+        'custom_message': alert.custom_message,
+        'created_at': alert.created_at.isoformat(),
+        'last_triggered_at': alert.last_triggered_at.isoformat() if alert.last_triggered_at else None,
+        'trigger_count': alert.trigger_count,
     }
 
 
-@router.put("/{alert_id}")
-@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="alerts")
-async def update_alert(request, alert_id: str, payload: AlertUpdateIn):
-    """Update an existing alert."""
-    alert_engine = get_alert_engine()
-    
-    update_data = {k: v for k, v in payload.dict().items() if v is not None}
-    
-    alert = await alert_engine.update_alert(alert_id, **update_data)
-    
+@router.patch("/alerts/{alert_id}")
+def update_alert(request, alert_id: int, data: UpdateAlertRequest):
+    """Update an alert."""
+    update_data = data.model_dump(exclude_unset=True)
+    alert = alert_service.update_alert(alert_id, request.user, **update_data)
+
     if not alert:
-        raise NotFoundException("Alert not found", alert_id=alert_id)
-    
-    return {
-        "id": str(alert.id),
-        "name": alert.name,
-        "message": "Alert updated successfully"
-    }
+        return {'error': 'Alert not found'}, 404
+
+    return {'status': 'updated', 'id': alert.id}
 
 
-@router.delete("/{alert_id}")
-@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="alerts")
-async def delete_alert(request, alert_id: str):
-    """Delete an alert (soft delete)."""
-    alert_engine = get_alert_engine()
-    
-    success = await alert_engine.delete_alert(alert_id)
-    
+@router.delete("/alerts/{alert_id}")
+def delete_alert(request, alert_id: int):
+    """Delete an alert."""
+    success = alert_service.delete_alert(alert_id, request.user)
     if not success:
-        raise NotFoundException("Alert not found", alert_id=alert_id)
-    
-    return {"message": "Alert deleted successfully"}
+        return {'error': 'Alert not found'}, 404
+    return {'status': 'deleted'}
 
 
-@router.post("/{alert_id}/pause")
-@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="alerts")
-async def pause_alert(request, alert_id: str):
-    """Pause an active alert."""
-    alert_engine = get_alert_engine()
-    
-    success = await alert_engine.pause_alert(alert_id)
-    
-    if not success:
-        raise NotFoundException("Alert not found", alert_id=alert_id)
-    
-    return {"message": "Alert paused successfully"}
+@router.post("/alerts/{alert_id}/pause")
+def pause_alert(request, alert_id: int):
+    """Pause an alert."""
+    alert = alert_service.pause_alert(alert_id, request.user)
+    if not alert:
+        return {'error': 'Alert not found'}, 404
+    return {'status': 'paused', 'id': alert.id}
 
 
-@router.post("/{alert_id}/resume")
-@api_endpoint(rate=RATE_LIMITS['write'], key_prefix="alerts")
-async def resume_alert(request, alert_id: str):
+@router.post("/alerts/{alert_id}/resume")
+def resume_alert(request, alert_id: int):
     """Resume a paused alert."""
-    alert_engine = get_alert_engine()
-    
-    success = await alert_engine.resume_alert(alert_id)
-    
-    if not success:
-        raise NotFoundException("Alert not found", alert_id=alert_id)
-    
-    return {"message": "Alert resumed successfully"}
-
-
-@router.get("/{alert_id}/history", response=List[AlertHistoryOut])
-@api_endpoint(ttl=CACHE_TTLS['short'], rate=RATE_LIMITS['read'], key_prefix="alerts")
-async def get_alert_history(
-    request,
-    alert_id: str,
-    limit: int = Query(default=ALERT_HISTORY_LIMIT, ge=1, le=100),
-    offset: int = Query(default=0, ge=0)
-):
-    """Get alert trigger history."""
-    alert = await Alert.objects.filter(
-        id=alert_id,
-        user_id=str(request.user.id)
-    ).afirst()
-    
+    alert = alert_service.resume_alert(alert_id, request.user)
     if not alert:
-        raise NotFoundException("Alert not found", alert_id=alert_id)
-    
-    history = await AlertHistory.objects.filter(
-        alert=alert
-    ).order_by('-triggered_at')[offset:offset + limit]
-    
-    return [
-        {
-            'id': str(h.id),
-            'triggered_at': h.triggered_at,
-            'trigger_value': float(h.trigger_value),
-            'condition_met': h.condition_met,
-            'notification_sent': h.notification_sent,
-            'notification_channels': h.notification_channels
-        }
-        for h in history
-    ]
+        return {'error': 'Alert not found'}, 404
+    return {'status': 'active', 'id': alert.id}
 
 
-@router.get("/stats", response=AlertStatsOut)
-@api_endpoint(ttl=CACHE_TTLS['medium'], rate=RATE_LIMITS['read'], key_prefix="alerts")
-async def get_alert_stats(request):
-    """Get alert statistics for current user."""
-    try:
-        alert_engine = get_alert_engine()
-        user_id = str(request.user.id)
-        
-        stats = alert_engine.get_alert_statistics(user_id)
-        
-        return AlertStatsOut(**stats)
-    except Exception as e:
-        logger.error(f"Error getting alert stats: {e}")
-        raise DatabaseException("Failed to retrieve alert statistics")
+@router.get("/alerts/{alert_id}/triggers")
+def get_alert_triggers(request, alert_id: int, limit: int = 20):
+    """Get trigger history for an alert."""
+    alerts = alert_service.get_user_alerts(request.user)
+    alert = next((a for a in alerts if a.id == alert_id), None)
 
-
-@router.post("/{alert_id}/test")
-@api_endpoint(rate=RATE_LIMITS['read'], key_prefix="alerts")
-async def test_alert(request, alert_id: str):
-    """Test an alert by manually triggering it."""
-    alert = await Alert.objects.filter(
-        id=alert_id,
-        user_id=str(request.user.id)
-    ).afirst()
-    
     if not alert:
-        raise NotFoundException("Alert not found", alert_id=alert_id)
-    
-    alert_engine = get_alert_engine()
-    
-    should_trigger = await alert_engine._check_alert(alert)
-    
+        return {'error': 'Alert not found'}, 404
+
+    triggers = AlertTrigger.objects.filter(alert=alert).order_by('-triggered_at')[:limit]
+
     return {
-        "alert_id": str(alert.id),
-        "name": alert.name,
-        "symbol": alert.symbol,
-        "would_trigger": should_trigger,
-        "current_condition_value": float(alert.condition_value),
-        "condition_operator": alert.condition_operator
+        'triggers': [
+            {
+                'id': t.id,
+                'triggered_at': t.triggered_at.isoformat(),
+                'trigger_value': float(t.trigger_value),
+                'asset_price': float(t.asset_price) if t.asset_price else None,
+                'email_sent': t.email_sent,
+                'push_sent': t.push_sent,
+                'sms_sent': t.sms_sent,
+                'viewed': t.viewed,
+            }
+            for t in triggers
+        ]
     }
 
 
-@router.get("/types/")
-@api_endpoint(ttl=CACHE_TTLS['long'], rate=RATE_LIMITS['read'], key_prefix="alerts")
-async def get_alert_types():
-    """Get available alert types."""
-    return [
-        {"value": choice[0], "label": choice[1]}
-        for choice in AlertType.choices
-    ]
+@router.get("/notifications/")
+def list_notifications(
+    request,
+    unread_only: bool = False,
+    limit: int = 50,
+):
+    """List notifications for the current user."""
+    notifications = alert_service.get_user_notifications(
+        request.user, unread_only=unread_only, limit=limit
+    )
+
+    return {
+        'notifications': [
+            {
+                'id': n.id,
+                'notification_type': n.notification_type,
+                'title': n.title,
+                'message': n.message,
+                'read': n.read,
+                'priority': n.priority,
+                'action_url': n.action_url,
+                'related_asset_symbol': n.related_asset.symbol if n.related_asset else None,
+                'created_at': n.created_at.isoformat(),
+            }
+            for n in notifications
+        ],
+        'unread_count': alert_service.get_unread_count(request.user),
+    }
 
 
-@router.get("/channels/")
-@api_endpoint(ttl=CACHE_TTLS['long'], rate=RATE_LIMITS['read'], key_prefix="alerts")
-async def get_delivery_channels():
-    """Get available delivery channels."""
-    return [
-        {"value": choice[0], "label": choice[1]}
-        for choice in DeliveryChannel.choices
-    ]
+@router.post("/notifications/{notification_id}/read")
+def mark_notification_read(request, notification_id: int):
+    """Mark a notification as read."""
+    success = alert_service.mark_notification_read(notification_id, request.user)
+    if not success:
+        return {'error': 'Notification not found'}, 404
+    return {'status': 'read'}
+
+
+@router.post("/notifications/read-all")
+def mark_all_read(request):
+    """Mark all notifications as read."""
+    count = alert_service.mark_all_notifications_read(request.user)
+    return {'status': 'updated', 'count': count}
+
+
+@router.get("/notifications/count")
+def get_unread_count(request):
+    """Get count of unread notifications."""
+    return {'count': alert_service.get_unread_count(request.user)}
+
+
+@router.get("/alerts/trigger")
+def trigger_check(request):
+    """Manually trigger alert check (for testing)."""
+    triggers = alert_service.check_and_trigger_alerts()
+    return {
+        'status': 'checked',
+        'triggers_count': len(triggers),
+        'triggers': [
+            {
+                'id': t.id,
+                'alert_id': t.alert_id,
+                'triggered_at': t.triggered_at.isoformat(),
+            }
+            for t in triggers
+        ]
+    }

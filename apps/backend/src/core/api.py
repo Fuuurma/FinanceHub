@@ -42,11 +42,14 @@ from ai_advisor.api.templates import router as ai_templates_router
 from ai_advisor.api.reports import router as ai_reports_router
 from api.quantitative_models import router as quantitative_models_router
 from trading.api.trading import router as trading_router
-from charts.api.charts import router as charts_router
+from api.charts import router as charts_router
 from api.currency import router as currency_router
 from api.reference import router as reference_router
 from api.economic import router as economic_router
 from api.rate_limit_admin import router as rate_limit_admin_router
+from api.screener_presets import router as screener_presets_router
+from api.portfolio_rebalancing import router as portfolio_rebalancing_router
+from api.ai_news import router as ai_news_router
 
 
 # Register API exception handlers
@@ -90,3 +93,6 @@ api.add_router("/currency", currency_router)
 api.add_router("/reference", reference_router)
 api.add_router("/economic", economic_router)
 api.add_router("/admin", rate_limit_admin_router)
+api.add_router("/screener", screener_presets_router)
+api.add_router("/rebalancing", portfolio_rebalancing_router)
+api.add_router("/ai/news", ai_news_router)

@@ -75,7 +75,7 @@ export function TradingViewChart({
   symbol,
   chartType = 'candlestick',
   timeframe = '1d',
-  height = 500,
+  height = 400,
   showVolume = true,
   showIndicators = [],
   indicatorConfig = {},
@@ -98,6 +98,18 @@ export function TradingViewChart({
     volume: null,
   })
   const [retryCount, setRetryCount] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const responsiveHeight = isMobile ? Math.min(height * 0.7, 350) : height
 
   const isDark = theme === 'dark'
 
@@ -188,7 +200,7 @@ export function TradingViewChart({
 
       const chart = createChart(chartContainerRef.current, {
         width: chartContainerRef.current.clientWidth,
-        height: height - (showRSI || showMACD ? 250 : 0) - 60,
+        height: responsiveHeight - (showRSI || showMACD ? 250 : 0) - 60,
         layout: {
           background: { type: ColorType.Solid, color: chartColors.background },
           textColor: chartColors.text,
@@ -545,14 +557,14 @@ export function TradingViewChart({
 
   if (loading) {
     return (
-      <div className="w-full rounded-lg border bg-card" style={{ height }}>
+      <div className="w-full rounded-lg border bg-card" style={{ height: responsiveHeight }}>
         <div className="p-4 border-b space-y-3">
           <Skeleton className="h-6 w-32" />
-          <div className="flex gap-4">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-20" />
+          <div className="flex gap-4 flex-wrap">
+            <Skeleton className="h-4 w-16 sm:w-20" />
+            <Skeleton className="h-4 w-16 sm:w-20" />
+            <Skeleton className="h-4 w-16 sm:w-20" />
+            <Skeleton className="h-4 w-16 sm:w-20" />
           </div>
         </div>
         <Skeleton className="w-full h-[calc(100%-80px)] rounded-none" />

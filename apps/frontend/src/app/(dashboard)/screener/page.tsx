@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, RotateCcw, Play, Clock } from 'lucide-react'
 import { ScreenerFilter } from '@/components/screener/ScreenerFilter'
 import { ScreenerResults } from '@/components/screener/ScreenerResults'
+import { PresetList } from '@/components/screener/PresetList'
 import { useScreenerStore } from '@/stores/screenerStore'
+import { useScreenerPresets } from '@/stores/screenerPresetsStore'
 
 function formatLastUpdated(dateString: string | null): string {
   if (!dateString) return 'Never'
@@ -25,6 +27,8 @@ export default function ScreenerPage() {
     last_updated,
   } = useScreenerStore()
 
+  const { fetchPresets } = useScreenerPresets()
+
   const handleRunScreener = useCallback(() => {
     runScreener()
   }, [runScreener])
@@ -35,6 +39,7 @@ export default function ScreenerPage() {
 
   useEffect(() => {
     runScreener()
+    fetchPresets()
   }, [])
 
   const activeFilterCount = Object.values(filters).filter(
@@ -92,7 +97,8 @@ export default function ScreenerPage() {
       )}
 
       <div className="grid lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-4">
+          <PresetList />
           <ScreenerFilter />
         </div>
         <div className="lg:col-span-3">

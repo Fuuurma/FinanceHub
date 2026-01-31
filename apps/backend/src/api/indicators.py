@@ -1,504 +1,181 @@
-from typing import List, Optional, Dict, Any
-from ninja import Router, Schema, Query
-from django.shortcuts import get_object_or_404
+"""
+Technical Indicators API
+Endpoints for calculating and retrieving technical indicators.
+"""
 
-from utils.helpers.logger.logger import get_logger
-from utils.services.technical_indicators import get_technical_indicators, IndicatorType
-from utils.services.data_orchestrator import get_data_orchestrator
-from assets.models.asset import Asset
-from utils.constants.api import RATE_LIMITS, CACHE_TTLS
-from core.exceptions import NotFoundException, ValidationException, ExternalAPIException
+import logging
+from typing import Optional, List
+from ninja import Router, Query
+from pydantic import BaseModel
+from django.http import HttpResponse
+from investments.models import Asset, AssetPricesHistoric
+from investments.lib.indicators import TechnicalIndicators, IndicatorResult
 
-logger = get_logger(__name__)
+router = Router(tags=["Indicators"])
+logger = logging.getLogger(__name__)
 
-router = Router(tags=["Technical Indicators"])
 
-
-class IndicatorRequest(Schema):
+class IndicatorRequest(BaseModel):
     symbol: str
-    indicators: Optional[List[str]] = None
-    period: Optional[int] = None
-    days: int = 90
-
-
-class IndicatorResponse(Schema):
     indicator: str
-    data: List[Dict[str, Any]]
-    calculated_at: str
-
-    class Config:
-        from_attributes = True
-
-
-class IndicatorDataPoint(Schema):
-    timestamp: str
-    value: float
-    close: Optional[float] = None
-
-    class Config:
-        from_attributes = True
+    period: int = 14
+    fast: int = 12
+    slow: int = 26
+    signal: int = 9
+    std_dev: int = 2
 
 
-class TechnicalIndicatorsOut(Schema):
-    symbol: str
-    sma: Optional[List[Dict[str, float]]] = None
-    ema: Optional[List[Dict[str, float]]] = None
-    rsi: Optional[List[Dict[str, float]]] = None
-    macd: Optional[List[Dict[str, float]]] = None
-    bollinger: Optional[List[Dict[str, float]]] = None
-    stochastic: Optional[List[Dict[str, float]]] = None
-    williams_r: Optional[List[Dict[str, float]]] = None
-    atr: Optional[List[Dict[str, float]]] = None
-    obv: Optional[List[Dict[str, float]]] = None
-    cci: Optional[List[Dict[str, float]]] = None
+INDICATOR_MAP = {
+    'sma': lambda prices, **kwargs: TechnicalIndicators.sma(prices, kwargs.get('period', 20)),
+    'ema': lambda prices, **kwargs: TechnicalIndicators.ema(prices, kwargs.get('period', 20)),
+    'wma': lambda prices, **kwargs: TechnicalIndicators.wma(prices, kwargs.get('period', 20)),
+    'rsi': lambda prices, **kwargs: TechnicalIndicators.rsi(prices, kwargs.get('period', 14)),
+    'macd': lambda prices, **kwargs: TechnicalIndicators.macd(prices, kwargs.get('fast', 12), kwargs.get('slow', 26), kwargs.get('signal', 9)),
+    'stochastic': lambda prices, **kwargs: TechnicalIndicators.stochastic(
+        [], [], prices, kwargs.get('period', 14)
+    ) if False else IndicatorResult(values=[], timestamps=[]),
+    'bollinger_bands': lambda prices, **kwargs: TechnicalIndicators.bollinger_bands(prices, kwargs.get('period', 20), kwargs.get('std_dev', 2)),
+    'atr': lambda prices, **kwargs: TechnicalIndicators.atr([], [], prices, kwargs.get('period', 14)),
+    'obv': lambda prices, **kwargs: IndicatorResult(values=[], timestamps=[]),
+    'williams_r': lambda prices, **kwargs: TechnicalIndicators.williams_r([], [], prices, kwargs.get('period', 14)),
+    'cci': lambda prices, **kwargs: TechnicalIndicators.cci([], [], prices, kwargs.get('period', 20)),
+    'momentum': lambda prices, **kwargs: TechnicalIndicators.momentum(prices, kwargs.get('period', 10)),
+    'roc': lambda prices, **kwargs: TechnicalIndicators.roc(prices, kwargs.get('period', 10)),
+}
 
 
-@router.post("/calculate", response=TechnicalIndicatorsOut)
-async def calculate_indicators(request, payload: IndicatorRequest):
-    """
-    Calculate technical indicators for a symbol
-
-    Available indicators: sma, ema, rsi, macd, bollinger, stochastic,
-                            williams_r, atr, obv, cci
-    """
-    orchestrator = get_data_orchestrator()
-
-    asset = get_object_or_404(Asset, symbol__iexact=payload.symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-
-    historical_response = await orchestrator.get_market_data(
-        data_type=data_type,
-        symbol=payload.symbol,
-        params={"days": payload.days},
-        priority="medium",
-    )
-
-    if not historical_response.data or len(historical_response.data) == 0:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    if isinstance(historical_response.data, list):
-        ohlcv_data = historical_response.data
-    elif isinstance(historical_response.data, dict):
-        ohlcv_data = historical_response.data.get("results", [])
-    else:
-        raise ValidationException("Invalid data format received from data provider")
-
-    technical_indicators = get_technical_indicators()
-
-    indicator_map = {
-        "sma": IndicatorType.SMA,
-        "ema": IndicatorType.EMA,
-        "rsi": IndicatorType.RSI,
-        "macd": IndicatorType.MACD,
-        "bollinger": IndicatorType.BOLLINGER,
-        "stochastic": IndicatorType.STOCHASTIC,
-        "williams_r": IndicatorType.WILLIAMS_R,
-        "atr": IndicatorType.ATR,
-        "obv": IndicatorType.OBV,
-        "cci": IndicatorType.CCI,
-    }
-
-    indicators_to_calculate = payload.indicators or list(indicator_map.keys())
-    indicator_types = [
-        indicator_map[ind] for ind in indicators_to_calculate if ind in indicator_map
-    ]
-
-    results = await technical_indicators.calculate_all(ohlcv_data, indicator_types)
-
-    return {
-        "symbol": payload.symbol,
-        "sma": results.get("sma", []),
-        "ema": results.get("ema", []),
-        "rsi": results.get("rsi", []),
-        "macd": results.get("macd", []),
-        "bollinger": results.get("bollinger", []),
-        "stochastic": results.get("stochastic", []),
-        "williams_r": results.get("williams_r", []),
-        "atr": results.get("atr", []),
-        "obv": results.get("obv", []),
-        "cci": results.get("cci", []),
-    }
-
-
-@router.get("/{symbol}/sma")
-async def get_sma(request, symbol: str, period: int = 20, days: int = 90):
-    """Get Simple Moving Average (SMA)"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    sma_data = technical_indicators.calculate_sma(ohlcv_data, period)
-
-    return {"symbol": symbol, "period": period, "data": sma_data}
-
-
-@router.get("/{symbol}/ema")
-async def get_ema(request, symbol: str, period: int = 20, days: int = 90):
-    """Get Exponential Moving Average (EMA)"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    ema_data = technical_indicators.calculate_ema(ohlcv_data, period)
-
-    return {"symbol": symbol, "period": period, "data": ema_data}
-
-
-@router.get("/{symbol}/rsi")
-async def get_rsi(request, symbol: str, period: int = 14, days: int = 90):
-    """Get Relative Strength Index (RSI)"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    rsi_data = technical_indicators.calculate_rsi(ohlcv_data, period)
-
-    return {"symbol": symbol, "period": period, "data": rsi_data}
-
-
-@router.get("/{symbol}/macd")
-async def get_macd(
+@router.get("/indicators/{symbol}/{indicator}")
+def get_indicator(
     request,
     symbol: str,
-    fast_period: int = 12,
-    slow_period: int = 26,
-    signal_period: int = 9,
-    days: int = 90,
+    indicator: str,
+    period: int = Query(14),
+    fast: int = Query(12),
+    slow: int = Query(26),
+    signal: int = Query(9),
+    std_dev: int = Query(2),
+    days: int = Query(365)
 ):
-    """Get MACD (Moving Average Convergence Divergence)"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
+    """Calculate and return technical indicator data for a symbol."""
+    try:
+        asset = Asset.objects.get(symbol=symbol.upper())
+    except Asset.DoesNotExist:
+        return {'error': 'Asset not found'}, 404
 
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
+    prices = list(
+        AssetPricesHistoric.objects.filter(
+            asset=asset
+        ).order_by('-timestamp')[:days].values_list('close_price', flat=True)
     )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
+    prices.reverse()
 
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
+    if len(prices) < 10:
+        return {'error': 'Insufficient price data'}, 400
 
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
+    if indicator not in INDICATOR_MAP:
+        return {'error': f'Unknown indicator: {indicator}'}, 400
 
-    technical_indicators = get_technical_indicators()
-    macd_data = technical_indicators.calculate_macd(
-        ohlcv_data, fast_period, slow_period, signal_period
-    )
+    kwargs = {
+        'period': period, 'fast': fast, 'slow': slow,
+        'signal': signal, 'std_dev': std_dev
+    }
+
+    result = INDICATOR_MAP[indicator](prices, **kwargs)
 
     return {
-        "symbol": symbol,
-        "parameters": {
-            "fast_period": fast_period,
-            "slow_period": slow_period,
-            "signal_period": signal_period,
-        },
-        "data": macd_data,
+        'symbol': symbol,
+        'indicator': indicator,
+        'values': result.values,
+        'metadata': result.metadata,
+        'count': len(result.values)
     }
 
 
-@router.get("/{symbol}/bollinger")
-async def get_bollinger_bands(
-    request, symbol: str, period: int = 20, std_dev: float = 2.0, days: int = 90
-):
-    """Get Bollinger Bands"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    bollinger_data = technical_indicators.calculate_bollinger_bands(
-        ohlcv_data, period, std_dev
-    )
-
+@router.get("/indicators/list")
+def list_indicators(request):
+    """List available indicators."""
     return {
-        "symbol": symbol,
-        "parameters": {"period": period, "std_dev": std_dev},
-        "data": bollinger_data,
+        'indicators': list(INDICATOR_MAP.keys()),
+        'categories': {
+            'trend': ['sma', 'ema', 'wma'],
+            'momentum': ['rsi', 'macd', 'stochastic', 'williams_r', 'cci', 'momentum', 'roc'],
+            'volatility': ['bollinger_bands', 'atr'],
+            'volume': ['obv']
+        }
     }
 
 
-@router.get("/{symbol}/stochastic")
-async def get_stochastic(
+@router.post("/indicators/calculate")
+def calculate_indicator(request, data: IndicatorRequest):
+    """Calculate indicator on provided price data."""
+    try:
+        asset = Asset.objects.get(symbol=data.symbol.upper())
+    except Asset.DoesNotExist:
+        return {'error': 'Asset not found'}, 404
+
+    prices = list(
+        AssetPricesHistoric.objects.filter(
+            asset=asset
+        ).order_by('-timestamp')[:365].values_list('close_price', flat=True)
+    )[-100:]
+    prices.reverse()
+
+    if data.indicator not in INDICATOR_MAP:
+        return {'error': f'Unknown indicator: {data.indicator}'}, 400
+
+    kwargs = {
+        'period': data.period, 'fast': data.fast, 'slow': data.slow,
+        'signal': data.signal, 'std_dev': data.std_dev
+    }
+
+    result = INDICATOR_MAP[data.indicator](prices, **kwargs)
+
+    return {
+        'symbol': data.symbol,
+        'indicator': data.indicator,
+        'values': result.values[-50:],
+        'metadata': result.metadata
+    }
+
+
+@router.get("/indicators/batch/{symbols}")
+def get_multiple_indicators(
     request,
-    symbol: str,
-    k_period: int = 14,
-    d_period: int = 3,
-    smooth_k: int = 3,
-    days: int = 90,
+    symbols: str,
+    indicators: str = 'rsi,macd',
+    period: int = 14
 ):
-    """Get Stochastic Oscillator"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
+    """Get indicators for multiple symbols."""
+    symbol_list = symbols.split(',')
+    result = {}
 
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
+    for symbol in symbol_list[:10]:
+        symbol = symbol.strip().upper()
+        try:
+            asset = Asset.objects.get(symbol=symbol)
+        except Asset.DoesNotExist:
+            result[symbol] = {'error': 'Not found'}
+            continue
 
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
+        prices = list(
+            AssetPricesHistoric.objects.filter(
+                asset=asset
+            ).order_by('-timestamp')[:100].values_list('close_price', flat=True)
+        )
+        prices.reverse()
 
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
+        if len(prices) < 10:
+            result[symbol] = {'error': 'Insufficient data'}
+            continue
 
-    technical_indicators = get_technical_indicators()
-    stochastic_data = technical_indicators.calculate_stochastic(
-        ohlcv_data, k_period, d_period, smooth_k
-    )
+        result[symbol] = {}
+        for ind in indicators.split(','):
+            ind = ind.strip()
+            if ind in INDICATOR_MAP:
+                calc_result = INDICATOR_MAP[ind](prices, {'period': period})
+                result[symbol][ind] = {
+                    'value': calc_result.values[-1] if calc_result.values else None,
+                    'metadata': calc_result.metadata
+                }
 
-    return {
-        "symbol": symbol,
-        "parameters": {
-            "k_period": k_period,
-            "d_period": d_period,
-            "smooth_k": smooth_k,
-        },
-        "data": stochastic_data,
-    }
-
-
-@router.get("/{symbol}/wma")
-async def get_wma(request, symbol: str, period: int = 20, days: int = 90):
-    """Get Weighted Moving Average (WMA)"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    wma_data = technical_indicators.calculate_wma(ohlcv_data, period)
-
-    return {"symbol": symbol, "period": period, "data": wma_data}
-
-
-@router.get("/{symbol}/mfi")
-async def get_mfi(request, symbol: str, period: int = 14, days: int = 90):
-    """Get Money Flow Index (MFI)"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    mfi_data = technical_indicators.calculate_mfi(ohlcv_data, period)
-
-    return {"symbol": symbol, "period": period, "data": mfi_data}
-
-
-@router.get("/{symbol}/vwap")
-async def get_vwap(request, symbol: str, days: int = 90):
-    """Get Volume Weighted Average Price (VWAP)"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    vwap_data = technical_indicators.calculate_vwap(ohlcv_data)
-
-    return {"symbol": symbol, "data": vwap_data}
-
-
-@router.get("/{symbol}/ichimoku")
-async def get_ichimoku(
-    request,
-    symbol: str,
-    tenkan_period: int = 9,
-    kijun_period: int = 26,
-    senkou_span_b_period: int = 52,
-    days: int = 180,
-):
-    """Get Ichimoku Cloud indicators"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    ichimoku_data = technical_indicators.calculate_ichimoku(
-        ohlcv_data, tenkan_period, kijun_period, senkou_span_b_period
-    )
-
-    return {
-        "symbol": symbol,
-        "parameters": {
-            "tenkan_period": tenkan_period,
-            "kijun_period": kijun_period,
-            "senkou_span_b_period": senkou_span_b_period,
-        },
-        "data": ichimoku_data,
-    }
-
-
-@router.get("/{symbol}/parabolic-sar")
-async def get_parabolic_sar(
-    request,
-    symbol: str,
-    acceleration: float = 0.02,
-    maximum: float = 0.2,
-    days: int = 90,
-):
-    """Get Parabolic SAR"""
-    orchestrator = get_data_orchestrator()
-    asset = get_object_or_404(Asset, symbol__iexact=symbol)
-
-    data_type = (
-        "crypto_historical"
-        if "crypto" in asset.asset_type.name.lower()
-        else "stock_historical"
-    )
-    historical_response = await orchestrator.get_market_data(
-        data_type, symbol, {"days": days}
-    )
-
-    if not historical_response.data:
-        raise ExternalAPIException("historical_data", "No historical data available")
-
-    ohlcv_data = (
-        historical_response.data if isinstance(historical_response.data, list) else []
-    )
-
-    technical_indicators = get_technical_indicators()
-    psar_data = technical_indicators.calculate_parabolic_sar(
-        ohlcv_data, acceleration, maximum
-    )
-
-    return {
-        "symbol": symbol,
-        "parameters": {"acceleration": acceleration, "maximum": maximum},
-        "data": psar_data,
-    }
+    return result

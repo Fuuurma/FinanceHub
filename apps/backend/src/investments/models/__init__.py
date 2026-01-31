@@ -7,6 +7,16 @@ from .trending import TrendingAsset
 from .dex_data import DEXTradingPair
 from .options import OptionContract, OptionsContractSnapshot, OptionsGreeksHistory
 from .economic_indicator import EconomicIndicator, EconomicDataPoint, EconomicDataCache
+from .portfolio_analytics import (
+    PortfolioSectorAllocation,
+    PortfolioGeographicAllocation,
+    PortfolioAssetClassAllocation,
+    PortfolioConcentrationRisk,
+    PortfolioBeta,
+    PerformanceAttribution,
+    PortfolioRiskMetrics,
+)
+from .dashboard import DashboardLayout, DashboardWidget
 
 __all__ = [
     "DataProvider",
@@ -23,4 +33,13 @@ __all__ = [
     "EconomicIndicator",
     "EconomicDataPoint",
     "EconomicDataCache",
+    "PortfolioSectorAllocation",
+    "PortfolioGeographicAllocation",
+    "PortfolioAssetClassAllocation",
+    "PortfolioConcentrationRisk",
+    "PortfolioBeta",
+    "PerformanceAttribution",
+    "PortfolioRiskMetrics",
+    "DashboardLayout",
+    "DashboardWidget",
 ]

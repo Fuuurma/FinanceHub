@@ -159,7 +159,7 @@ FinanceHub/
 | Asset Detail Pages | ✅ Complete | Full detail pages implemented |
 | Screener UI | ✅ Complete | FilterPanel, ResultsPanel, ScreenerChart all working |
 | Settings Page | ✅ Complete | 4 tabs: Appearance, Notifications, Account, Security |
-| Testing Infrastructure | 🔄 In Progress | Jest configured, 183 tests (121 passing, 62 failing) |
+| Testing Infrastructure | 🔄 In Progress | Jest configured, 11 tests written (screener components), infrastructure requires Babel fix |
 | Mobile Responsiveness | 🔄 Partial | Some pages responsive, needs full audit |
 | Accessibility | ❌ Not Started | ARIA labels, keyboard navigation not implemented |
 
