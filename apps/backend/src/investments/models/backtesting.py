@@ -1,8 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from utils.helpers.uuid_model import UUIDModel
 from utils.helpers.timestamped_model import TimestampedModel
 from utils.helpers.soft_delete_model import SoftDeleteModel
+
+User = get_user_model()
 
 
 class TradingStrategy(UUIDModel, TimestampedModel, SoftDeleteModel):

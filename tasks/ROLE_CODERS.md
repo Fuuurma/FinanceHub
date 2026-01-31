@@ -40,18 +40,24 @@ Tasks include:
 # 2. Check if code exists
 find . -name "*ComponentName*"
 
-# 3. Read existing code
+# 3. Read existing code AND model fields BEFORE using them
 cat ./path/to/file.py
 
-# 4. Make changes
+# 4. Check logs FIRST if something fails
+docker-compose logs --tail 50
+
+# 5. Make changes
 # Edit files, update paths, add features
 
-# 5. Test your changes
+# 6. Test incrementally - don't rebuild container 5+ times
+docker exec python -c "import mymodule; print('OK')"
+
+# 7. Test your changes
 npm run lint
 npm run typecheck
 npm run test
 
-# 6. Commit and push
+# 8. Commit and push
 git add .
 git commit -m "feat: [description]"
 git push
@@ -150,6 +156,11 @@ grep -r "function_name" .
 3. **NEVER use `any` type** - Use proper TypeScript types
 4. **ALWAYS follow existing patterns** - Match the codebase style
 5. **ASK when unsure** - Don't guess requirements
+6. **CHECK LOGS FIRST** - docker-compose logs --tail 50 before any fix
+7. **PRE-FLIGHT CHECKS** - Verify model fields before using them
+8. **TEST INCREMENTALLY** - Verify imports work before rebuilding
+9. **FASTER PIVOT** - When stuck, switch to manual creation immediately
+10. **ASYNC AWARENESS** - Django ORM in async needs sync_to_async
 
 ## 🔧 YOUR TOOLKIT
 
@@ -229,6 +240,13 @@ Before marking a task complete:
 - [ ] Complex code commented
 - [ ] API endpoints documented
 - [ ] README updated (if needed)
+
+### 🚨 VERIFICATION CHECKLIST (NEW):
+- [ ] All acceptance criteria met
+- [ ] No LSP/type errors accumulating
+- [ ] WebSocket endpoints verified (if applicable)
+- [ ] Real-time progress updates sent during session
+- [ ] Zero typos in final pass
 
 ## 🎨 CODING STANDARDS
 

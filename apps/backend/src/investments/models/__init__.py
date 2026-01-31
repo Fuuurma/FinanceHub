@@ -24,6 +24,7 @@ from .market_depth import (
     MarketDepthSummary,
     LargeOrders,
 )
+from .backtesting import TradingStrategy, Backtest, BacktestTrade
 
 __all__ = [
     "DataProvider",
@@ -54,4 +55,7 @@ __all__ = [
     "TimeAndSales",
     "MarketDepthSummary",
     "LargeOrders",
+    "TradingStrategy",
+    "Backtest",
+    "BacktestTrade",
 ]

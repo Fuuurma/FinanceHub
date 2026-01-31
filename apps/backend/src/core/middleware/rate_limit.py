@@ -36,8 +36,11 @@ class RateLimitMiddleware:
 
     EXCLUDED_PATHS = [
         "/admin/",
+        "/health/",
+        "/api/health",
         "/api/health/",
         "/api/health-check/",
+        "/api/monitoring/health",
     ]
 
     def __init__(self, get_response: Callable):
