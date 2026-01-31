@@ -122,17 +122,24 @@
 | C-027 | Universal Asset Search Engine | 12-16h | ✅ COMPLETED | P0 CRITICAL | Search models (SavedSearch, SearchHistory, ScreenTemplate, AssetComparison), UniversalSearchService with relevance scoring, advanced filtering, API endpoints, SearchBar component, existing ScreenerPage integrated |
 | C-028 | IPO Calendar & Listings Tracker | 10-14h | ✅ COMPLETED | P1 HIGH | IPO models (IPOCalendar, IPOAlert, IPOWatchlist, SPACTracker), IPO CalendarService with upcoming IPOs, recent listings, watchlist, alerts, SPAC tracking, API endpoints, IPO Calendar frontend page |
 | C-029 | Level 2 Market Depth | 12-16h | ✅ COMPLETED | P2 MEDIUM | Market depth models (OrderBookLevel, OrderBookSnapshot, TimeAndSales, MarketDepthSummary, LargeOrders), MarketDepthService with 10 methods, API endpoints (order-book, time-sales, summary, large-orders, order-flow-heatmap), OrderBook frontend component with depth visualization and analytics |
-| C-030 | Broker API Integration | 14-18h | ⏳ PENDING | P1 HIGH |
-| C-031 | Bond Yield Calculator | 12-16h | ⏳ PENDING | P2 MEDIUM |
-| C-032 | Economic Calendar Tracker | 10-14h | ⏳ PENDING | P2 MEDIUM |
-| C-033 | Keyboard Shortcuts System | 10-12h | ⏳ PENDING | P2 MEDIUM |
-| C-034 | Webhooks System | 12-16h | ⏳ PENDING | P2 MEDIUM |
-| C-035 | Dividend Tracking System | 14-18h | ⏳ PENDING | P1 HIGH |
-| C-036 | Paper Trading System | 16-20h | ⏳ PENDING | P1 HIGH |
-| C-037 | Social Sentiment Analysis | 18-24h | ⏳ PENDING | P1 HIGH |
-| C-038 | Options Chain Visualization | 16-20h | ⏳ PENDING | P1 HIGH |
-| C-039 | Multi-Currency Portfolio Support | 14-18h | ⏳ PENDING | P2 MEDIUM |
-| C-040 | Robo-Advisor Asset Allocation | 18-24h | ⏳ PENDING | P1 HIGH |
+| C-030 | Broker API Integration | 14-18h | ⏳ PENDING | P1 HIGH | **PHASE 1 - LAST** (most complex, do after C-036/C-037) |
+| C-031 | Bond Yield Calculator | 12-16h | ⏳ PENDING | P2 MEDIUM | Phase 3 feature |
+| C-032 | Economic Calendar Tracker | 10-14h | ⏳ PENDING | P2 MEDIUM | Phase 3 feature |
+| C-033 | Keyboard Shortcuts System | 10-12h | ⏳ PENDING | P2 MEDIUM | Phase 3 feature |
+| C-034 | Webhooks System | 12-16h | ⏳ PENDING | P2 MEDIUM | Phase 3 feature |
+| C-035 | Dividend Tracking System | 14-18h | ⏳ PENDING | P1 HIGH | Phase 3 feature |
+| C-036 | Paper Trading System | 16-20h | ⏳ PENDING | P0 CRITICAL | **PHASE 1 - FIRST** (user onboarding priority) |
+| C-037 | Social Sentiment Analysis | 18-24h | ⏳ PENDING | P0 CRITICAL | **PHASE 1 - SECOND** (engagement priority) |
+| C-038 | Options Chain Visualization | 16-20h | ⏳ PENDING | P1 HIGH | Phase 3 feature |
+| C-039 | Multi-Currency Portfolio Support | 14-18h | ⏳ PENDING | P2 MEDIUM | Phase 3 feature |
+| C-040 | Robo-Advisor Asset Allocation | 18-24h | ⏳ PENDING | P1 HIGH | Phase 3 feature |
+
+**STRATEGIC PRIORITY ORDER (User Approved):**
+1. ✅ **C-036: Paper Trading** (FIRST - 16-20h) - Build user base, low barrier to entry
+2. ✅ **C-037: Social Sentiment** (SECOND - 18-24h) - Drive engagement
+3. ✅ **C-030: Broker Integration** (LAST - 14-18h) - Most complex, do when platform mature
+4. **Phase 2:** Mobile Apps (iOS/Android) - User approved critical feature
+5. **Phase 3:** Remaining features (C-031, C-032, C-033, C-034, C-035, C-038, C-039, C-040)
 
 **Coder Progress:**
 - Migration tasks: 6 of 10 complete (60%)
@@ -140,10 +147,12 @@
 - **Total: 24 of 40 complete (60%)**
 - **Total estimated work: 450+ hours**
 
-**Next Action:**
-1. Complete C-016 (Customizable Dashboards) - HIGH VALUE
-2. Complete C-017 (Market Heat Map Visualization) - HIGH VALUE
-3. Complete S-003 (Security fixes) - P0 CRITICAL
+**Next Action (Strategic Priorities):**
+1. **C-036: Paper Trading System** (FIRST) - Assigned to Turing (frontend) + Linus (backend)
+2. **C-037: Social Sentiment Analysis** (SECOND) - Assigned to Guido (backend) + Turing (frontend)
+3. **C-030: Broker API Integration** (LAST) - Assigned to Linus (backend) + Turing (frontend)
+4. **Mobile Apps (Phase 2)** - iOS/Android native apps (approved by user)
+5. Complete remaining security fixes (S-009, S-010, S-011) - Critical infrastructure
 
 ---
 
