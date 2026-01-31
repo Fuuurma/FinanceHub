@@ -121,7 +121,7 @@
 | C-026 | Value-at-Risk (VaR) Calculator | 14-18h | ✅ COMPLETED | P0 CRITICAL | Risk models (VaR, StressTest, RiskContribution, RiskLimit), VaR calculation service with 3 methods (parametric, historical, Monte Carlo), stress testing service with 4 historical scenarios, API endpoints, RiskDashboard frontend component |
 | C-027 | Universal Asset Search Engine | 12-16h | ✅ COMPLETED | P0 CRITICAL | Search models (SavedSearch, SearchHistory, ScreenTemplate, AssetComparison), UniversalSearchService with relevance scoring, advanced filtering, API endpoints, SearchBar component, existing ScreenerPage integrated |
 | C-028 | IPO Calendar & Listings Tracker | 10-14h | ✅ COMPLETED | P1 HIGH | IPO models (IPOCalendar, IPOAlert, IPOWatchlist, SPACTracker), IPO CalendarService with upcoming IPOs, recent listings, watchlist, alerts, SPAC tracking, API endpoints, IPO Calendar frontend page |
-| C-029 | Level 2 Market Depth | 12-16h | ⏳ PENDING | P2 MEDIUM |
+| C-029 | Level 2 Market Depth | 12-16h | ✅ COMPLETED | P2 MEDIUM | Market depth models (OrderBookLevel, OrderBookSnapshot, TimeAndSales, MarketDepthSummary, LargeOrders), MarketDepthService with 10 methods, API endpoints (order-book, time-sales, summary, large-orders, order-flow-heatmap), OrderBook frontend component with depth visualization and analytics |
 | C-030 | Broker API Integration | 14-18h | ⏳ PENDING | P1 HIGH |
 | C-031 | Bond Yield Calculator | 12-16h | ⏳ PENDING | P2 MEDIUM |
 | C-032 | Economic Calendar Tracker | 10-14h | ⏳ PENDING | P2 MEDIUM |
@@ -136,8 +136,8 @@
 
 **Coder Progress:**
 - Migration tasks: 6 of 10 complete (60%)
-- Feature tasks: 17 of 30 complete (57%)
-- **Total: 23 of 40 complete (58%)**
+- Feature tasks: 18 of 30 complete (60%)
+- **Total: 24 of 40 complete (60%)**
 - **Total estimated work: 450+ hours**
 
 **Next Action:**

@@ -4,22 +4,23 @@ Models for storing dashboard layouts and widget configurations.
 """
 
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
+
+from utils.helpers.uuid_model import UUIDModel
+from utils.helpers.timestamped_model import TimestampedModel
+from utils.helpers.soft_delete_model import SoftDeleteModel
 
 
-User = get_user_model()
-
-
-class DashboardLayout(models.Model):
+class DashboardLayout(UUIDModel, TimestampedModel, SoftDeleteModel):
     """User dashboard layout model."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="dashboard_layouts"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="dashboard_layouts",
     )
     name = models.CharField(max_length=100, default="Default")
     is_default = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ["user", "name"]
@@ -29,7 +30,7 @@ class DashboardLayout(models.Model):
         return f"{self.user.username} - {self.name}"
 
 
-class DashboardWidget(models.Model):
+class DashboardWidget(UUIDModel, TimestampedModel, SoftDeleteModel):
     """Dashboard widget configuration model."""
 
     WIDGET_TYPES = [

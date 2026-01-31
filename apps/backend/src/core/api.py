@@ -56,6 +56,8 @@ from api.search import router as search_router
 from api.ipo import router as ipo_router
 from api.backtesting import router as backtesting_router
 from api.market_depth import router as market_depth_router
+from brokers.api import router as brokers_router
+from social_sentiment.api import router as social_sentiment_router
 
 
 # Register API exception handlers
@@ -108,3 +110,5 @@ api.add_router("/search", search_router)
 api.add_router("/ipo", ipo_router)
 api.add_router("/backtesting", backtesting_router)
 api.add_router("/market-depth", market_depth_router)
+api.add_router("/brokers", brokers_router)
+api.add_router("/sentiment", social_sentiment_router)

@@ -142,7 +142,7 @@ export function OrderBook({
             </CardTitle>
             <CardDescription className="flex items-center gap-3 mt-1">
               <span className="flex items-center gap-1">
-                Spread: <span className="font-mono font-medium">{formatCurrency(spspread)}</span>
+                Spread: <span className="font-mono font-medium">{formatCurrency(spread)}</span>
                 <span className="text-muted-foreground">({spreadPct?.toFixed(3)}%)</span>
               </span>
               <span className="flex items-center gap-1">

@@ -5,14 +5,14 @@ from decimal import Decimal
 from datetime import datetime
 import logging
 
-from .models import (
+from brokers.models import (
     BrokerConnection,
     BrokerPosition,
     BrokerTransaction,
     BrokerOrder,
     PortfolioSyncLog,
 )
-from .integrations import BaseBroker, AlpacaBroker, BinanceBroker, CoinbaseBroker
+from brokers.integrations import BaseBroker, AlpacaBroker, BinanceBroker, CoinbaseBroker
 
 logger = logging.getLogger(__name__)
 

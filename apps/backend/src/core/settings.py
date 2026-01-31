@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "trading",
     "charts",
     "brokers",
+    "social_sentiment",
     "utils",
 ]
 

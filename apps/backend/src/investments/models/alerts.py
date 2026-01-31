@@ -4,13 +4,15 @@ Alert definitions and notification tracking.
 """
 
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.utils import timezone
 
-User = get_user_model()
+from utils.helpers.uuid_model import UUIDModel
+from utils.helpers.timestamped_model import TimestampedModel
+from utils.helpers.soft_delete_model import SoftDeleteModel
 
 
-class Alert(models.Model):
+class Alert(UUIDModel, TimestampedModel, SoftDeleteModel):
     """Alert definitions for price movements, portfolio changes, etc."""
 
     ALERT_TYPE_CHOICES = [
@@ -44,7 +46,9 @@ class Alert(models.Model):
         ("weekly", "Weekly Max"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="alerts")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="alerts"
+    )
 
     alert_type = models.CharField(max_length=30, choices=ALERT_TYPE_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
@@ -81,8 +85,6 @@ class Alert(models.Model):
     send_sms = models.BooleanField(default=False)
     send_in_app = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     last_triggered_at = models.DateTimeField(null=True, blank=True)
     trigger_count = models.IntegerField(default=0)
 
@@ -115,7 +117,7 @@ class Alert(models.Model):
         return True
 
 
-class AlertTrigger(models.Model):
+class AlertTrigger(UUIDModel, TimestampedModel, SoftDeleteModel):
     """History of triggered alerts."""
 
     alert = models.ForeignKey(Alert, on_delete=models.CASCADE, related_name="triggers")
@@ -158,7 +160,7 @@ class AlertTrigger(models.Model):
         return f"Triggered {self.alert.name} at {self.triggered_at}"
 
 
-class NotificationPreference(models.Model):
+class NotificationPreference(UUIDModel, TimestampedModel, SoftDeleteModel):
     """User notification preferences."""
 
     CHANNEL_CHOICES = [
@@ -169,7 +171,9 @@ class NotificationPreference(models.Model):
     ]
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="notification_preferences"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notification_preferences",
     )
 
     channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
@@ -186,11 +190,11 @@ class NotificationPreference(models.Model):
         return f"{self.user.username} - {self.channel} for {self.alert_type}"
 
 
-class Notification(models.Model):
+class Notification(UUIDModel, TimestampedModel, SoftDeleteModel):
     """In-app notifications."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="notifications"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications"
     )
 
     notification_type = models.CharField(max_length=50)
@@ -217,7 +221,6 @@ class Notification(models.Model):
     read_at = models.DateTimeField(null=True, blank=True)
     action_url = models.CharField(max_length=500, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:

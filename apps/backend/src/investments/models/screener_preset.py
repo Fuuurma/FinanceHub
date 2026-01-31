@@ -1,11 +1,8 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from utils.helpers.uuid_model import UUIDModel
 from utils.helpers.timestamped_model import TimestampedModel
 from utils.helpers.soft_delete_model import SoftDeleteModel
-
-
-User = get_user_model()
 
 
 class ScreenerPreset(UUIDModel, TimestampedModel, SoftDeleteModel):
@@ -19,7 +16,9 @@ class ScreenerPreset(UUIDModel, TimestampedModel, SoftDeleteModel):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="screener_presets"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="screener_presets",
     )
     name = models.CharField(max_length=255)
     filters = models.JSONField(default=dict)
