@@ -6,6 +6,8 @@ import { AppSidebar } from "@/components/layout/sidebar"
 import { Navbar } from "@/components/layout/navbar"
 import { RightSidebar } from "@/components/layout/right-sidebar"
 import { useEffect, useState } from "react"
+import { shortcutRegistry, registerDefaultShortcuts, useGlobalShortcuts, useHelpShortcut } from "@/lib/shortcuts"
+import { ShortcutHelpDialog } from "@/lib/shortcuts/ShortcutHelpDialog"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false)

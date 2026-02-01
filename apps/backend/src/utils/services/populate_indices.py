@@ -177,7 +177,7 @@ def populate_indices_sync(historical_years: int = 1):
                 f"[{i + 1}/{total}] {symbol}: {info.get('longName', symbol)} - {len(hist)} prices"
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
             continue
 

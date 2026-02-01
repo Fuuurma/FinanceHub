@@ -175,7 +175,7 @@ class OptionsAnalyzer:
                 interpretation=interpretation,
             )
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error analyzing option: {e}")
             return self._empty_option_report(S, K, T, option_type)
     

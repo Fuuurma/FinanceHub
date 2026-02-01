@@ -192,7 +192,7 @@ def populate_forex_sync(historical_years: int = 1):
                 f"[{i + 1}/{total}] {symbol}: {base_curr}/{quote_curr} - {len(hist)} prices"
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             print(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
             continue
 

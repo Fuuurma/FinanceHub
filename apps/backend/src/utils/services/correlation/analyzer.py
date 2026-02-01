@@ -163,7 +163,7 @@ class CorrelationAnalyzer:
             for c in set(clusters_raw):
                 cluster_assets = [assets[i] for i, x in enumerate(clusters_raw) if x == c]
                 clusters.append(cluster_assets)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.warning(f"Clustering failed: {e}")
             clusters = [assets]
         

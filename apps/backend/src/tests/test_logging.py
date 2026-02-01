@@ -72,7 +72,7 @@ class TestNoPrintStatements:
             with open(file_path, 'r') as f:
                 content = f.read()
                 
-                # Pattern: except Exception as e: print(
+                # Pattern: except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e: print(
                 pattern = r'except\s+\w+\s*(?:as\s+\w+)?\s*:\s*\n\s*print\('
                 matches = re.findall(pattern, content)
                 

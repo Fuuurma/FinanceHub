@@ -261,7 +261,7 @@ class StockScreener:
 
             return result
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Screener error: {str(e)}")
             return {
                 "error": str(e),

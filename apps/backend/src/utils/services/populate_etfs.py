@@ -226,7 +226,7 @@ def populate_etfs_sync(historical_years: int = 1):
                 f"[{i + 1}/{total}] {symbol}: {info.get('longName', symbol)} - {len(hist)} prices"
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error processing {symbol}: {e}")
             print(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
             continue

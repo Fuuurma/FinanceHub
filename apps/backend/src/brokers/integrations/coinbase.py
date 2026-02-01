@@ -143,7 +143,7 @@ class CoinbaseBroker(BaseBroker):
         try:
             await self._request("GET", "/v2/user")
             return True
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Coinbase connection test failed: {e}")
             return False
 

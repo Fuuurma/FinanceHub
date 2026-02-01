@@ -137,7 +137,7 @@ class BinanceBroker(BaseBroker):
         try:
             await self._request("GET", "/api/v3/ping")
             return True
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Binance connection test failed: {e}")
             return False
 

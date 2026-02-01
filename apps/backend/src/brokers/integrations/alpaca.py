@@ -147,7 +147,7 @@ class AlpacaBroker(BaseBroker):
         try:
             await self._request("GET", "/v2/account")
             return True
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Alpaca connection test failed: {e}")
             return False
 

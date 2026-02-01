@@ -230,7 +230,7 @@ async def place_order(request, connection_id: str, data: OrderCreateIn):
             if order.submitted_at
             else None,
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         return JsonResponse({"error": str(e)}, status=400)
 
 

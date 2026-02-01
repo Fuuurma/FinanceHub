@@ -59,7 +59,7 @@ class TestTokenRaceConditions(TestCase):
                     self.user, refresh_token
                 )
                 results.append(("success", result))
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 results.append(("error", str(e)))
 
         # Run 3 concurrent attempts

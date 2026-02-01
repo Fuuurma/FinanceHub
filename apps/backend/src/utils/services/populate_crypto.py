@@ -278,7 +278,7 @@ def populate_crypto_sync(historical_years: int = 1):
                 f"{len(hist) if not hist.empty else 0} prices"
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error processing {symbol}: {e}")
             print(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
             error_count += 1

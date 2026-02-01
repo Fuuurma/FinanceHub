@@ -192,7 +192,7 @@ class Command(BaseCommand):
                     else:
                         updated += 1
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 errors += 1
                 self.stdout.write(
                     self.style.ERROR(

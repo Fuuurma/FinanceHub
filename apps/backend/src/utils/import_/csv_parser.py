@@ -154,7 +154,7 @@ class CSVImportParser:
                 else:
                     valid_rows.append(parsed_row)
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 errors.append({"row": row_num, "message": f"Parse error: {str(e)}"})
 
         return valid_rows, errors
