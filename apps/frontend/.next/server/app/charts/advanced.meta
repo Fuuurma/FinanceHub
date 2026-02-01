@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(dashboard)/layout,_N_T_/(dashboard)/charts/layout,_N_T_/(dashboard)/charts/advanced/layout,_N_T_/(dashboard)/charts/advanced/page,_N_T_/charts/advanced"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGRhc2hib2FyZCk/charts/advanced/__PAGE__",
+    "/!KGRhc2hib2FyZCk/charts/advanced",
+    "/!KGRhc2hib2FyZCk/charts",
+    "/!KGRhc2hib2FyZCk",
+    "/_index",
+    "/_head"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(dashboard)/layout,_N_T_/(dashboard)/market/layout,_N_T_/(dashboard)/market/indices/layout,_N_T_/(dashboard)/market/indices/page,_N_T_/market/indices"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGRhc2hib2FyZCk/market/indices/__PAGE__",
+    "/!KGRhc2hib2FyZCk/market/indices",
+    "/!KGRhc2hib2FyZCk/market",
+    "/!KGRhc2hib2FyZCk",
+    "/_index",
+    "/_head"
+  ]
+}
