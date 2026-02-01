@@ -232,7 +232,7 @@ def delete_sentiment_alert(request, alert_id: int):
     return {"status": "deleted"}
 
 
-@router.get("/{symbol}", response=AggregatedSentimentSchema)
+@router.get("/data/{symbol}", response=AggregatedSentimentSchema)
 def get_symbol_sentiment(
     request, symbol: str, source: Optional[str] = None, timeframe: Optional[str] = "24h"
 ):
@@ -241,7 +241,7 @@ def get_symbol_sentiment(
     return analyzer.get_aggregated_sentiment(symbol, source, timeframe)
 
 
-@router.get("/{symbol}/posts", response=List[SocialPostSchema])
+@router.get("/data/{symbol}/posts", response=List[SocialPostSchema])
 def get_symbol_posts(
     request, symbol: str, source: Optional[str] = None, limit: int = 50
 ):

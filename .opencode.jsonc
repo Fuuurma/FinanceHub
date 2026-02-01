@@ -1,0 +1,58 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "brave-search": {
+      "type": "remote",
+      "url": "https://search.brave.com/api",
+      "enabled": true
+    },
+    "glm-vision": {
+      "type": "local",
+      "command": ["npx", "-y", "@z_ai/mcp-server"],
+      "enabled": true,
+      "environment": {
+        "Z_AI_API_KEY": "{env:GLM_API_KEY}",
+        "Z_AI_MODE": "ZAI"
+      }
+    },
+    "minimax": {
+      "type": "local",
+      "command": ["uvx", "-y", "minimax-mcp"],
+      "enabled": false,
+      "environment": {
+        "MINIMAX_API_KEY": "{env:MINIMAX_API_KEY}",
+        "MINIMAX_MCP_BASE_PATH": "/Users/sergi/Desktop/Projects/FinanceHub/generated",
+        "MINIMAX_API_HOST": "https://api.minimax.io",
+        "MINIMAX_API_RESOURCE_MODE": "local"
+      }
+    }
+  },
+  "permission": {
+    "skill": {
+      "python": "allow",
+      "typescript": "allow",
+      "javascript": "allow",
+      "react": "allow",
+      "next-js": "allow",
+      "django-ninja": "allow",
+      "node-js": "allow",
+      "tailwind-css": "allow",
+      "radix-ui": "allow",
+      "shadcn": "allow",
+      "security-analysis": "allow",
+      "accessibility": "allow",
+      "web-research": "allow",
+      "data-providers": "allow",
+      "professional-frontend": "allow",
+      "professional-backend": "allow",
+      "financial-research": "allow",
+      "documentation": "allow",
+      "*": "allow"
+    }
+  },
+  "tools": {
+    "brave-search_*": true,
+    "glm-vision_*": true,
+    "minimax_*": false
+  }
+}
