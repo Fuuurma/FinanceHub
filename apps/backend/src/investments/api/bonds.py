@@ -74,7 +74,7 @@ def calculate_bond_yield(request, data: BondCalculationInput):
 
         try:
             result.current_yield = float(svc.current_yield(face, coupon, price))
-        except Exception as e:
+        except (ValueError, ZeroDivisionError) as e:
             result.error_message = f"Current yield error: {str(e)}"
 
         try:
@@ -83,7 +83,7 @@ def calculate_bond_yield(request, data: BondCalculationInput):
                     face, coupon, price, data.years_to_maturity, data.frequency
                 )
             )
-        except Exception as e:
+        except (ValueError, ZeroDivisionError) as e:
             if not result.error_message:
                 result.error_message = str(e)
 
@@ -99,7 +99,7 @@ def calculate_bond_yield(request, data: BondCalculationInput):
                         data.frequency,
                     )
                 )
-        except Exception as e:
+        except (ValueError, ZeroDivisionError) as e:
             pass
 
         try:
@@ -113,7 +113,7 @@ def calculate_bond_yield(request, data: BondCalculationInput):
                     data.frequency,
                 )
             )
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             pass
 
         try:
@@ -126,7 +126,7 @@ def calculate_bond_yield(request, data: BondCalculationInput):
                     data.frequency,
                 )
             )
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             pass
 
         try:
@@ -139,7 +139,7 @@ def calculate_bond_yield(request, data: BondCalculationInput):
                     data.frequency,
                 )
             )
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             pass
 
         try:
@@ -152,12 +152,12 @@ def calculate_bond_yield(request, data: BondCalculationInput):
                     data.frequency,
                 )
             )
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             pass
 
         return result.model_dump(exclude_none=True)
 
-    except Exception as e:
+    except (ValueError, ZeroDivisionError) as e:
         logger.error(f"Bond calculation error: {e}")
         return {"error": str(e)}, 500
 
@@ -175,7 +175,7 @@ def calculate_current_yield(request, data: BondCalculationInput):
             Decimal(str(data.current_price)),
         )
         return {"current_yield": float(result)}
-    except Exception as e:
+    except (ValueError, ZeroDivisionError) as e:
         return {"error": str(e)}, 500
 
 
@@ -194,7 +194,7 @@ def calculate_ytm(request, data: BondCalculationInput):
             data.frequency,
         )
         return {"ytm": float(result)}
-    except Exception as e:
+    except (ValueError, ZeroDivisionError) as e:
         return {"error": str(e)}, 500
 
 
@@ -211,7 +211,7 @@ def calculate_zero_coupon_yield(
             Decimal(str(current_price)), Decimal(str(face_value)), years_to_maturity
         )
         return {"zero_coupon_yield": float(result)}
-    except Exception as e:
+    except (ValueError, ZeroDivisionError) as e:
         return {"error": str(e)}, 500
 
 
@@ -227,7 +227,7 @@ def calculate_treasury_yield(request, discount_rate: float, days_to_maturity: in
             "discount_yield": float(result["discount_yield"]),
             "investment_yield": float(result["investment_yield"]),
         }
-    except Exception as e:
+    except (ValueError, ZeroDivisionError) as e:
         return {"error": str(e)}, 500
 
 
@@ -264,7 +264,7 @@ def compare_bonds(request, data: BondComparisonInput):
                 )
                 if best_ytm is None or result.ytm > best_ytm:
                     best_ytm = result.ytm
-            except:
+            except (ValueError, ZeroDivisionError):
                 pass
 
             results.append(result.model_dump(exclude_none=True))
@@ -273,7 +273,7 @@ def compare_bonds(request, data: BondComparisonInput):
             bonds=results, best_yield=best_ytm, highest_current_yield=best_current
         ).model_dump(exclude_none=True)
 
-    except Exception as e:
+    except (ValueError, ZeroDivisionError) as e:
         logger.error(f"Bond comparison error: {e}")
         return {"error": str(e)}, 500
 

@@ -690,8 +690,8 @@ export function AdvancedChart({
         chartTitle={`${symbol} - ${CHART_TYPES.find(t => t.value === chartType)?.label} Chart`}
         chartDescription={`Financial chart showing ${symbol} price movements on ${timeframe} timeframe`}
         currentValue={latestData?.close}
-        change={priceChange}
-        changePercent={priceChangePercent}
+        change={priceChange ?? undefined}
+        changePercent={priceChangePercent ?? undefined}
         timeframe={timeframe}
         data={currentData.map(d => [
           { label: 'Date', value: d.date },
