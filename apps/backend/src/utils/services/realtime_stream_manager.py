@@ -76,7 +76,7 @@ class RealTimeStreamManager:
             
             logger.info("Binance WebSocket streams started")
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to start Binance streams: {e}")
     
     async def _start_finnhub_streams(self):
@@ -93,7 +93,7 @@ class RealTimeStreamManager:
             
             logger.info("Finnhub WebSocket streams started")
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to start Finnhub streams: {e}")
     
     async def _handle_binance_message(self, message: dict):
@@ -110,7 +110,7 @@ class RealTimeStreamManager:
             
             await self._notify_subscribers(stream, data)
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error handling Binance message: {e}")
     
     async def _handle_finnhub_message(self, message: dict):
@@ -130,7 +130,7 @@ class RealTimeStreamManager:
             stream = f'finnhub_{symbol}'
             await self._notify_subscribers(stream, data)
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error handling Finnhub message: {e}")
     
     async def _process_ticker_data(self, data: dict, source: str):
@@ -230,7 +230,7 @@ class RealTimeStreamManager:
                     tasks.append(callback(data))
                 else:
                     callback(data)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.error(f"Error in subscriber callback: {e}")
         
         if tasks:
@@ -250,7 +250,7 @@ class RealTimeStreamManager:
             
             return None
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error getting real-time price: {e}")
             return None
     
@@ -270,7 +270,7 @@ class RealTimeStreamManager:
             
             return trades[:limit]
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error getting recent trades: {e}")
             return []
     
@@ -288,7 +288,7 @@ class RealTimeStreamManager:
             
             return None
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error getting order book: {e}")
             return None
     

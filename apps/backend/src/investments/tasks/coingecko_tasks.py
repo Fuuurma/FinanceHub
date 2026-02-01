@@ -73,14 +73,14 @@ def fetch_trending_cryptos(self) -> Dict[str, Any]:
                 )
                 count += 1
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.error(f"Error processing trending coin {coin_id}: {e}")
                 continue
 
         logger.info(f"Fetched {count} trending cryptocurrencies")
         return {"count": count, "timestamp": timezone.now().isoformat()}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching trending cryptos: {e}")
         raise self.retry(exc=e)
 
@@ -150,14 +150,14 @@ def update_crypto_prices(self) -> Dict[str, Any]:
                     )
                     count += 1
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.error(f"Error updating price for {coin_id}: {e}")
                 continue
 
         logger.info(f"Updated {count} cryptocurrency prices from CoinGecko")
         return {"count": count, "timestamp": timezone.now().isoformat()}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error updating crypto prices: {e}")
         raise self.retry(exc=e)
 
@@ -207,7 +207,7 @@ def fetch_crypto_market_data(self, coin_id: str, days: int = 7) -> Dict[str, Any
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching market data for {coin_id}: {e}")
         raise self.retry(exc=e)
 
@@ -238,7 +238,7 @@ def sync_all_crypto_prices(self) -> Dict[str, Any]:
         logger.info(f"Synced {result.get('count', 0)} crypto prices")
         return result
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error syncing crypto prices: {e}")
         return {"error": str(e)}
 
@@ -272,7 +272,7 @@ def refresh_crypto_cache(self) -> Dict[str, Any]:
         logger.info(f"Refreshed cache for {count} cryptocurrencies")
         return {"count": count, "timestamp": timezone.now().isoformat()}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error refreshing crypto cache: {e}")
         return {"error": str(e)}
 
@@ -350,7 +350,7 @@ def fetch_dex_trading_pairs(self, dex_name: str = "uniswap-v3") -> Dict[str, Any
                 )
                 count += 1
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.error(f"Error processing DEX pair: {e}")
                 continue
 
@@ -361,6 +361,6 @@ def fetch_dex_trading_pairs(self, dex_name: str = "uniswap-v3") -> Dict[str, Any
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching DEX pairs: {e}")
         raise self.retry(exc=e)

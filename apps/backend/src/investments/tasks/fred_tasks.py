@@ -132,7 +132,7 @@ def fetch_series_fred(
             "indicator_created": created,
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching FRED series {series_id}: {e}")
         raise self.retry(exc=e)
 
@@ -152,7 +152,7 @@ def fetch_gdp_fred(self, real_gdp: bool = True) -> Dict[str, Any]:
         data = scraper.get_gdp(real_gdp=real_gdp)
         return fetch_series_fred(series_id)
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching GDP: {e}")
         raise self.retry(exc=e)
 
@@ -177,7 +177,7 @@ def fetch_inflation_fred(self) -> Dict[str, Any]:
 
         return {"status": "success", "series_fetched": len(results), "results": results}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching inflation data: {e}")
         raise self.retry(exc=e)
 
@@ -202,7 +202,7 @@ def fetch_employment_fred(self) -> Dict[str, Any]:
 
         return {"status": "success", "series_fetched": len(results), "results": results}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching employment data: {e}")
         raise self.retry(exc=e)
 
@@ -227,7 +227,7 @@ def fetch_interest_rates_fred(self) -> Dict[str, Any]:
 
         return {"status": "success", "series_fetched": len(results), "results": results}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching interest rates: {e}")
         raise self.retry(exc=e)
 
@@ -252,7 +252,7 @@ def fetch_housing_fred(self) -> Dict[str, Any]:
 
         return {"status": "success", "series_fetched": len(results), "results": results}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching housing data: {e}")
         raise self.retry(exc=e)
 
@@ -312,7 +312,7 @@ def fetch_all_indicators_fred(self) -> Dict[str, Any]:
             try:
                 result = fetch_series_fred(series_id)
                 results.append(result)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.error(f"Failed to fetch {series_id}: {e}")
                 results.append(
                     {"status": "error", "series_id": series_id, "error": str(e)}
@@ -332,7 +332,7 @@ def fetch_all_indicators_fred(self) -> Dict[str, Any]:
             "results": results,
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching all indicators: {e}")
         raise self.retry(exc=e)
 
@@ -370,7 +370,7 @@ def update_macro_dashboard_fred(self) -> Dict[str, Any]:
             "created": created,
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error updating macro dashboard: {e}")
         raise self.retry(exc=e)
 
@@ -408,7 +408,7 @@ def sync_fred_provider_status(self) -> Dict[str, Any]:
             "is_healthy": is_healthy,
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"FRED provider health check failed: {e}")
 
         status_sync = ProviderStatusSync()

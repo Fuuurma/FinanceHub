@@ -127,7 +127,7 @@ class FREDScraper(FREDBase):
             )
             response.raise_for_status()
             return response.json()
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching series {series_id}: {e}")
             return {}
 
@@ -147,7 +147,7 @@ class FREDScraper(FREDBase):
             response = self.session.get(f"{self.BASE_URL}/series", params=params)
             response.raise_for_status()
             return response.json()
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching series info for {series_id}: {e}")
             return {}
 
@@ -159,7 +159,7 @@ class FREDScraper(FREDBase):
             response = self.session.get(f"{self.BASE_URL}/category", params=params)
             response.raise_for_status()
             return response.json().get("categories", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching categories: {e}")
             return []
 
@@ -177,7 +177,7 @@ class FREDScraper(FREDBase):
             )
             response.raise_for_status()
             return response.json().get("categories", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching category children for {category_id}: {e}")
             return []
 
@@ -189,7 +189,7 @@ class FREDScraper(FREDBase):
             response = self.session.get(f"{self.BASE_URL}/releases", params=params)
             response.raise_for_status()
             return response.json().get("releases", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching releases: {e}")
             return []
 
@@ -210,7 +210,7 @@ class FREDScraper(FREDBase):
             response = self.session.get(f"{self.BASE_URL}/{endpoint}", params=params)
             response.raise_for_status()
             return response.json()
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching release {release_id}: {e}")
             return {}
 
@@ -237,7 +237,7 @@ class FREDScraper(FREDBase):
             )
             response.raise_for_status()
             return response.json().get("seriess", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching release series for {release_id}: {e}")
             return []
 
@@ -249,7 +249,7 @@ class FREDScraper(FREDBase):
             response = self.session.get(f"{self.BASE_URL}/sources", params=params)
             response.raise_for_status()
             return response.json().get("sources", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching sources: {e}")
             return []
 
@@ -261,7 +261,7 @@ class FREDScraper(FREDBase):
             response = self.session.get(f"{self.BASE_URL}/tags", params=params)
             response.raise_for_status()
             return response.json().get("tags", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching tags: {e}")
             return []
 
@@ -297,7 +297,7 @@ class FREDScraper(FREDBase):
             response = self.session.get(f"{self.BASE_URL}/series/search", params=params)
             response.raise_for_status()
             return response.json().get("seriess", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error searching series for '{search_text}': {e}")
             return []
 
@@ -325,7 +325,7 @@ class FREDScraper(FREDBase):
             )
             response.raise_for_status()
             return response.json().get("seriess", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching series updates: {e}")
             return []
 

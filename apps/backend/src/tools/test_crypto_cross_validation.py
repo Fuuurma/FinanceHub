@@ -54,7 +54,7 @@ async def test_cross_validation_single():
         print("✅ Cross-validation test passed!")
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -96,7 +96,7 @@ async def test_cross_validation_batch():
         print("✅ Batch validation test passed!")
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -126,7 +126,7 @@ async def test_anomaly_detection():
         print("✅ Anomaly detection test passed!")
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -160,7 +160,7 @@ async def test_unified_provider():
         print("✅ Unified provider test passed!")
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -208,7 +208,7 @@ async def test_batch_fetch():
         print("✅ Batch fetch test passed!")
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -252,7 +252,7 @@ async def test_provider_health():
         print("✅ Provider health test passed!")
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -277,7 +277,7 @@ async def test_trending_fetch():
         print("✅ Trending fetch test passed!")
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -337,7 +337,7 @@ if __name__ == "__main__":
         asyncio.run(run_all_tests())
     except KeyboardInterrupt:
         print("\n\nTest interrupted by user")
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         print(f"\n\nFatal error: {str(e)}")
         import traceback
         traceback.print_exc()

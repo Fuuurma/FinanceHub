@@ -162,7 +162,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No company data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Company test FAILED: {e}"))
 
     def _test_quote(self, symbol: str):
@@ -189,7 +189,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No quote data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Quote test FAILED: {e}"))
 
     def _test_key_stats(self, symbol: str):
@@ -218,7 +218,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No key stats data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Key stats test FAILED: {e}"))
 
     def _test_financials(self, symbol: str):
@@ -254,7 +254,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No financials data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Financials test FAILED: {e}"))
 
     def _test_earnings(self, symbol: str):
@@ -287,7 +287,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No earnings data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Earnings test FAILED: {e}"))
 
     def _test_estimates(self, symbol: str):
@@ -318,7 +318,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No estimates data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Estimates test FAILED: {e}"))
 
     def _test_peers(self, symbol: str):
@@ -344,7 +344,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No peers data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Peers test FAILED: {e}"))
 
     def _test_advanced_stats(self, symbol: str):
@@ -374,7 +374,7 @@ class Command(BaseCommand):
                     self.style.WARNING("  No advanced stats data returned")
                 )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Advanced stats test FAILED: {e}"))
 
     def _test_insider_transactions(self, symbol: str):
@@ -405,7 +405,7 @@ class Command(BaseCommand):
                     self.style.WARNING("  No insider transactions data returned")
                 )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(
                 self.style.ERROR(f"  Insider transactions test FAILED: {e}")
             )
@@ -436,7 +436,7 @@ class Command(BaseCommand):
                     self.style.WARNING("  No market movers data returned")
                 )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Market movers test FAILED: {e}"))
 
     def _test_sector_performance(self):
@@ -466,7 +466,7 @@ class Command(BaseCommand):
                     self.style.WARNING("  No sector performance data returned")
                 )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(
                 self.style.ERROR(f"  Sector performance test FAILED: {e}")
             )

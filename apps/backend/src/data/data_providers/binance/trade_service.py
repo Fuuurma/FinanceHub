@@ -191,7 +191,7 @@ class BinanceTradeService:
             await self.ws_client.subscribe_trade(symbol, on_trade)
             logger.info(f"Subscribed to individual trades for {symbol}")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error subscribing to trades for {symbol}: {str(e)}")
     
     async def subscribe_agg_trades(self, symbol: str, callback: Optional[callable] = None):
@@ -211,7 +211,7 @@ class BinanceTradeService:
             await self.ws_client.subscribe_agg_trade(symbol, on_agg_trade)
             logger.info(f"Subscribed to aggregated trades for {symbol}")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error subscribing to agg trades for {symbol}: {str(e)}")
     
     async def _process_trade(self, symbol: str, data: dict):
@@ -232,7 +232,7 @@ class BinanceTradeService:
             
             logger.debug(f"Processed trade for {symbol}: {trade.side} {trade.quantity} @ {trade.price}")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error processing trade for {symbol}: {str(e)}")
     
     async def _process_agg_trade(self, symbol: str, data: dict):
@@ -251,7 +251,7 @@ class BinanceTradeService:
             
             logger.debug(f"Processed agg trade for {symbol}: {agg_trade.side} {agg_trade.quantity} @ {agg_trade.price}")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error processing agg trade for {symbol}: {str(e)}")
     
     async def _run_callback(self, callback: callable, data: dict):
@@ -261,7 +261,7 @@ class BinanceTradeService:
                 await callback(data)
             else:
                 callback(data)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error in callback: {str(e)}")
     
     async def get_recent_trades(self, symbol: str, limit: int = 100) -> List[dict]:
@@ -349,7 +349,7 @@ class BinanceTradeService:
                 'volume_profile': volume_profile
             }
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error calculating volume profile for {symbol}: {str(e)}")
             return None
     
@@ -418,7 +418,7 @@ class BinanceTradeService:
                 'total_volume': float(total_volume)
             }
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error analyzing trade flow for {symbol}: {str(e)}")
             return None
     
@@ -459,7 +459,7 @@ class BinanceTradeService:
             
             return [trade.to_dict() for trade in large_trades[:limit]]
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error finding large trades for {symbol}: {str(e)}")
             return []
     
@@ -498,7 +498,7 @@ class BinanceTradeService:
             
             return trades
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching historical trades for {symbol}: {str(e)}")
             return []
     
@@ -534,7 +534,7 @@ class BinanceTradeService:
             
             return agg_trades
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching agg trades for {symbol}: {str(e)}")
             return []
     

@@ -111,7 +111,7 @@ class CoinGeckoWebSocketClient:
 
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to connect to CoinGecko WebSocket: {e}")
             self._connected = False
             return False
@@ -137,7 +137,7 @@ class CoinGeckoWebSocketClient:
         if self._websocket:
             try:
                 await self._websocket.close()
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.warning(f"Error closing WebSocket: {e}")
 
         self._websocket = None
@@ -173,7 +173,7 @@ class CoinGeckoWebSocketClient:
             logger.info(f"Subscribed to {len(coin_ids)} coins: {coin_ids}")
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to subscribe: {e}")
             return False
 
@@ -207,7 +207,7 @@ class CoinGeckoWebSocketClient:
             logger.info(f"Unsubscribed from {len(coin_ids)} coins: {coin_ids}")
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to unsubscribe: {e}")
             return False
 
@@ -219,12 +219,12 @@ class CoinGeckoWebSocketClient:
                 if self._connected and self._websocket:
                     try:
                         await self._websocket.ping()
-                    except Exception as e:
+                    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                         logger.warning(f"Heartbeat failed: {e}")
                         break
             except asyncio.CancelledError:
                 break
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.error(f"Heartbeat loop error: {e}")
                 break
 
@@ -244,7 +244,7 @@ class CoinGeckoWebSocketClient:
             except websockets.ConnectionClosed:
                 logger.warning("WebSocket connection closed")
                 break
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.error(f"Error listening for messages: {e}")
                 break
 
@@ -279,7 +279,7 @@ class CoinGeckoWebSocketClient:
 
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON message: {e}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error handling message: {e}")
 
     async def _notify_callbacks(self, update: CoinGeckoPriceUpdate) -> None:
@@ -290,7 +290,7 @@ class CoinGeckoWebSocketClient:
                     await callback(update)
                 else:
                     callback(update)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.error(f"Error in price callback: {e}")
 
     async def _reconnect(self) -> None:

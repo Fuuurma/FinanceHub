@@ -188,7 +188,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No quote data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Trades/quotes test FAILED: {e}"))
 
     def _test_snapshot(self, symbol: str):
@@ -216,7 +216,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No snapshot data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Snapshot test FAILED: {e}"))
 
     def _test_options_chain(self, underlying_symbol: str, expiration: Optional[str] = None):
@@ -260,7 +260,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No options data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Options chain test FAILED: {e}"))
 
     def _test_sma(self, symbol: str, window: int):
@@ -291,7 +291,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No SMA data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  SMA test FAILED: {e}"))
 
     def _test_ema(self, symbol: str, window: int):
@@ -322,7 +322,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No EMA data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  EMA test FAILED: {e}"))
 
     def _test_rsi(self, symbol: str, window: int):
@@ -353,7 +353,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No RSI data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  RSI test FAILED: {e}"))
 
     def _test_macd(self, symbol: str):
@@ -385,7 +385,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No MACD data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  MACD test FAILED: {e}"))
 
     def _test_bbands(self, symbol: str, window: int):
@@ -417,7 +417,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No Bollinger Bands data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  Bollinger Bands test FAILED: {e}"))
 
     def _test_gainers_losers(self, direction: str):
@@ -447,5 +447,5 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING(f"  No {direction} data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"  {direction.capitalize()} test FAILED: {e}"))

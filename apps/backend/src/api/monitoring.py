@@ -76,7 +76,7 @@ async def get_all_provider_metrics():
         
         return results
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting provider metrics: {e}")
         return []
 
@@ -106,7 +106,7 @@ async def get_provider_metrics(provider_name: str):
             error_rate=metrics.get('error_rate', 0)
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting provider metrics: {e}")
         return {"error": str(e)}
 
@@ -125,7 +125,7 @@ async def get_health_summary():
         
         return HealthSummaryOut(**summary)
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting health summary: {e}")
         return HealthSummaryOut(
             total=0,
@@ -165,7 +165,7 @@ async def get_provider_health(provider_name: str):
             "recommendation": get_recommendation(health)
         }
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting provider health: {e}")
         return {"error": str(e)}
 
@@ -196,7 +196,7 @@ async def get_slowest_providers(limit: int = 5):
         
         return results
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting slowest providers: {e}")
         return []
 
@@ -227,7 +227,7 @@ async def get_error_prone_providers(limit: int = 5):
         
         return results
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting error-prone providers: {e}")
         return []
 
@@ -246,7 +246,7 @@ async def get_cache_statistics():
             L3=stats.get('L3', {'hits': 0, 'misses': 0, 'total': 0, 'hit_rate': 0})
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting cache stats: {e}")
         return CacheStatsOut(
             L1={'hits': 0, 'misses': 0, 'total': 0, 'hit_rate': 0},
@@ -282,7 +282,7 @@ async def get_overall_statistics():
             health_scores=stats.get('health_scores', {})
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting overall statistics: {e}")
         return OverallStatsOut(
             timestamp='',
@@ -303,7 +303,7 @@ async def get_monitor_status():
         
         return status
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error getting monitor status: {e}")
         return {"error": str(e)}
 

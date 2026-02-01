@@ -127,7 +127,7 @@ def fetch_crypto_data_cmc(self, symbol: str) -> Dict[str, Any]:
             "has_quotes": bool(data["quotes"]),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching crypto data for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -174,7 +174,7 @@ def fetch_crypto_listings_cmc(
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching crypto listings: {e}")
         raise self.retry(exc=e)
 
@@ -205,7 +205,7 @@ def fetch_global_metrics_cmc(self) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching global metrics: {e}")
         raise self.retry(exc=e)
 
@@ -259,7 +259,7 @@ def fetch_trending_cryptos_cmc(
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching trending cryptos: {e}")
         raise self.retry(exc=e)
 
@@ -309,7 +309,7 @@ def fetch_exchange_listings_cmc(
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching exchange listings: {e}")
         raise self.retry(exc=e)
 
@@ -344,7 +344,7 @@ def fetch_market_pairs_cmc(self, crypto_id: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching market pairs for {crypto_id}: {e}")
         raise self.retry(exc=e)
 
@@ -408,7 +408,7 @@ def fetch_crypto_quote_cmc(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching quote for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -450,7 +450,7 @@ def sync_coinmarketcap_provider_status() -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error checking CoinMarketCap status: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -492,7 +492,7 @@ def fetch_top_cryptos_cmc(self, limit: int = 100) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching top cryptos: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -542,6 +542,6 @@ def fetch_crypto_fundamentals_cmc(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error fetching fundamentals for {symbol}: {e}")
         raise self.retry(exc=e)

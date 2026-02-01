@@ -151,7 +151,7 @@ def process_batch_data(data: List[Dict]) -> pl.DataFrame:
         )
 
         return processed_df
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error processing batch data: {str(e)}")
         return pl.DataFrame()
 
@@ -192,7 +192,7 @@ async def fetch_stocks_alpha(symbols: Optional[List[str]] = None) -> dict:
             "failed": len(symbols) - success_count,
             "timestamp": datetime.now().isoformat(),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error in fetch_stocks_alpha: {str(e)}")
         return {"error": str(e)}
 
@@ -227,7 +227,7 @@ async def fetch_cryptos_coingecko(symbols: Optional[List[str]] = None) -> dict:
             "failed": len(symbols) - success_count,
             "timestamp": datetime.now().isoformat(),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error in fetch_cryptos_coingecko: {str(e)}")
         return {"error": str(e)}
 
@@ -264,7 +264,7 @@ async def fetch_cryptos_coinmarketcap(symbols: Optional[List[str]] = None) -> di
             "failed": len(symbols) - success_count,
             "timestamp": datetime.now().isoformat(),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error in fetch_cryptos_coinmarketcap: {str(e)}")
         return {"error": str(e)}
 
@@ -295,7 +295,7 @@ async def fetch_all_markets() -> dict:
             "completed_at": datetime.now().isoformat(),
             "sources": list(results.keys()),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error in fetch_all_markets: {str(e)}")
         return {"error": str(e)}
 
@@ -323,7 +323,7 @@ async def update_asset_price(symbol: str, source: str = "alpha_vantage") -> dict
             "success": success,
             "timestamp": datetime.now().isoformat(),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error in update_asset_price for {symbol}: {str(e)}")
         return {"error": str(e)}
 
@@ -370,7 +370,7 @@ def clean_old_data(days: int = 365) -> dict:
             "cutoff_days": days,
             "timestamp": datetime.now().isoformat(),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error in clean_old_data: {str(e)}")
         return {"error": str(e)}
 
@@ -430,7 +430,7 @@ async def batch_update_assets(
             "results": results,
             "timestamp": datetime.now().isoformat(),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Error in batch_update_assets: {str(e)}")
         return {"error": str(e)}
 

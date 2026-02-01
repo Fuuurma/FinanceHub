@@ -59,7 +59,7 @@ def refresh_stale_templates(self):
                     f"Refreshed {template.template_type} for {template.symbol or template.sector}"
                 )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             failed += 1
             logger.error(f"Failed to refresh {template.template_type}: {e}")
 
@@ -85,7 +85,7 @@ def generate_market_summary_task(self):
         template = generator.generate_market_summary()
         logger.info(f"Generated market summary: {template.id}")
         return {"status": "success", "template_id": str(template.id)}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Market summary generation failed: {e}")
         raise self.retry(exc=e)
 
@@ -105,7 +105,7 @@ def generate_crypto_market_task(self):
         template = generator.generate_crypto_market()
         logger.info(f"Generated crypto market analysis: {template.id}")
         return {"status": "success", "template_id": str(template.id)}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Crypto market generation failed: {e}")
         raise self.retry(exc=e)
 
@@ -125,7 +125,7 @@ def generate_asset_analysis_task(self, symbol: str):
         template = generator.generate_asset_analysis(symbol.upper())
         logger.info(f"Generated asset analysis for {symbol}: {template.id}")
         return {"status": "success", "template_id": str(template.id), "symbol": symbol}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Asset analysis generation failed for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -145,7 +145,7 @@ def generate_sector_report_task(self, sector: str):
         template = generator.generate_sector_report(sector)
         logger.info(f"Generated sector report for {sector}: {template.id}")
         return {"status": "success", "template_id": str(template.id), "sector": sector}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Sector report generation failed for {sector}: {e}")
         raise self.retry(exc=e)
 
@@ -165,7 +165,7 @@ def generate_risk_commentary_task(self):
         template = generator.generate_risk_commentary()
         logger.info(f"Generated risk commentary: {template.id}")
         return {"status": "success", "template_id": str(template.id)}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Risk commentary generation failed: {e}")
         raise self.retry(exc=e)
 
@@ -185,7 +185,7 @@ def generate_sentiment_summary_task(self):
         template = generator.generate_sentiment_summary()
         logger.info(f"Generated sentiment summary: {template.id}")
         return {"status": "success", "template_id": str(template.id)}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Sentiment summary generation failed: {e}")
         raise self.retry(exc=e)
 
@@ -205,7 +205,7 @@ def generate_volatility_outlook_task(self, symbol: str = "SPY"):
         template = generator.generate_volatility_outlook(symbol.upper())
         logger.info(f"Generated volatility outlook for {symbol}: {template.id}")
         return {"status": "success", "template_id": str(template.id), "symbol": symbol}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Volatility outlook generation failed for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -225,7 +225,7 @@ def generate_bond_market_task(self):
         template = generator.generate_bond_market()
         logger.info(f"Generated bond market analysis: {template.id}")
         return {"status": "success", "template_id": str(template.id)}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Bond market generation failed: {e}")
         raise self.retry(exc=e)
 

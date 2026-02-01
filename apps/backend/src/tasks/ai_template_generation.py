@@ -90,7 +90,7 @@ def generate_all_templates(self):
         
         logger.info(f"AI template generation completed in {results['duration_seconds']:.2f}s")
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Template generation batch failed: {e}")
         results['errors'].append(str(e))
         raise self.retry(exc=e)
@@ -155,7 +155,7 @@ def generate_market_summaries(self):
             else:
                 results['updated'] += 1
                 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to generate market summary for {symbol}: {e}")
             results['errors'].append(f"{symbol}: {str(e)}")
     
@@ -213,7 +213,7 @@ def generate_asset_analysis(self, asset_class: str, symbols: List[str]):
             else:
                 results['updated'] += 1
                 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to generate analysis for {symbol}: {e}")
             results['errors'].append(f"{symbol}: {str(e)}")
     
@@ -263,7 +263,7 @@ def generate_sector_reports(self):
             else:
                 results['updated'] += 1
                 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to generate sector report for {sector}: {e}")
             results['errors'].append(f"{sector}: {str(e)}")
     
@@ -303,7 +303,7 @@ def generate_risk_commentary(self):
         
         return {'created': 1, 'updated': 0, 'errors': []}
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Failed to generate risk commentary: {e}")
         return {'created': 0, 'updated': 0, 'errors': [str(e)]}
 
@@ -355,7 +355,7 @@ def generate_sentiment_summaries(self):
             else:
                 results['updated'] += 1
                 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to generate sentiment for {symbol}: {e}")
             results['errors'].append(f"{symbol}: {str(e)}")
     
@@ -397,7 +397,7 @@ def generate_volatility_outlook(self, symbols: List[str]):
         template.save()
         results['created' if created else 'updated'] += 1
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Failed to generate volatility outlook: {e}")
         results['errors'].append(str(e))
     
@@ -444,7 +444,7 @@ def generate_options_strategies(self, symbols: List[str]):
             else:
                 results['updated'] += 1
                 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to generate options for {symbol}: {e}")
             results['errors'].append(f"{symbol}: {str(e)}")
     
@@ -484,7 +484,7 @@ def generate_bond_market_analysis(self):
         
         return {'created': 1, 'updated': 0, 'errors': []}
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Failed to generate bond market analysis: {e}")
         return {'created': 0, 'updated': 0, 'errors': [str(e)]}
 
@@ -523,7 +523,7 @@ def generate_crypto_market_analysis(self):
         
         return {'created': 1, 'updated': 0, 'errors': []}
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Failed to generate crypto market analysis: {e}")
         return {'created': 0, 'updated': 0, 'errors': [str(e)]}
 

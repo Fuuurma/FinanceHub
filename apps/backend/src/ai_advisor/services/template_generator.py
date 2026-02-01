@@ -284,7 +284,7 @@ class AITemplateGenerator:
             logger.info(f"Generated {template_type} template for {symbol or sector}")
             return template
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             error_message = str(e)
             success = False
             logger.error(f"Failed to generate {template_type} template: {e}")
@@ -336,7 +336,7 @@ class AITemplateGenerator:
                 data["indices"] = indices_data
                 data["sources"].append("live")
                 self.cache.set("market:indices", indices_data, ttl=CACHE_TTL_MEDIUM)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.warning(f"Failed to fetch indices: {e}")
                 data["indices"] = {"SPY": {"price": 0, "change": 0}}
 
@@ -349,7 +349,7 @@ class AITemplateGenerator:
                 sentiment = await self.orchestrator.get_sentiment_summary()
                 data["sentiment"] = sentiment
                 self.cache.set("market:sentiment", sentiment, ttl=CACHE_TTL_LONG)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.warning(f"Failed to fetch sentiment: {e}")
 
         return data
@@ -386,7 +386,7 @@ class AITemplateGenerator:
             # Cache result
             self.cache.set(cache_key, data, ttl=CACHE_TTL_MEDIUM)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.warning(f"Failed to fetch asset data for {symbol}: {e}")
             data["error"] = str(e)
 
@@ -408,7 +408,7 @@ class AITemplateGenerator:
             data["performance"] = sector_data
             data["sources"].append("live")
             self.cache.set(cache_key, data, ttl=CACHE_TTL_LONG)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.warning(f"Failed to fetch sector data for {sector}: {e}")
 
         return data
@@ -427,7 +427,7 @@ class AITemplateGenerator:
                 data["risk"] = risk_metrics
                 data["sources"].append("live")
                 self.cache.set("market:risk", data, ttl=CACHE_TTL_MEDIUM)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.warning(f"Failed to fetch risk data: {e}")
 
         return data
@@ -446,7 +446,7 @@ class AITemplateGenerator:
                 data.update(sentiment)
                 data["sources"].append("live")
                 self.cache.set("market:sentiment", data, ttl=CACHE_TTL_MEDIUM)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.warning(f"Failed to fetch sentiment: {e}")
 
         return data
@@ -466,7 +466,7 @@ class AITemplateGenerator:
                 data["volatility"] = vol_data
                 data["sources"].append("live")
                 self.cache.set(cache_key, data, ttl=CACHE_TTL_SHORT)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.warning(f"Failed to fetch volatility for {symbol}: {e}")
 
         return data
@@ -485,7 +485,7 @@ class AITemplateGenerator:
                 data.update(crypto_data)
                 data["sources"].append("live")
                 self.cache.set("crypto:market", data, ttl=CACHE_TTL_SHORT)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.warning(f"Failed to fetch crypto data: {e}")
 
         return data
@@ -504,7 +504,7 @@ class AITemplateGenerator:
                 data.update(bond_data)
                 data["sources"].append("live")
                 self.cache.set("fixed_income:market", data, ttl=CACHE_TTL_LONG)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 logger.warning(f"Failed to fetch bond data: {e}")
 
         return data
