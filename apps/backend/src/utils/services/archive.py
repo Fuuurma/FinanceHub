@@ -60,7 +60,7 @@ class DataArchiver:
                     region_name=aws_region
                 )
                 logger.info("S3 client initialized successfully")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
                 logger.error(f"Failed to initialize S3 client: {e}")
 
     def get_default_archive_folder(self) -> Path:
@@ -73,7 +73,7 @@ class DataArchiver:
         try:
             folder.mkdir(parents=True, exist_ok=True)
             return True
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Failed to create archive directory {folder}: {e}")
             return False
 
@@ -133,7 +133,7 @@ class DataArchiver:
                                     try:
                                         writer.writerow(row)
                                         exported += 1
-                                    except Exception as e:
+                                    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
                                         errors += 1
                                         logger.error(f"Error writing row: {e}")
 
@@ -142,7 +142,7 @@ class DataArchiver:
                     logger.info(f"Exported {exported} records to {output_path}")
                     return (exported, errors)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Export failed: {e}")
             return (exported, errors)
 
@@ -164,7 +164,7 @@ class DataArchiver:
             file_path.unlink()
             return compressed_path
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Failed to compress {file_path}: {e}")
             return file_path
 
@@ -248,7 +248,7 @@ class DataArchiver:
                     logger.info(f"Deleted {deleted} records from {table_name}")
                     return (deleted, errors)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Failed to delete archived records: {e}")
             return (deleted, errors)
 
@@ -402,7 +402,7 @@ class DataArchiver:
                     logger.info(f"Restored {restored} records from {archive_path}")
                     return (restored, errors)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Failed to restore from archive: {e}")
             return (restored, errors)
 

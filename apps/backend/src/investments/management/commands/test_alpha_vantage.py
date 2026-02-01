@@ -120,7 +120,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No quote data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Quote test FAILED: {e}"))
 
     def _test_overview(self, symbol: str):
@@ -153,7 +153,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No overview data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Overview test FAILED: {e}"))
 
     def _test_income_statement(self, symbol: str):
@@ -197,7 +197,7 @@ class Command(BaseCommand):
                     self.style.WARNING("  No income statement data returned")
                 )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Income statement test FAILED: {e}"))
 
     def _test_balance_sheet(self, symbol: str):
@@ -244,7 +244,7 @@ class Command(BaseCommand):
                     self.style.WARNING("  No balance sheet data returned")
                 )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Balance sheet test FAILED: {e}"))
 
     def _test_cash_flow(self, symbol: str):
@@ -289,7 +289,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No cash flow data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Cash flow test FAILED: {e}"))
 
     def _test_earnings(self, symbol: str):
@@ -334,5 +334,5 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No earnings data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Earnings test FAILED: {e}"))

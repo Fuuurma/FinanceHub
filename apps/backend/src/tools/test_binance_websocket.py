@@ -49,7 +49,7 @@ async def test_websocket_connection():
         await ws_client.disconnect()
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -105,7 +105,7 @@ async def test_mini_ticker_stream(symbol: str = 'BTCUSDT', duration: int = 30):
         await ws_client.disconnect()
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -154,7 +154,7 @@ async def test_trade_stream(symbol: str = 'BTCUSDT', duration: int = 30):
         await ws_client.disconnect()
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -220,7 +220,7 @@ async def test_order_book(symbol: str = 'BTCUSDT', duration: int = 30):
         await order_book_service.stop()
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -277,7 +277,7 @@ async def test_trade_flow(symbol: str = 'BTCUSDT', duration: int = 60):
         await ws_client.disconnect()
         return True
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -331,7 +331,7 @@ if __name__ == "__main__":
         asyncio.run(run_all_tests())
     except KeyboardInterrupt:
         print("\n\nTest interrupted by user")
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         print(f"\n\nFatal error: {str(e)}")
         import traceback
         traceback.print_exc()

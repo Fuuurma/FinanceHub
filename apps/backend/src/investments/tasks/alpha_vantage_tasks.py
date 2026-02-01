@@ -93,7 +93,7 @@ def fetch_stock_fundamentals(self, symbol: str) -> Dict[str, Any]:
             ),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching fundamentals for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -127,7 +127,7 @@ def fetch_all_stocks_fundamentals(self, batch_size: int = 50) -> Dict[str, Any]:
                 result = fetch_stock_fundamentals.delay(symbol)
                 processed += 1
                 successful += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
                 logger.error(f"Failed to queue fetch for {symbol}: {e}")
                 failed += 1
                 continue
@@ -140,7 +140,7 @@ def fetch_all_stocks_fundamentals(self, batch_size: int = 50) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error in batch fundamentals fetch: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -217,7 +217,7 @@ def update_company_overview(self, symbol: str) -> Dict[str, Any]:
 
         return {"status": "error", "message": "No overview data returned"}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error updating company overview for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -317,7 +317,7 @@ def fetch_income_statement(self, symbol: str, quarterly: bool = True) -> Dict[st
 
         return {"status": "error", "message": "No income statement data returned"}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching income statement for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -410,7 +410,7 @@ def fetch_earnings_data(self, symbol: str) -> Dict[str, Any]:
 
         return {"status": "error", "message": "No earnings data returned"}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching earnings for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -452,6 +452,6 @@ def sync_alpha_vantage_provider_status() -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error checking Alpha Vantage status: {e}")
         return {"status": "error", "message": str(e)}

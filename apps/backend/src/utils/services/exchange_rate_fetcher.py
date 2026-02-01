@@ -99,7 +99,7 @@ class ExchangeRateFetcher:
             if rate is not None and use_cache:
                 self._set_cached_rate(base, quote, rate, date_str, FALLBACK_CACHE_TTL)
             return rate
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching exchange rate {base}/{quote}: {e}")
             return None
 
@@ -137,7 +137,7 @@ class ExchangeRateFetcher:
             if rates:
                 return rates.get(quote.upper())
             return None
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Fallback rate fetch failed: {e}")
             return None
 
@@ -165,7 +165,7 @@ class ExchangeRateFetcher:
             if rates and use_cache:
                 self._set_cached_rates(base, rates, date_str, FALLBACK_CACHE_TTL)
             return rates
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching all rates for {base}: {e}")
             return None
 
@@ -244,7 +244,7 @@ class ExchangeRateFetcher:
                 except Exception:
                     continue
             return rates if rates else None
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Fallback rates fetch failed: {e}")
             return None
 
@@ -300,7 +300,7 @@ class ExchangeRateFetcher:
                 self._set_cached_rates(base, rates, "latest", DEFAULT_CACHE_TTL)
                 return True
             return False
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error refreshing cache: {e}")
             return False
 

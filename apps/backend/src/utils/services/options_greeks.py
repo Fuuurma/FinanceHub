@@ -95,7 +95,7 @@ class OptionsGreeksCalculator:
                 'option_type': option_type
             }
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error calculating Greeks: {str(e)}")
             raise
     
@@ -126,7 +126,7 @@ class OptionsGreeksCalculator:
             
             return max(price, 0)  # Option price can't be negative
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error calculating option price: {str(e)}")
             return 0
     
@@ -161,11 +161,11 @@ class OptionsGreeksCalculator:
                     maxiter=100
                 )
                 return max(implied_vol, 0.001)  # Minimum volatility
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
                 logger.warning(f"Could not converge: {str(e)}")
                 return None
                 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error calculating implied volatility: {str(e)}")
             return None
     
@@ -245,7 +245,7 @@ class OptionsGreeksCalculator:
             
             return results
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error calculating options chain Greeks: {str(e)}")
             return []
     
@@ -279,7 +279,7 @@ class OptionsGreeksCalculator:
             
             return max(volatility, 0.001)  # Minimum volatility
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error estimating volatility: {str(e)}")
             return 0.2  # Default volatility
 

@@ -148,7 +148,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Company info test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_filings_summary(self, scraper, symbol):
@@ -173,7 +173,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Filings summary test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_annual_reports(self, scraper, symbol, count):
@@ -198,7 +198,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Annual reports test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_quarterly_reports(self, scraper, symbol, count):
@@ -225,7 +225,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Quarterly reports test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_current_reports(self, scraper, symbol, count):
@@ -248,7 +248,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Current reports test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_insider_transactions(self, scraper, symbol, count):
@@ -275,7 +275,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Insider transactions test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_recent_filings(self, scraper, symbol, count):
@@ -305,7 +305,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Recent filings test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_company_filings(self, scraper, symbol, count):
@@ -328,5 +328,5 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Company filings test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")

@@ -46,7 +46,7 @@ def check_database() -> Dict[str, Any]:
             "size": db_size,
             "response_time_ms": 0,
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Database health check failed: {e}")
         return {
             "status": "unhealthy",
@@ -85,7 +85,7 @@ def check_redis() -> Dict[str, Any]:
             "response_time_ms": round(response_time, 2),
             **redis_info,
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Redis health check failed: {e}")
         return {"status": "unhealthy", "error": str(e), "response_time_ms": 0}
 
@@ -120,7 +120,7 @@ def check_migrations() -> Dict[str, Any]:
             "all_applied": pending == 0,
             "critical_applied": critical_pending == 0,
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Migration check failed: {e}")
         return {
             "status": "error",
@@ -128,7 +128,7 @@ def check_migrations() -> Dict[str, Any]:
             "pending_migrations": -1,
             "critical_pending_migrations": -1,
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Migration check failed: {e}")
         return {"status": "error", "error": str(e), "pending_migrations": -1}
 
@@ -170,7 +170,7 @@ def get_deployment_info() -> Dict[str, Any]:
             "timestamp": datetime.now().isoformat(),
             "environment": os.getenv("ENVIRONMENT", "development"),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {
             "commit": "unknown",
             "uptime": "unknown",
@@ -211,7 +211,7 @@ def check_queues() -> Dict[str, Any]:
 
         return queue_info
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Queue health check failed: {e}")
         return {"broker": "error", "error": str(e), "queues": {}}
 
@@ -237,7 +237,7 @@ def queue_health(request) -> Dict[str, Any]:
             "response_time_ms": round(response_time, 2),
             **queue_status,
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Queue health check failed: {e}")
         return {"status": "unhealthy", "error": str(e), "response_time_ms": 0}
 
@@ -329,7 +329,7 @@ def readiness_check(request) -> Dict[str, Any]:
                 "redis": redis["status"] == "healthy",
             },
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Readiness check failed: {e}")
         return {
             "ready": False,

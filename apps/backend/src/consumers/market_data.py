@@ -80,7 +80,7 @@ class MarketDataConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError:
             logger.error("Invalid JSON received")
             await self._send_error('Invalid JSON')
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error receiving message: {e}")
             await self._send_error(str(e))
     
@@ -115,7 +115,7 @@ class MarketDataConsumer(AsyncWebsocketConsumer):
             
             await self.send(text_data=json.dumps(message))
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error sending stream data: {e}")
     
     async def _send_initial_price(self):
@@ -150,7 +150,7 @@ class MarketDataConsumer(AsyncWebsocketConsumer):
         
         try:
             await self.send(text_data=json.dumps(data))
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error sending market data: {e}")
 
 
@@ -205,7 +205,7 @@ class MultiSymbolConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError:
             logger.error("Invalid JSON received")
             await self._send_error('Invalid JSON')
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error receiving message: {e}")
             await self._send_error(str(e))
     
@@ -284,7 +284,7 @@ class MultiSymbolConsumer(AsyncWebsocketConsumer):
             
             await self.send(text_data=json.dumps(message))
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error sending stream data: {e}")
     
     async def _send_error(self, error_message):
@@ -331,7 +331,7 @@ class NewsStreamConsumer(AsyncWebsocketConsumer):
                     'timestamp': timezone.now().isoformat()
                 }))
                 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error receiving message: {e}")
     
     async def news_update(self, event):
@@ -339,5 +339,5 @@ class NewsStreamConsumer(AsyncWebsocketConsumer):
         
         try:
             await self.send(text_data=json.dumps(data))
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error sending news update: {e}")

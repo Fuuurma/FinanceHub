@@ -146,7 +146,7 @@ class ATLASNewsAdapter:
             logger.info(f"Fetched {len(articles)} articles from {source['name']}")
             return articles
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching {source['name']}: {e}")
             return []
 
@@ -269,7 +269,7 @@ class ATLASNewsAdapter:
             logger.info(f"Parsed {len(articles)} articles from {file_path}")
             return articles
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error parsing ATLAS JSON: {e}")
             return []
 
@@ -320,7 +320,7 @@ class ATLASNewsAdapter:
             logger.info(f"Parsed {len(normalized)} crypto articles from {file_path}")
             return normalized
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error parsing crypto news file: {e}")
             return []
 
@@ -355,7 +355,7 @@ class ATLASNewsAdapter:
 
             return []
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching CryptoCompare: {e}")
             return []
 
@@ -527,7 +527,7 @@ class ATLASNewsCrawler:
 
             return []
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error crawling CoinDesk: {e}")
             return []
 
@@ -568,7 +568,7 @@ class ATLASNewsCrawler:
 
             return []
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error crawling The Block: {e}")
             return []
 

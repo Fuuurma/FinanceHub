@@ -736,8 +736,8 @@ function AdvancedChart({ symbol, chartType = 'candlestick', timeframe = '1d', he
                 chartTitle: `${symbol} - ${CHART_TYPES.find((t)=>t.value === chartType)?.label} Chart`,
                 chartDescription: `Financial chart showing ${symbol} price movements on ${timeframe} timeframe`,
                 currentValue: latestData?.close,
-                change: priceChange,
-                changePercent: priceChangePercent,
+                change: priceChange !== null ? priceChange : undefined,
+                changePercent: priceChangePercent !== null ? priceChangePercent : undefined,
                 timeframe: timeframe,
                 data: currentData.map((d)=>[
                         {

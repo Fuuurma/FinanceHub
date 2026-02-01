@@ -19,7 +19,7 @@ def get_user(token: str):
                 return User.objects.get(id=payload['user_id'])
             except User.DoesNotExist:
                 return AnonymousUser()
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error authenticating WebSocket: {e}")
     return AnonymousUser()
 

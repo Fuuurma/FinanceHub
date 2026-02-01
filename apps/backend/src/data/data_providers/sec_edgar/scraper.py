@@ -36,7 +36,7 @@ class SECEDGARScraper(SECEDGARBase):
                     )
 
             return results[:10]
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching SEC filings for {ticker}: {str(e)}")
             return []
 
@@ -94,7 +94,7 @@ class SECEDGARScraper(SECEDGARBase):
             response = self.session.get(url)
             response.raise_for_status()
             return response.text
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error downloading filing: {str(e)}")
             return ""
 
@@ -131,7 +131,7 @@ class SECEDGARScraper(SECEDGARBase):
                 else "",
                 "number_of_filings": len(filings.get("form", [])),
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching company info for {ticker}: {str(e)}")
             return None
 
@@ -186,7 +186,7 @@ class SECEDGARScraper(SECEDGARBase):
                         break
 
             return results
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error searching filings for {ticker}: {str(e)}")
             return []
 
@@ -244,7 +244,7 @@ class SECEDGARScraper(SECEDGARBase):
                 summary[form] = summary.get(form, 0) + 1
 
             return summary
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error getting filings summary for {ticker}: {str(e)}")
             return {}
 
@@ -306,7 +306,7 @@ class SECEDGARScraper(SECEDGARBase):
                     continue
 
             return results
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error getting recent filings for {ticker}: {str(e)}")
             return []
 
@@ -338,6 +338,6 @@ class SECEDGARScraper(SECEDGARBase):
                 )
 
             return results
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error getting recent filings for {ticker}: {str(e)}")
             return []

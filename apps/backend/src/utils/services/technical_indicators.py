@@ -589,7 +589,7 @@ class TechnicalIndicators:
             try:
                 results[indicator_name] = await task
                 self.logger.debug(f"Calculated {indicator_name} indicator")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
                 self.logger.error(f"Failed to calculate {indicator_name}: {e}")
                 results[indicator_name] = []
 

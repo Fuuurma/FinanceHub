@@ -44,7 +44,7 @@ class YahooFinanceFetcher:
             await asyncio.sleep(0.5)  # Rate limiting
             return info
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching Yahoo Finance info for {ticker}: {str(e)}")
             return {}
 
@@ -71,7 +71,7 @@ class YahooFinanceFetcher:
             await asyncio.sleep(0.5)
             return hist
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching historical data for {ticker}: {str(e)}")
             return pd.DataFrame()
 
@@ -80,7 +80,7 @@ class YahooFinanceFetcher:
         try:
             ticker_obj = yf.Ticker(ticker)
             return ticker_obj.dividends
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching dividends for {ticker}: {str(e)}")
             return pd.Series()
 
@@ -89,7 +89,7 @@ class YahooFinanceFetcher:
         try:
             ticker_obj = yf.Ticker(ticker)
             return ticker_obj.splits
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching splits for {ticker}: {str(e)}")
             return pd.Series()
 
@@ -98,7 +98,7 @@ class YahooFinanceFetcher:
         try:
             ticker_obj = yf.Ticker(ticker)
             return ticker_obj.actions
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching actions for {ticker}: {str(e)}")
             return pd.DataFrame()
 
@@ -128,7 +128,7 @@ class YahooFinanceFetcher:
                 "quarterly_cash_flow": ticker_obj.quarterly_cashflow,
             }
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching financials for {ticker}: {str(e)}")
             return {}
 
@@ -157,7 +157,7 @@ class YahooFinanceFetcher:
 
             return {"calls": opts.calls, "puts": opts.puts}
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching options for {ticker}: {str(e)}")
             return {}
 
@@ -192,6 +192,6 @@ class YahooFinanceFetcher:
             await asyncio.sleep(1)  # Rate limiting
             return data
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error fetching multiple tickers: {str(e)}")
             return pd.DataFrame()

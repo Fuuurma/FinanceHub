@@ -156,7 +156,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ NewsAPI test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_finnhub(self, symbol, count, api_key):
@@ -197,7 +197,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Finnhub news test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_atlas_adapter(self, symbol, count):
@@ -226,7 +226,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ ATLAS adapter test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_normalization(self, symbol, count):
@@ -275,7 +275,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Normalization test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_sentiment_analysis(self):
@@ -298,7 +298,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Sentiment analysis test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_symbol_extraction(self):
@@ -324,7 +324,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Symbol extraction test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")
 
     def test_pickle_cache(self):
@@ -374,5 +374,5 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Pickle cache test passed\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(f"  ✗ Error: {e}\n")

@@ -61,7 +61,7 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
                 await self._handle_ping(content)
             else:
                 await self._send_error(f"Unknown message type: {message_type}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error handling message: {e}")
             await self._send_error(f"Internal error: {str(e)}")
 
@@ -159,7 +159,7 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
                 
                 await asyncio.sleep(interval)
                 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
                 logger.error(f"Error streaming {data_type} for {symbol}: {e}")
                 await asyncio.sleep(interval)
 
@@ -182,7 +182,7 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
                 }
                 
                 await self.send_json(message)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error sending initial data for {symbol}: {e}")
 
     async def _send_error(self, message: str):
@@ -217,7 +217,7 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
                 metrics.record_connection(self.user_id, self.channel_name, user_agent=self.scope.get('user_agent'))
             
             logger.info(f"WebSocket connected for user {self.user_id}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error registering connection: {e}")
 
     async def _unregister_connection(self):
@@ -225,7 +225,7 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
         try:
             connections_key = f"ws_connections:{self.user_id}"
             await self.cache_manager.delete('ws_connections', connections_key)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error unregistering connection: {e}")
 
     async def _update_connections_cache(self):
@@ -246,5 +246,5 @@ class RealTimeDataStreamConsumer(AsyncJsonWebsocketConsumer):
                     current,
                     ttl=3600
                 )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error updating connections cache: {e}")

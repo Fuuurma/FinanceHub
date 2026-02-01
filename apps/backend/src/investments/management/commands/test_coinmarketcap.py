@@ -141,7 +141,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No crypto info data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Crypto info test FAILED: {e}"))
 
     def _test_quote(self, symbol: str):
@@ -179,7 +179,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No quote data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Quote test FAILED: {e}"))
 
     def _test_listings(self):
@@ -218,7 +218,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No listings data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Listings test FAILED: {e}"))
 
     def _test_crypto_map(self):
@@ -251,7 +251,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No crypto map data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Crypto map test FAILED: {e}"))
 
     def _test_global_metrics(self):
@@ -294,7 +294,7 @@ class Command(BaseCommand):
                     self.style.WARNING("  No global metrics data returned")
                 )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Global metrics test FAILED: {e}"))
 
     def _test_trending(self):
@@ -330,7 +330,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No trending data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Trending test FAILED: {e}"))
 
     def _test_exchange_listings(self):
@@ -363,5 +363,5 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING("  No exchange data returned"))
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.stdout.write(self.style.ERROR(f"  Exchange listings test FAILED: {e}"))

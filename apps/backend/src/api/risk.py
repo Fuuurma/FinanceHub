@@ -141,7 +141,7 @@ def calculate_var(request, portfolio_id: int, data: VaRCalculateSchema):
         )
 
         return result
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -174,7 +174,7 @@ def historical_stress_test(
         return result
     except ValueError as e:
         return {"error": str(e)}, 400
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -205,7 +205,7 @@ def custom_stress_test(request, portfolio_id: int, data: StressTestSchema):
         )
 
         return result
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -237,7 +237,7 @@ def _get_portfolio_positions(request, portfolio_id: int) -> dict:
             positions_data.append(position_dict)
 
         return {"id": portfolio.id, "name": portfolio.name, "positions": positions_data}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}
 
 
@@ -310,7 +310,7 @@ def calculate_position_size(request, data: PositionSizeInput):
             "max_loss": result.get("max_loss", 0),
             "stop_loss_distance": result.get("stop_loss_distance", 0),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -335,7 +335,7 @@ def calculate_stop_loss_price(request, data: StopLossInput):
             "stop_loss_pct": result.get("stop_loss_pct", 0),
             "position_type": result.get("position_type", "LONG"),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -362,5 +362,5 @@ def calculate_risk_reward(request, data: RiskRewardInput):
             "risk_per_share": result.get("risk_per_share", 0),
             "reward_per_share": result.get("reward_per_share", 0),
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500

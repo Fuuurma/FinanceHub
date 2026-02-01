@@ -79,7 +79,7 @@ def universal_search(
             or 0,
         )
         return result
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -130,7 +130,7 @@ def advanced_search(request, data: AdvancedSearchSchema):
             or 0,
         )
         return result
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -155,7 +155,7 @@ def get_filter_options(request):
 
     try:
         return search_service.get_filter_options()
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -207,7 +207,7 @@ def save_search(request, data: SaveSearchSchema):
             description=data.description,
         )
         return result
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -242,7 +242,7 @@ def create_comparison(request, data: ComparisonSchema):
             metrics=data.metrics,
         )
         return result
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 
@@ -257,7 +257,7 @@ def get_comparison(request, comparison_id: int):
         if "error" in result:
             return result, 404
         return result
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {"error": str(e)}, 500
 
 

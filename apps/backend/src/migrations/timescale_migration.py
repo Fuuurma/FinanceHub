@@ -60,7 +60,7 @@ class TimescaleMigration:
                 cur.execute("SELECT version();")
                 version = cur.fetchone()[0]
                 logger.info(f"PostgreSQL version: {version}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             missing.append(f"Database connection failed: {e}")
 
         return len(missing) == 0, missing
@@ -74,7 +74,7 @@ class TimescaleMigration:
                 "Create TimescaleDB extension", "Extension created or already exists"
             )
             return True
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.log_migration("Create TimescaleDB extension", str(e), success=False)
             return False
 
@@ -102,7 +102,7 @@ class TimescaleMigration:
                         "row_count": result[1],
                         "size_bytes": result[2],
                     }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Failed to get table info for {table_name}: {e}")
 
         return {}
@@ -176,7 +176,7 @@ class TimescaleMigration:
         except ImportError as e:
             self.log_migration("Import error", str(e), success=False)
             return False
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.log_migration("Migration error", str(e), success=False)
             return False
 
@@ -217,7 +217,7 @@ class TimescaleMigration:
                 self.log_migration("Create performance metrics hypertable", "Success")
                 return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.log_migration(
                 "Create performance metrics hypertable", str(e), success=False
             )
@@ -262,7 +262,7 @@ class TimescaleMigration:
                 self.log_migration("Create API usage hypertable", "Success")
                 return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.log_migration("Create API usage hypertable", str(e), success=False)
             return False
 
@@ -303,7 +303,7 @@ class TimescaleMigration:
                     for row in cur.fetchall()
                 ]
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             validation["errors"].append(str(e))
 
         return validation
@@ -386,7 +386,7 @@ class TimescaleMigration:
                 cur.execute("SELECT drop_hypertable(%s);", (table_name,))
             self.log_migration("Rollback", f"Dropped hypertable {table_name}")
             return True
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.log_migration("Rollback failed", str(e), success=False)
             return False
 

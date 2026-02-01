@@ -185,7 +185,7 @@ class PatternRecognition:
                     )
                     patterns.append(pattern)
             self.logger.info(f"Detected {len(patterns)} Head and Shoulders patterns")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.logger.error(f"Error detecting Head and Shoulders: {e}")
         return patterns
 
@@ -246,7 +246,7 @@ class PatternRecognition:
                     )
                     patterns.append(pattern)
             self.logger.info(f"Detected {len(patterns)} Double Top patterns")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.logger.error(f"Error detecting Double Top: {e}")
         return patterns
 
@@ -307,7 +307,7 @@ class PatternRecognition:
                     )
                     patterns.append(pattern)
             self.logger.info(f"Detected {len(patterns)} Double Bottom patterns")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.logger.error(f"Error detecting Double Bottom: {e}")
         return patterns
 
@@ -373,7 +373,7 @@ class PatternRecognition:
                     )
                     patterns.append(pattern)
             self.logger.info(f"Detected {len(patterns)} Triangle patterns")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.logger.error(f"Error detecting Triangle: {e}")
         return patterns
 
@@ -414,7 +414,7 @@ class PatternRecognition:
                         resistance_levels.append(level)
             support_levels.sort(key=lambda x: x["strength"], reverse=True)
             resistance_levels.sort(key=lambda x: x["strength"], reverse=True)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             self.logger.error(f"Error detecting Support/Resistance: {e}")
         return {"support": support_levels[:10], "resistance": resistance_levels[:10]}
 
