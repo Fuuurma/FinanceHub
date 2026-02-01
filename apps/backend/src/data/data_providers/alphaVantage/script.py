@@ -65,7 +65,7 @@ class AlphaVantageJobs(BaseDataJob):
                     self.stats["success"] += 1
                     logger.info(f"✓ Completed initial setup for {symbol}")
 
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                     self.stats["errors"] += 1
                     logger.error(f"Error in initial setup for {symbol}: {str(e)}")
 
@@ -98,7 +98,7 @@ class AlphaVantageJobs(BaseDataJob):
 
                     self.stats["success"] += 1
 
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                     self.stats["errors"] += 1
                     logger.error(
                         f"Error fetching historical for {asset.ticker}: {str(e)}"
@@ -161,7 +161,7 @@ class AlphaVantageJobs(BaseDataJob):
                         f"✓ Updated price for {asset.ticker}: ${data.get('05. price', 0)}"
                     )
 
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                     self.stats["errors"] += 1
                     logger.error(f"Error updating price for {asset.ticker}: {str(e)}")
 
@@ -196,7 +196,7 @@ class AlphaVantageJobs(BaseDataJob):
                     else:
                         self.stats["skipped"] += 1
 
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                     self.stats["errors"] += 1
                     logger.error(
                         f"Error updating general data for {asset.ticker}: {str(e)}"
@@ -224,7 +224,7 @@ class AlphaVantageJobs(BaseDataJob):
                     self.stats["success"] += 1
                     logger.info(f"✓ Updated fundamentals for {asset.ticker}")
 
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                     self.stats["errors"] += 1
                     logger.error(
                         f"Error updating fundamentals for {asset.ticker}: {str(e)}"
@@ -379,5 +379,5 @@ class AlphaVantageJobs(BaseDataJob):
             asset.save(update_fields=["metadata"])
             logger.info(f"Updated fundamental data for {asset.ticker}")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error fetching fundamentals for {asset.ticker}: {str(e)}")

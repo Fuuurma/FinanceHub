@@ -155,7 +155,7 @@ class PriceDataProcessor(DataProcessor):
 
             return normalized
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error normalizing price data: {str(e)}")
             return None
 
@@ -268,7 +268,7 @@ class TechnicalIndicatorsCalculator:
 
             return indicators
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error calculating technical indicators: {str(e)}")
             return {}
 
@@ -582,7 +582,7 @@ class DataPipeline:
 
             processed.is_valid = True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             processed.is_valid = False
             processed.validation_errors.append(f"Processing error: {str(e)}")
             logger.error(f"Error processing data for {processed.symbol}: {str(e)}")
@@ -615,7 +615,7 @@ class DataPipeline:
                 "processed_at": datetime.now().isoformat(),
             }
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error processing with indicators: {str(e)}")
             return {"error": str(e)}
 
@@ -685,7 +685,7 @@ class DataPipeline:
                 "total": len(valid_data),
             }
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Batch save failed: {str(e)}")
             raise
 
@@ -726,7 +726,7 @@ class DataPipeline:
             logger.info(f"Saved processed data for {processed_data.symbol}")
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error saving to database: {str(e)}")
             return False
 

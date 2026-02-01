@@ -121,7 +121,7 @@ class PriceStreamConsumer(AsyncJsonWebsocketConsumer):
                 f"Code: {close_code}, Subscriptions: {len(self.subscriptions)}"
             )
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error during disconnect: {str(e)}")
     
     async def receive_json(self, content):
@@ -151,7 +151,7 @@ class PriceStreamConsumer(AsyncJsonWebsocketConsumer):
             # Update last activity
             self.last_ping = datetime.now()
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error handling message: {str(e)}")
             await self.send_json({
                 'type': 'error',
@@ -342,7 +342,7 @@ class PriceStreamConsumer(AsyncJsonWebsocketConsumer):
                     await self.close(code=1000, reason='Connection timeout')
                     break
             
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error in keep_alive: {str(e)}")
                 break
     
@@ -357,7 +357,7 @@ class PriceStreamConsumer(AsyncJsonWebsocketConsumer):
             cache_key = f"user_subscriptions_{self.user.id}"
             cache.set(cache_key, list(subscriptions), timeout=3600)
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error storing subscriptions: {str(e)}")
 
 

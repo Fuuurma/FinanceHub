@@ -160,7 +160,7 @@ async def get_realtime_price(request, symbol: str, source: str = 'market'):
         raise
     except ExternalAPIException:
         raise
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching realtime price for {symbol}: {e}")
         raise ServiceException(f"Error fetching realtime price for {symbol}")
 
@@ -227,7 +227,7 @@ async def get_batch_prices(request, data: BatchPriceUpdateRequest):
             source='market'
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching batch prices: {e}")
         raise ServiceException("Error fetching batch prices")
 
@@ -285,7 +285,7 @@ async def get_recent_trades(request, symbol: str, limit: int = 20):
             source='market_data'
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching recent trades for {symbol}: {e}")
         raise ServiceException(f"Error fetching recent trades for {symbol}")
 
@@ -341,7 +341,7 @@ async def get_orderbook(
             source='market_data'
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching orderbook for {symbol}: {e}")
         raise ServiceException(f"Error fetching orderbook for {symbol}")
 
@@ -365,6 +365,6 @@ async def get_websocket_connection_info(request, user_id: Optional[str] = None):
             ping_ms=50
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error getting WebSocket connection info: {e}")
         raise ServiceException("Error getting WebSocket connection info")

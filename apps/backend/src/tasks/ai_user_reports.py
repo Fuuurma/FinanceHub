@@ -62,7 +62,7 @@ def generate_user_portfolio_reports(self):
             
             results['users_processed'] += 1
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to generate reports for user {user.id}: {e}")
             results['errors'].append(f"User {user.id}: {str(e)}")
     
@@ -149,7 +149,7 @@ def generate_single_portfolio_report(self, user_id: str, portfolio_id: str) -> D
             'content_length': len(content),
         }
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to generate portfolio report: {e}")
         raise self.retry(exc=e)
 
@@ -204,7 +204,7 @@ def generate_user_holdings_analysis(self, user_id: str, portfolio_id: str) -> Di
         
         return {'report_id': str(report.id)}
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to generate holdings analysis: {e}")
         return {'error': str(e)}
 
@@ -230,7 +230,7 @@ def regenerate_stale_reports(self):
                     portfolio_id=str(report.portfolio_id)
                 )
                 regenerated += 1
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             errors.append(f"Report {report.id}: {str(e)}")
     
     return {'regenerated': regenerated, 'errors': errors}

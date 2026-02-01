@@ -88,7 +88,7 @@ class RateLimitMonitor:
                             "endpoint": data.get("endpoint"),
                         }
                     )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error fetching violations: {e}")
 
         return sorted(violations, key=lambda x: x["count"], reverse=True)
@@ -111,7 +111,7 @@ class RateLimitMonitor:
                 "unique_abusers": len(keys),
                 "active_bans": active_bans,
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error getting stats: {e}")
             return {"error": str(e)}
 
@@ -132,7 +132,7 @@ class RateLimitMonitor:
 
             logger.info(f"Cleaned {cleaned} old violation records")
             return cleaned
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error cleaning violations: {e}")
             return 0
 

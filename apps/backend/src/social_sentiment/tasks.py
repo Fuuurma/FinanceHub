@@ -70,12 +70,12 @@ def update_sentiment_data(self):
                 updated_count += 1
                 logger.info(f"Updated sentiment for {symbol}")
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error updating sentiment for {asset.symbol}: {e}")
 
         return f"Updated sentiment for {updated_count} assets"
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Sentiment update task failed: {e}")
         raise self.retry(exc=e)
 
@@ -111,7 +111,7 @@ def calculate_trending_assets(self):
 
         return f"Calculated {len(trending_data)} trending assets"
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Trending calculation failed: {e}")
         raise self.retry(exc=e)
 
@@ -172,7 +172,7 @@ def fetch_twitter_sentiment(symbol: str):
 
         return f"Fetched {len(tweets)} tweets for {symbol}"
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Twitter fetch failed for {symbol}: {e}")
         return f"Error: {e}"
 
@@ -237,7 +237,7 @@ def fetch_reddit_sentiment(symbol: str):
 
         return f"Fetched {len(posts)} posts for {symbol}"
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Reddit fetch failed for {symbol}: {e}")
         return f"Error: {e}"
 

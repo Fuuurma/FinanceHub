@@ -187,7 +187,7 @@ def fetch_technical_indicators(
         logger.info(f"Completed fetching {indicator} for {symbol}")
         return {"status": "success", "symbol": symbol, "indicator": indicator}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching technical indicators for {symbol}: {e}")
         return {"status": "error", "symbol": symbol, "error": str(e)}
 
@@ -290,14 +290,14 @@ def fetch_news_with_sentiment(symbols: list = None, category: str = "general"):
                     articles_fetched += 1
                     logger.info(f"Saved news: {headline[:50]}...")
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error fetching news for {symbol}: {e}")
                 continue
 
         logger.info(f"Completed fetching news. Total articles: {articles_fetched}")
         return {"status": "success", "articles_fetched": articles_fetched}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching news: {e}")
         return {"status": "error", "error": str(e)}
 
@@ -357,7 +357,7 @@ def fetch_pattern_recognition(symbol: str):
 
         return {"status": "success", "symbol": symbol}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching pattern recognition for {symbol}: {e}")
         return {"status": "error", "symbol": symbol, "error": str(e)}
 

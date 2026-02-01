@@ -146,7 +146,7 @@ async def get_market_overview():
             'sources': ['market_data', 'fundamentals']
         }
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching market overview: {e}")
         raise ExternalAPIException("market_overview", str(e))
 
@@ -208,7 +208,7 @@ async def get_market_indices():
             'source': 'market_data'
         }
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching market indices: {e}")
         raise ExternalAPIException("market_indices", str(e))
 
@@ -262,7 +262,7 @@ async def get_market_movers(
             fetched_at=timezone.now().isoformat()
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching market movers: {e}")
         raise ExternalAPIException("market_movers", str(e))
 
@@ -298,6 +298,6 @@ async def get_trending_assets(
             'source': 'market_data'
         }
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching trending assets: {e}")
         raise ExternalAPIException("trending_assets", str(e))

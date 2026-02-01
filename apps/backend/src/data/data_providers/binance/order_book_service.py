@@ -272,7 +272,7 @@ class BinanceOrderBookService:
             
             return order_book
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error initializing order book for {symbol}: {str(e)}")
             raise
     
@@ -288,7 +288,7 @@ class BinanceOrderBookService:
             
             logger.info(f"Subscribed to depth updates for {symbol}")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error subscribing to depth updates for {symbol}: {str(e)}")
     
     async def _subscribe_depth_diff_updates(self, symbol: str, update_speed: str = '100ms'):
@@ -309,7 +309,7 @@ class BinanceOrderBookService:
             
             logger.info(f"Subscribed to depth diff updates for {symbol}")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error subscribing to depth diff for {symbol}: {str(e)}")
     
     async def _process_depth_update(self, symbol: str, data: dict):
@@ -351,7 +351,7 @@ class BinanceOrderBookService:
             
             logger.debug(f"Updated order book for {symbol}: {len(bids)} bids, {len(asks)} asks")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error processing depth update for {symbol}: {str(e)}")
     
     async def _process_depth_diff(self, symbol: str, data: dict):
@@ -391,7 +391,7 @@ class BinanceOrderBookService:
             # Update history
             self._update_history(symbol, order_book)
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error processing depth diff for {symbol}: {str(e)}")
     
     def _update_history(self, symbol: str, order_book: OrderBookDepth):

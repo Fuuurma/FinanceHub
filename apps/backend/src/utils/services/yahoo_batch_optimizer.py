@@ -94,7 +94,7 @@ class YahooFinanceBatchOptimizer:
             
             return new_data
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error fetching multiple quotes: {str(e)}")
             # Record failure for rate limiter
             if isinstance(limiter, type(self.rate_limiter)):
@@ -135,7 +135,7 @@ class YahooFinanceBatchOptimizer:
             
             return results
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error downloading quotes: {str(e)}")
             return {s: {} for s in symbols}
     
@@ -180,7 +180,7 @@ class YahooFinanceBatchOptimizer:
             
             return results
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error processing quotes: {str(e)}")
             return raw_data
     
@@ -238,7 +238,7 @@ class YahooFinanceBatchOptimizer:
             
             return new_data
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error fetching historical data: {str(e)}")
             # Record failure
             if isinstance(limiter, type(self.rate_limiter)):
@@ -274,7 +274,7 @@ class YahooFinanceBatchOptimizer:
             
             return results
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error downloading historical data: {str(e)}")
             return {s: {} for s in symbols}
     

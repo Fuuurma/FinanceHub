@@ -102,7 +102,7 @@ class NewsPickleCache:
             logger.info(f"Saved {len(articles)} articles to {filepath}")
             return filepath
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error saving cache: {e}")
             raise
 
@@ -176,7 +176,7 @@ class NewsPickleCache:
             logger.info(f"Loaded {len(articles)} articles from {filepath}")
             return articles
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error loading cache: {e}")
             return None
 
@@ -273,7 +273,7 @@ class NewsPickleCache:
                     os.remove(filepath)
                     removed += 1
                     logger.info(f"Removed expired cache: {filepath}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error removing {filepath}: {e}")
 
         logger.info(f"Cleaned up {removed} expired cache files")

@@ -538,7 +538,7 @@ class IEXCloudScraper(BaseAPIFetcher):
 
                 if financials:
                     logger.info(f"Fetched financials for {symbol}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error fetching financials for {symbol}: {str(e)}")
 
             # Get earnings data
@@ -547,7 +547,7 @@ class IEXCloudScraper(BaseAPIFetcher):
 
                 if earnings:
                     logger.info(f"Fetched earnings for {symbol}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error fetching earnings for {symbol}: {str(e)}")
 
             # Get dividends
@@ -556,7 +556,7 @@ class IEXCloudScraper(BaseAPIFetcher):
 
                 if dividends:
                     logger.info(f"Fetched dividends for {symbol}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error fetching dividends for {symbol}: {str(e)}")
 
             # Get historical data
@@ -588,14 +588,14 @@ class IEXCloudScraper(BaseAPIFetcher):
                                 volume=float(bar.get("volume", 0)),
                             )
                             count += 1
-                        except Exception as e:
+                        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                             logger.debug(
                                 f"Error saving price point for {symbol}: {str(e)}"
                             )
                             continue
 
                     logger.info(f"Saved {count} historical prices for {symbol}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error fetching historical data for {symbol}: {str(e)}")
 
             logger.info(
@@ -603,7 +603,7 @@ class IEXCloudScraper(BaseAPIFetcher):
             )
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error fetching/saving stock {symbol}: {str(e)}")
             return False
 

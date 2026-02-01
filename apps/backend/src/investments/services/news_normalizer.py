@@ -195,7 +195,7 @@ class NewsNormalizer:
                 raw_data=article,
                 symbols=[],  # Will be extracted separately
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error normalizing NewsAPI article: {e}")
             return None
 
@@ -222,7 +222,7 @@ class NewsNormalizer:
                 raw_data=article,
                 symbols=article.get("relatedSymbols", []),
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error normalizing Finnhub article: {e}")
             return None
 
@@ -249,7 +249,7 @@ class NewsNormalizer:
                 raw_data=article,
                 symbols=[],
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error normalizing ATLAS article: {e}")
             return None
 
@@ -312,7 +312,7 @@ class NewsNormalizer:
                 raw_data=article,
                 symbols=[],
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error normalizing generic article: {e}")
             return None
 
@@ -402,7 +402,7 @@ class BatchNormalizer:
                 normalized = self.process_source(articles, source_type, category)
                 results[source_name] = normalized
                 logger.info(f"Processed {len(normalized)} articles from {source_name}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error processing {source_name}: {e}")
                 results[source_name] = []
 

@@ -116,7 +116,7 @@ class Command(BaseCommand):
                 )
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             self.stdout.write(self.style.ERROR(f"Error fetching prices: {e}"))
 
     def _test_trending_fetch(self):
@@ -137,7 +137,7 @@ class Command(BaseCommand):
                 )
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             self.stdout.write(self.style.ERROR(f"Error starting trending fetch: {e}"))
 
     def _test_market_chart(self, coins: List[str]):
@@ -171,7 +171,7 @@ class Command(BaseCommand):
                 self.style.SUCCESS(f"\nSuccessfully fetched market charts")
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             self.stdout.write(self.style.ERROR(f"Error fetching market charts: {e}"))
 
     def _test_cache_operations(self, coins: List[str]):
@@ -212,5 +212,5 @@ class Command(BaseCommand):
                         self.style.ERROR(f"  Cache test FAILED - value not found")
                     )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             self.stdout.write(self.style.ERROR(f"Error testing cache: {e}"))

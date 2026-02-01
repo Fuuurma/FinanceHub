@@ -132,7 +132,7 @@ def arima_forecast(request, data: ARIMARequest):
             bic=float(result.bic),
             compute_time_ms=result.compute_time_ms
         )
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         raise ValueError(f"ARIMA forecasting failed: {str(e)}")
 
 
@@ -173,7 +173,7 @@ def garch_volatility_forecast(request, data: GARCHRequest):
             total_volatility=float(result.total_volatility),
             compute_time_ms=result.compute_time_ms
         )
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         raise ValueError(f"GARCH forecasting failed: {str(e)}")
 
 
@@ -214,7 +214,7 @@ def run_kalman_filter(request, data: KalmanFilterRequest):
             likelihood=float(result.likelihood),
             compute_time_ms=result.compute_time_ms
         )
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         raise ValueError(f"Kalman filter failed: {str(e)}")
 
 
@@ -243,7 +243,7 @@ def calculate_half_life(request, data: HalfLifeRequest):
             mean_reversion_strength=result.mean_reversion_strength,
             compute_time_ms=result.compute_time_ms
         )
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         raise ValueError(f"Half-life calculation failed: {str(e)}")
 
 
@@ -270,7 +270,7 @@ def calculate_hurst_exponent(request, data: HurstExponentRequest):
             interpretation=result.interpretation,
             compute_time_ms=result.compute_time_ms
         )
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         raise ValueError(f"Hurst exponent estimation failed: {str(e)}")
 
 
@@ -337,7 +337,7 @@ def detect_volatility_regimes(
             },
             "overall_volatility": round(vol, 2)
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         raise ValueError(f"Volatility regime detection failed: {str(e)}")
 
 

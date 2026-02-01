@@ -124,7 +124,7 @@ class PriceBroadcaster:
                 # Wait before next update
                 await asyncio.sleep(self.update_intervals["crypto"])
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error updating crypto prices: {str(e)}")
                 await asyncio.sleep(10)
 
@@ -177,7 +177,7 @@ class PriceBroadcaster:
                 # Wait before next update
                 await asyncio.sleep(self.update_intervals["stock"])
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error updating stock prices: {str(e)}")
                 await asyncio.sleep(10)
 
@@ -207,7 +207,7 @@ class PriceBroadcaster:
 
             except ChannelFull:
                 logger.warning(f"Channel full for {symbol}, skipping update")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error broadcasting to {symbol}: {str(e)}")
 
     def subscribe_symbol(self, symbol: str):

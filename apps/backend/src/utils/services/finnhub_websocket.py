@@ -49,7 +49,7 @@ class FinnhubWebSocketClient:
             asyncio.create_task(self._listen_messages())
             logger.info("Finnhub WebSocket connected successfully")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to connect to Finnhub WebSocket: {e}")
             raise
 
@@ -117,13 +117,13 @@ class FinnhubWebSocketClient:
                     await self._handle_message(data)
                 except json.JSONDecodeError:
                     logger.warning(f"Failed to decode message: {message}")
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                     logger.error(f"Error handling message: {e}")
 
         except websockets.exceptions.ConnectionClosed:
             logger.warning("WebSocket connection closed")
             self.is_connected = False
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error in message listener: {e}")
             self.is_connected = False
 
@@ -185,7 +185,7 @@ class FinnhubWebSocketClient:
                 for callback in self.listeners["quote"]:
                     await callback(data)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error handling quote update: {e}")
 
     async def _handle_news_update(self, data: dict):
@@ -236,7 +236,7 @@ class FinnhubWebSocketClient:
                 for callback in self.listeners["news"]:
                     await callback(data)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error handling news update: {e}")
 
     async def get_connection_status(self) -> dict:

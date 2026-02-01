@@ -57,7 +57,7 @@ def get_dashboard_widgets(request):
             return {'widgets': widgets}
         else:
             return {'widgets': []}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {'error': str(e)}, 500
 
 
@@ -87,7 +87,7 @@ def save_dashboard_layout(request, data: SaveLayoutRequest):
                 )
             
             return {'status': 'saved', 'dashboard': data.dashboard}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {'error': str(e)}, 500
 
 
@@ -107,7 +107,7 @@ def create_dashboard(request, data: CreateDashboardRequest):
         )
         
         return {'status': 'created', 'name': data.name}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {'error': str(e)}, 500
 
 
@@ -124,7 +124,7 @@ def delete_dashboard(request, dashboard_name: str):
             return {'error': 'Dashboard not found'}, 404
         
         return {'status': 'deleted', 'name': dashboard_name}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {'error': str(e)}, 500
 
 
@@ -137,5 +137,5 @@ def list_dashboards(request):
         ).values_list('name', flat=True)
         
         return {'dashboards': list(layouts)}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {'error': str(e)}, 500

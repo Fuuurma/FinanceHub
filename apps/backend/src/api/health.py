@@ -32,7 +32,7 @@ def get_websocket_health(request) -> Dict[str, Any]:
             'timestamp': None,
             'error': 'Metrics service unavailable'
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {
             'active_connections': 0,
             'total_subscriptions': 0,
@@ -70,7 +70,7 @@ def get_all_websocket_connections(request) -> Dict[str, Any]:
             'timestamp': None,
             'error': 'Metrics service unavailable'
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {
             'connections': [],
             'total': 0,
@@ -105,7 +105,7 @@ def get_user_websocket_connections(request, user_id: str) -> Dict[str, Any]:
             'timestamp': None,
             'error': 'Metrics service unavailable'
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {
             'user_id': user_id,
             'connections': [],
@@ -145,7 +145,7 @@ def cleanup_old_websocket_records(request, hours: int = 24) -> Dict[str, Any]:
             'timestamp': None,
             'status': 'error'
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         return {
             'message': f'Cleanup failed: {str(e)}',
             'hours_ago': hours,

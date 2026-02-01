@@ -224,7 +224,7 @@ class CallPlanner:
                 try:
                     result = await request.callback(**request.params)
                     logger.debug(f"Request completed: {request.endpoint}")
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                     logger.error(f"Callback failed for {request.endpoint}: {str(e)}")
                     if request.retry_count < request.max_retries:
                         request.retry_count += 1
@@ -239,7 +239,7 @@ class CallPlanner:
             
             return True
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error executing request {request.request_id}: {str(e)}")
             if request.retry_count < request.max_retries:
                 request.retry_count += 1
@@ -272,7 +272,7 @@ class CallPlanner:
             except asyncio.CancelledError:
                 logger.info(f"Worker {worker_id} cancelled")
                 break
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Worker {worker_id} error: {str(e)}")
                 await asyncio.sleep(1)
         

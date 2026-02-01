@@ -86,7 +86,7 @@ class AINewsService:
                 temperature=0.5,
             )
             return response.choices[0].message.content.strip()
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to summarize article: {e}")
             return self._mock_summarize(title, content)
 
@@ -130,7 +130,7 @@ class AINewsService:
                 "label": result.get("label", "NEUTRAL"),
                 "key_points": result.get("key_points", []),
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to analyze sentiment: {e}")
             return self._mock_sentiment(title, content)
 
@@ -165,7 +165,7 @@ class AINewsService:
             )
             result = json.loads(response.choices[0].message.content)
             return result.get("symbols", [])
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to extract asset mentions: {e}")
             return self._mock_extract_assets(title, content)
 
@@ -213,7 +213,7 @@ class AINewsService:
             )
             result = json.loads(response.choices[0].message.content)
             return min(100, max(0, float(result.get("impact_score", 50))))
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to calculate impact score: {e}")
             return self._mock_impact_score(
                 title, content, sentiment_score, asset_mentions
@@ -482,7 +482,7 @@ class NewsAggregatorService:
             try:
                 processed = await self.process_article(**article)
                 results.append(processed)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Failed to process article: {e}")
                 results.append(
                     {"title": article.get("title", "Unknown"), "error": str(e)}
