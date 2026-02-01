@@ -1,12 +1,14 @@
 from decimal import Decimal, InvalidOperation
-from typing import Optional
+from typing import Optional, List
 from ninja import Router, Schema
 from ninja_jwt.authentication import JWTAuth
 from trading.services.paper_trading_service import PaperTradingService
+from trading.services.paper_trading_engine import PaperTradingEngine
 
 router = Router(tags=["Paper Trading"], auth=JWTAuth())
 
 service = PaperTradingService()
+engine = PaperTradingEngine()
 
 
 class AccountOut(Schema):
@@ -181,4 +183,146 @@ def get_performance(request):
         "total_trades": summary["total_trades"],
         "winning_trades": summary["winning_trades"],
         "losing_trades": summary["losing_trades"],
+    }
+
+
+class PositionOut(Schema):
+    id: str
+    symbol: str
+    name: str
+    quantity: float
+    avg_price: float
+    current_price: float
+    market_value: float
+    pl: float
+    pl_percent: float
+
+
+class OrderIn(Schema):
+    asset: str
+    order_type: str
+    side: str
+    quantity: Decimal
+    price: Optional[Decimal] = None
+    stop_price: Optional[Decimal] = None
+
+
+class OrderOut(Schema):
+    id: str
+    symbol: str
+    order_type: str
+    side: str
+    quantity: float
+    price: Optional[float] = None
+    stop_price: Optional[float] = None
+    filled_price: Optional[float] = None
+    status: str
+    created_at: str
+    filled_at: Optional[str] = None
+
+
+class CancelOut(Schema):
+    success: bool
+    message: str
+
+
+class LimitOrderIn(Schema):
+    asset: str
+    side: str
+    quantity: Decimal
+    price: Decimal
+
+
+@router.get("/positions", response=List[PositionOut])
+def get_positions(request):
+    portfolio = engine.get_or_create_portfolio(request.user)
+    positions = engine.get_positions(portfolio)
+    return positions
+
+
+@router.get("/orders", response=List[OrderOut])
+def get_orders(request, limit: int = 100):
+    portfolio = engine.get_or_create_portfolio(request.user)
+    orders = engine.get_orders(portfolio, limit)
+    return orders
+
+
+@router.post("/orders/market", response=BuyOut)
+def create_market_order(request, data: OrderIn):
+    if data.quantity <= 0:
+        return BuyOut(success=False, error="Quantity must be positive")
+
+    portfolio = engine.get_or_create_portfolio(request.user)
+    order = engine.execute_market_order(
+        portfolio=portfolio,
+        asset_symbol=data.asset,
+        side=data.side,
+        quantity=data.quantity,
+    )
+
+    if order.status == "rejected":
+        return BuyOut(success=False, error=order.rejection_reason)
+
+    return BuyOut(
+        success=True,
+        trade_id=str(order.id),
+        asset=order.asset.symbol,
+        quantity=float(order.quantity),
+        price=float(order.filled_price) if order.filled_price else None,
+        total_value=float(order.total_value) if order.filled_price else None,
+        remaining_cash=float(portfolio.cash_balance),
+    )
+
+
+@router.post("/orders/limit", response=SellOut)
+def create_limit_order(request, data: LimitOrderIn):
+    if data.quantity <= 0:
+        return SellOut(success=False, error="Quantity must be positive")
+
+    portfolio = engine.get_or_create_portfolio(request.user)
+    order = engine.execute_limit_order(
+        portfolio=portfolio,
+        asset_symbol=data.asset,
+        side=data.side,
+        quantity=data.quantity,
+        limit_price=data.price,
+    )
+
+    if order.status == "rejected":
+        return SellOut(success=False, error=order.rejection_reason)
+
+    return SellOut(
+        success=True,
+        trade_id=str(order.id),
+        asset=order.asset.symbol,
+        quantity=float(order.quantity),
+        price=float(order.price),
+        total_value=None,
+        profit_loss=None,
+        remaining_cash=float(portfolio.cash_balance),
+    )
+
+
+@router.post("/orders/{order_id}/cancel", response=CancelOut)
+def cancel_order(request, order_id: str):
+    try:
+        success = engine.cancel_order(int(order_id), request.user.id)
+        if success:
+            return CancelOut(success=True, message="Order cancelled successfully")
+        else:
+            return CancelOut(
+                success=False, message="Order not found or cannot be cancelled"
+            )
+    except (ValueError, TypeError):
+        return CancelOut(success=False, message="Invalid order ID")
+
+
+@router.post("/portfolio/reset", response=ResetOut)
+def reset_portfolio(request):
+    portfolio = engine.get_or_create_portfolio(request.user)
+    engine.reset_portfolio(portfolio)
+    return {
+        "success": True,
+        "message": "Portfolio reset successfully",
+        "new_balance": float(portfolio.cash_balance),
     }

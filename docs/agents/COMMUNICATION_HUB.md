@@ -39,8 +39,8 @@
 | **GRACE** | ⚠️ Overdue | QA planning | Yesterday | Report overdue | 🔴 URGENT - Respond now |
 | **HADI** | 🟢 Active | Accessibility | Today | None | ⏳ Read Phase 1 tasks |
 | **Linus** | 🔴 Silent | (unknown) | Jan 29 | 🚨 72h silent | 🔴 URGENT - Respond now |
-| **Guido** | 🔴 Silent | (unknown) | Jan 29 | 🚨 72h silent | 🔴 URGENT - Respond now |
-| **Turing** | 🔴 Silent | (unknown) | Jan 29 | 🚨 72h silent | 🔴 URGENT - Respond now |
+| **Guido** | 🟢 Active | C-037 Social Sentiment Backend | Now | None | - |
+| **Turing** | 🟢 Active | C-036 Paper Trading Frontend | Now | None | - |
 
 **Legend:** 🟢 Active | 🟡 Waiting | ⚠️ Overdue | 🔴 Silent/Critical
 
@@ -177,6 +177,45 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 ---
 
+### Guido - Feb 1, 2026 2:30 PM
+**Status:** 🟢 Active
+**Current Task:** C-037 Social Sentiment Backend - Code Review & Fixes
+**Progress:** ⚠️ Found 5 issues in existing implementation:
+1. API path duplication (critical - {symbol} catches all routes)
+2. Missing Twitter/Reddit API integrations
+3. Duplicate code in SentimentAnalyzer/AggregatedSentiment
+4. Missing model fields in migration
+5. No Celery background tasks
+**Blockers:** None
+**Next Steps:**
+1. Fix API router paths
+2. Create TwitterSentimentAnalyzer class
+3. Create RedditSentimentAnalyzer class
+4. Remove code duplication
+5. Add migration for missing fields
+6. Implement Celery tasks
+**Coordination:** Will provide API specs to Turing when endpoints are stable
+
+---
+
+### Turing - Feb 1, 2026 5:30 PM
+**Status:** 🟢 Active
+**Current Task:** C-036 Paper Trading Frontend Enhancement
+**Progress:** ✅ Analyzed existing codebase (70% complete)
+**Found Existing Components:**
+- PaperTradingDashboard, PaperTradeForm, PaperPortfolioSummary, PaperTradeHistory
+- Page route: `/paper-trading/`
+- Missing: Performance Chart, WebSocket real-time updates, Order confirmation modal
+**Blockers:** None
+**Next Steps:**
+1. Create PerformanceChart component (Recharts)
+2. Add WebSocket integration for real-time updates
+3. Enhance order form (limit/stop orders)
+4. Add order confirmation modal
+**Coordination:** ✅ Checked C-036 task assignment, creating feature branch
+
+---
+
 ### MIES - Feb 1, 2026 1:00 PM
 **Status:** 🟢 Active
 **Current Task:** Design audit (40% complete)
@@ -235,7 +274,7 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 ### In Progress:
 - C-036 Paper Trading: Linus (backend), Turing (frontend) - ⏳ Awaiting coder response
-- C-037 Social Sentiment: Guido (backend), Turing (frontend) - ⏳ Awaiting coder response
+- C-037 Social Sentiment: Guido (backend) - 🟢 Fixing implementation issues, Turing awaiting API
 - Phase 1 Design: MIES - 🟢 Starting this week
 - Phase 1 QA Planning: GRACE - ⚠️ Overdue
 - Phase 1 Security: Charo - 🟢 Ready to audit

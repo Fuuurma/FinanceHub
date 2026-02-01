@@ -199,6 +199,107 @@
 
 ---
 
+## Minimalistic Brutalism Design System (Phase 1)
+
+**Added:** February 1, 2026
+**Author:** MIES (UI/UX Designer)
+
+### Core Principles
+
+1. **Brutalist Foundation:** `rounded-none` everywhere, sharp edges
+2. **Tiered Border Widths:**
+   - Landing: `border-4` (bold, marketing)
+   - Dashboard: `border-2` (standard)
+   - Trading: `border-1` (subtle, data-dense)
+3. **Clean Despite Complexity:** Strategic whitespace for data interfaces
+4. **Data Clarity First:** Financial interfaces require maximum readability
+
+### Border System
+
+| Context | Width | Class | Radius | Usage |
+|---------|-------|-------|--------|-------|
+| Landing | 4px | `border-4` | `rounded-none` | Hero, marketing cards |
+| Dashboard | 2px | `border-2` | `rounded-none` | Standard cards, buttons |
+| Trading | 1px | `border-1` | `rounded-none` | Tables, forms, data |
+| Subtle | 0.5px | `border-[0.5px]` | `rounded-none` | Grid lines |
+
+### Brutalist Component Classes
+
+#### Buttons
+```css
+.btn-brutalist {
+  @apply rounded-none border-2 border-foreground bg-foreground text-background font-black uppercase shadow-[4px_4px_0px_0px_var(--foreground)] transition-all;
+}
+
+.btn-brutalist-outline {
+  @apply rounded-none border-2 border-foreground bg-transparent text-foreground font-black uppercase shadow-[3px_3px_0px_0px_var(--foreground)];
+}
+
+.btn-trading {
+  @apply rounded-none border-1 bg-primary text-primary-foreground;
+}
+```
+
+#### Cards
+```css
+.card-landing {
+  @apply rounded-none border-4 p-8;
+}
+
+.card-dashboard {
+  @apply rounded-none border-2 p-6;
+}
+
+.card-trading {
+  @apply rounded-none border-1 p-4;
+}
+```
+
+#### Badges
+```css
+.badge-brutalist {
+  @apply rounded-none border-2 border-foreground bg-foreground text-background font-mono uppercase text-[10px];
+}
+
+.badge-trading {
+  @apply rounded-none border-1 px-2 py-0.5 text-xs;
+}
+```
+
+### Phase 1 Feature Applications
+
+| Feature | Card Border | Button Style | Table Border |
+|---------|-------------|--------------|--------------|
+| C-036 Paper Trading | `border-1` | Trading | `border-1` |
+| C-037 Social Sentiment | `border-1` | Trading | `border-1` |
+| C-030 Broker Integration | `border-2` | Dashboard | `border-1` |
+
+### Accessibility (WCAG 2.1 AA)
+
+- Minimum contrast ratio: 4.5:1
+- Focus indicators: `focus-visible:ring-2 focus-visible:ring-offset-2`
+- Touch targets: 44x44px minimum
+- Keyboard navigation: All interactive elements accessible
+
+### When to Use Brutalist vs Clean
+
+| Context | Style | Example |
+|---------|-------|---------|
+| Landing pages | Brutalist (border-4) | Hero sections, feature cards |
+| Dashboard | Minimalistic (border-2) | Standard cards, nav |
+| Trading/Data | Minimalistic (border-1) | Tables, forms, charts |
+| AI/News pages | Brutalist variants | Special feature sections |
+
+### Design System Files Updated
+
+- `docs/design/DESIGN_SYSTEM.md` (this file)
+- `docs/design/PHASE_1_DESIGN_MOCKUPS.md`
+- `docs/design/PHASE_1_COMPONENT_SPECS.md`
+- `docs/design/PHASE_1_USER_FLOWS.md`
+- `docs/design/PHASE_1_RESPONSIVE_DESIGNS.md`
+
+---
+
 **"God is in the details."**
 
 - MIES

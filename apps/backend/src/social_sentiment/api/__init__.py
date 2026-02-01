@@ -109,10 +109,134 @@ class TickerTrendingSchema(BaseModel):
     volume_spike: bool
 
 
+class SentimentAlertCreateSchema(BaseModel):
+    symbol: str
+    alert_type: str
+    threshold: float
+    direction: str = "above"
+
+
+class SentimentAlertResponseSchema(BaseModel):
+    id: int
+    symbol: str
+    alert_type: str
+    threshold: Optional[float] = None
+    direction: str
+    is_active: bool
+    is_triggered: bool
+    last_triggered_at: Optional[datetime] = None
+    created_at: datetime
+
+
+@router.post("/analyze", response=SentimentResponseSchema)
+def analyze_sentiment(request, payload: SentimentRequestSchema):
+    """Analyze sentiment of given text content."""
+    analyzer = SentimentAnalyzer()
+    result = analyzer.analyze_text(payload.content)
+
+    detected_symbols = []
+    if payload.symbols:
+        detected_symbols = payload.symbols
+    else:
+        detected_symbols = analyzer.detect_tickers(payload.content)
+
+    return SentimentResponseSchema(
+        symbol=detected_symbols[0] if detected_symbols else None,
+        vader_compound=result["vader"]["compound"],
+        vader_positive=result["vader"]["positive"],
+        vader_negative=result["vader"]["negative"],
+        vader_neutral=result["vader"]["neutral"],
+        textblob_polarity=result["textblob"]["polarity"],
+        textblob_subjectivity=result["textblob"]["subjectivity"],
+        combined_score=result["combined_score"],
+        confidence=result["confidence"],
+        sentiment_label=result["sentiment_label"],
+        detected_symbols=detected_symbols,
+    )
+
+
+@router.get("/trending", response=List[TickerTrendingSchema])
+def get_trending_tickers(request, source: Optional[str] = None, limit: int = 20):
+    """Get trending tickers by mention volume."""
+    mentions = TickerMention.objects.all()
+    if source:
+        mentions = mentions.filter(source=source)
+
+    mentions = mentions.order_by("-mention_count")[:limit]
+
+    return [
+        TickerTrendingSchema(
+            symbol=m.symbol,
+            mention_count=m.mention_count,
+            sentiment_score=m.avg_sentiment if m.avg_sentiment else 0.0,
+            sentiment_change=m.sentiment_change if m.sentiment_change else 0.0,
+            volume_spike=False,
+        )
+        for m in mentions
+    ]
+
+
+@router.get("/alerts", response=List[SentimentAlertResponseSchema])
+def get_sentiment_alerts(
+    request, symbol: Optional[str] = None, active_only: bool = True
+):
+    """Get sentiment alerts for user."""
+    alerts = SentimentAlert.objects.all()
+    if symbol:
+        alerts = alerts.filter(symbol=symbol.upper())
+    if active_only:
+        alerts = alerts.filter(status="active")
+
+    return [
+        SentimentAlertResponseSchema(
+            id=alert.id,
+            symbol=alert.symbol,
+            alert_type=alert.alert_type,
+            threshold=alert.threshold,
+            direction=alert.threshold_direction,
+            is_active=alert.is_active,
+            is_triggered=alert.is_triggered,
+            last_triggered_at=alert.last_triggered_at,
+            created_at=alert.created_at,
+        )
+        for alert in alerts
+    ]
+
+
+@router.post("/alerts", response=SentimentAlertResponseSchema)
+def create_sentiment_alert(request, payload: SentimentAlertCreateSchema):
+    """Create a new sentiment alert."""
+    alert = SentimentAlert.objects.create(
+        symbol=payload.symbol.upper(),
+        alert_type=payload.alert_type,
+        threshold=payload.threshold,
+        threshold_direction=payload.direction,
+    )
+    return SentimentAlertResponseSchema(
+        id=alert.id,
+        symbol=alert.symbol,
+        alert_type=alert.alert_type,
+        threshold=alert.threshold,
+        direction=alert.threshold_direction,
+        is_active=alert.is_active,
+        is_triggered=alert.is_triggered,
+        last_triggered_at=alert.last_triggered_at,
+        created_at=alert.created_at,
+    )
+
+
+@router.delete("/alerts/{alert_id}")
+def delete_sentiment_alert(request, alert_id: int):
+    """Delete a sentiment alert."""
+    SentimentAlert.objects.filter(id=alert_id).delete()
+    return {"status": "deleted"}
+
+
 @router.get("/{symbol}", response=AggregatedSentimentSchema)
 def get_symbol_sentiment(
     request, symbol: str, source: Optional[str] = None, timeframe: Optional[str] = "24h"
 ):
+    """Get aggregated sentiment for a symbol."""
     analyzer = SentimentAnalyzer()
     return analyzer.get_aggregated_sentiment(symbol, source, timeframe)
 
@@ -121,6 +245,7 @@ def get_symbol_sentiment(
 def get_symbol_posts(
     request, symbol: str, source: Optional[str] = None, limit: int = 50
 ):
+    """Get social media posts for a symbol."""
     posts = SocialPost.objects.filter(symbol=symbol.upper())
     if source:
         posts = posts.filter(source=source)
@@ -161,98 +286,3 @@ def get_symbol_posts(
             }
         result.append(SocialPostSchema(**post_data))
     return result
-
-
-@router.post("/analyze", response=SentimentResponseSchema)
-def analyze_sentiment(request, payload: SentimentRequestSchema):
-    analyzer = SentimentAnalyzer()
-    result = analyzer.analyze_text(payload.content)
-
-    detected_symbols = []
-    if payload.symbols:
-        detected_symbols = payload.symbols
-    else:
-        detected_symbols = analyzer.detect_tickers(payload.content)
-
-    return SentimentResponseSchema(
-        symbol=detected_symbols[0] if detected_symbols else None,
-        vader_compound=result["vader"]["compound"],
-        vader_positive=result["vader"]["positive"],
-        vader_negative=result["vader"]["negative"],
-        vader_neutral=result["vader"]["neutral"],
-        textblob_polarity=result["textblob"]["polarity"],
-        textblob_subjectivity=result["textblob"]["subjectivity"],
-        combined_score=result["combined_score"],
-        confidence=result["confidence"],
-        sentiment_label=result["sentiment_label"],
-        detected_symbols=detected_symbols,
-    )
-
-
-@router.get("/trending", response=List[TickerTrendingSchema])
-def get_trending_tickers(request, source: Optional[str] = None, limit: int = 20):
-    mentions = TickerMention.objects.all()
-    if source:
-        mentions = mentions.filter(source=source)
-
-    mentions = mentions.order_by("-mention_count")[:limit]
-
-    return [
-        TickerTrendingSchema(
-            symbol=m.symbol,
-            mention_count=m.mention_count,
-            sentiment_score=m.avg_sentiment,
-            sentiment_change=m.sentiment_change,
-            volume_spike=m.volume_spike,
-        )
-        for m in mentions
-    ]
-
-
-@router.get("/alerts", response=List[dict])
-def get_sentiment_alerts(
-    request, symbol: Optional[str] = None, active_only: bool = True
-):
-    alerts = SentimentAlert.objects.all()
-    if symbol:
-        alerts = alerts.filter(symbol=symbol.upper())
-    if active_only:
-        alerts = alerts.filter(is_active=True)
-
-    return [
-        {
-            "id": alert.id,
-            "symbol": alert.symbol,
-            "alert_type": alert.alert_type,
-            "threshold": alert.threshold,
-            "direction": alert.direction,
-            "is_active": alert.is_active,
-            "is_triggered": alert.is_triggered,
-            "last_triggered_at": alert.last_triggered_at,
-            "created_at": alert.created_at,
-        }
-        for alert in alerts
-    ]
-
-
-@router.post("/alerts")
-def create_sentiment_alert(
-    request,
-    symbol: str,
-    alert_type: str,
-    threshold: float,
-    direction: str = "above",
-):
-    alert = SentimentAlert.objects.create(
-        symbol=symbol.upper(),
-        alert_type=alert_type,
-        threshold=threshold,
-        direction=direction,
-    )
-    return {"id": alert.id, "status": "created"}
-
-
-@router.delete("/alerts/{alert_id}")
-def delete_sentiment_alert(request, alert_id: int):
-    SentimentAlert.objects.filter(id=alert_id).delete()
-    return {"status": "deleted"}

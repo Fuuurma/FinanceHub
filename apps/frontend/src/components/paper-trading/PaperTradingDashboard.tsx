@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { PaperTradeForm } from './PaperTradeForm'
 import { PaperPortfolioSummary } from './PaperPortfolioSummary'
 import { PaperTradeHistory } from './PaperTradeHistory'
+import { PaperPerformanceChart } from './PaperPerformanceChart'
 import {
   TrendingUp, TrendingDown, RefreshCw, AlertTriangle, Info,
   DollarSign, Trophy, Target, Zap
@@ -131,6 +132,7 @@ export function PaperTradingDashboard({ className }: PaperTradingDashboardProps)
         </div>
 
         <div className="lg:col-span-2 space-y-6">
+          <PaperPerformanceChart />
           <PaperPortfolioSummary />
           <PaperTradeHistory />
         </div>
