@@ -241,7 +241,7 @@ class ExchangeRateFetcher:
                 try:
                     rate = c.get_rate(base.upper(), quote)
                     rates[quote] = rate
-                except Exception:
+                except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
                     continue
             return rates if rates else None
         except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:

@@ -526,7 +526,7 @@ def generate_template(request, data: TemplateGenerateRequest):
             generated_at=template.last_generated_at,
         )
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger = logging.getLogger(__name__)
         logger.error(f"Template generation failed: {e}")
         raise ServiceException(f"Failed to generate template: {str(e)}")
@@ -622,7 +622,7 @@ def _check_delta_update(template: AITemplate) -> Optional[dict]:
 
         return None
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger = logging.getLogger(__name__)
         logger.warning(f"Delta check failed: {e}")
         return None

@@ -119,7 +119,7 @@ class CacheInvalidator:
                         valid_keys.append(key)
                     else:
                         logger.debug(f"Removing stale key: {key}")
-                except Exception:
+                except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
                     pass
 
             CacheInvalidator.TRACKED_KEYS[category] = valid_keys[:max_keys]

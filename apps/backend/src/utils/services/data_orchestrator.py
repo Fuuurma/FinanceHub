@@ -316,7 +316,7 @@ class DataOrchestrator:
                     freshness=DataFreshness.RECENT,
                 )
 
-            except Exception as e2:
+            except (NetworkError, TimeoutException, ValueError, KeyError) as e2:
                 logger.error(f"Failed to fetch stock data from Finnhub: {e2}")
                 raise
 
@@ -488,7 +488,13 @@ class DataOrchestrator:
                         timestamp=timezone.now(),
                     )
                     count += 1
-            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
+            except (
+                ValueError,
+                KeyError,
+                TypeError,
+                NetworkError,
+                TimeoutException,
+            ) as e:
                 logger.error(f"Error updating price for {symbol}: {e}")
 
         return {"count": count, "provider": provider}
@@ -546,7 +552,13 @@ class DataOrchestrator:
                     "healthy": is_healthy,
                     "last_checked": timezone.now().isoformat(),
                 }
-            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
+            except (
+                ValueError,
+                KeyError,
+                TypeError,
+                NetworkError,
+                TimeoutException,
+            ) as e:
                 health_status[source.value] = {
                     "healthy": False,
                     "error": str(e),
@@ -558,7 +570,7 @@ class DataOrchestrator:
     async def _check_provider_health(self, scraper) -> bool:
         try:
             return hasattr(scraper, "base_url") and scraper.base_url is not None
-        except Exception:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
             return False
 
     async def get_statistics(self) -> dict:

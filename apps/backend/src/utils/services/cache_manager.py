@@ -173,7 +173,7 @@ class CacheManager:
         try:
             serialized = self._serialize(value)
             return len(serialized.encode("utf-8"))
-        except Exception:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
             return 0
 
     async def _evict_l1(self):
@@ -381,7 +381,7 @@ class CacheManager:
             l2_info = (
                 django_cache._cache.info if hasattr(django_cache._cache, "info") else {}
             )
-        except Exception:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
             l2_info = {}
 
         return {

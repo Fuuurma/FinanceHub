@@ -132,7 +132,7 @@ class HealthScorer:
                 last_checked=timezone.now().isoformat()
             )
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error calculating health score for {provider}: {e}")
             return HealthScore(
                 overall_score=0.0,

@@ -133,5 +133,5 @@ class CacheManager:
             keys = cache.keys(pattern)
             if keys:
                 cache.delete_many(keys)
-        except Exception:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
             pass  # Fall back for non-Redis caches

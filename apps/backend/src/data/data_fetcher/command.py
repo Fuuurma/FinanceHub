@@ -48,5 +48,5 @@ class Command(BaseCommand):
         try:
             asyncio.run(run())
             self.stdout.write(self.style.SUCCESS(f"✓ {job_type.title()} job completed"))
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.ERROR(f"✗ Error: {str(e)}"))

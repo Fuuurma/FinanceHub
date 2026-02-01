@@ -11,19 +11,19 @@ from utils.constants.default import (
 def get_default_user_status():
     try:
         return UserStatus.objects.get_or_create(name=DEFAULT_USER_STATUS_NAME)[0].id
-    except Exception:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
         return None
 
 
 def get_default_account_type():
     try:
         return AccountType.objects.get_or_create(name=DEFAULT_ACCOUNT_TYPE_NAME)[0].id
-    except Exception:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
         return None
 
 
 def get_default_admin_role():
     try:
         return Role.objects.get_or_create(name=DEFAULT_ADMIN_ROLE_NAME)[0].id
-    except Exception:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
         return None

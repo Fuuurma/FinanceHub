@@ -52,7 +52,7 @@ class AlphaVantageFetcher:
 
                 return data
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Alpha Vantage API error: {str(e)}")
             raise
 

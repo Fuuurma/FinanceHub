@@ -67,7 +67,7 @@ class BinanceFetcher:
                 response.raise_for_status()
                 return await response.json()
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Binance API error: {str(e)}")
             raise
 

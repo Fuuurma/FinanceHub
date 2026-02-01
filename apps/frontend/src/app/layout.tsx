@@ -4,9 +4,6 @@ import { Suspense, lazy } from "react";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { FullPageSkeleton } from "@/components/ui/analytics-skeletons";
-import { ShortcutHelpDialog } from "@/components/shortcuts/ShortcutHelpDialog";
-import { registerDefaultShortcuts, shortcutRegistry } from "@/lib/shortcuts";
-import { useEffect } from "react";
 
 export const metadata: Metadata = {
   title: "FinanceHub - Professional Market Analysis",

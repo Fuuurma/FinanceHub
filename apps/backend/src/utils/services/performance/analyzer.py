@@ -373,7 +373,7 @@ class PerformanceAnalyzer:
                 interpretation=interpretation,
             )
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"Error in factor analysis: {e}")
             return self._empty_factor_report(symbol)
     

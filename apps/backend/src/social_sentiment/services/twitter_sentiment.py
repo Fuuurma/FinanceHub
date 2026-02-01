@@ -95,7 +95,7 @@ class TwitterSentimentAnalyzer:
         except tweepy.errors.TooManyRequests:
             logger.warning("Twitter API rate limit exceeded")
             return []
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching tweets: {e}")
             return []
 

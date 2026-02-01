@@ -403,7 +403,7 @@ class BinanceBroker(BaseBroker):
             try:
                 quote = await self.get_quote(symbol)
                 result[symbol] = quote
-            except Exception:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
                 continue
         return result
 

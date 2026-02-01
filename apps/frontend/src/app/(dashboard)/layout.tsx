@@ -11,10 +11,27 @@ import { ShortcutHelpDialog } from "@/lib/shortcuts/ShortcutHelpDialog"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
   useEffect(() => {
     setIsHydrated(true)
+    registerDefaultShortcuts()
   }, [])
+
+  useHelpShortcut(() => setShowHelp(true))
+
+  useGlobalShortcuts([
+    {
+      key: '?',
+      description: 'Show keyboard shortcuts',
+      action: () => setShowHelp(true),
+    },
+    {
+      key: 'escape',
+      description: 'Close dialog',
+      action: () => setShowHelp(false),
+    },
+  ])
 
   if (!isHydrated) {
     return (
@@ -41,6 +58,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <RightSidebar />
       </div>
+
+      <ShortcutHelpDialog
+        open={showHelp}
+        onOpenChange={setShowHelp}
+      />
     </SidebarProvider>
   )
 }

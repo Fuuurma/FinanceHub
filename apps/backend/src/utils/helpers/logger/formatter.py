@@ -51,7 +51,7 @@ class ORJSONFormatter(logging.Formatter):
                     else 0
                 ),
             ).decode()
-        except Exception:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
             # Fallback
             log_data = {k: str(v) for k, v in log_data.items()}
             return orjson.dumps(log_data).decode()

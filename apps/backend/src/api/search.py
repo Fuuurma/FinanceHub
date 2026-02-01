@@ -143,7 +143,7 @@ def search_suggestions(request, q: str, limit: int = 10):
     try:
         suggestions = search_service._generate_suggestions(q, None)[:limit]
         return {"suggestions": suggestions}
-    except Exception:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
         return {"suggestions": []}
 
 
@@ -288,5 +288,5 @@ def quick_search(request, q: str, type: Optional[str] = None):
         ]
 
         return {"results": results}
-    except Exception:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
         return {"results": []}

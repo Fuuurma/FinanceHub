@@ -154,7 +154,7 @@ def run_backtest_task(backtest_id: str):
 
     except Backtest.DoesNotExist:
         logger.error(f"Backtest {backtest_id} not found")
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Backtest {backtest_id} failed: {e}")
         try:
             backtest = Backtest.objects.get(id=backtest_id)

@@ -135,7 +135,7 @@ class UniversalSearchService:
                 "sector": getattr(asset, "sector", "") or "",
                 "relevance_score": getattr(asset, "relevance", 0),
             }
-        except Exception:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
             return {
                 "id": getattr(asset, "id", 0),
                 "symbol": getattr(asset, "symbol", "UNKNOWN"),
@@ -166,7 +166,7 @@ class UniversalSearchService:
                         "asset_type": asset.asset_type,
                     }
                 )
-        except Exception:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
             pass
 
         return suggestions
@@ -292,7 +292,7 @@ class UniversalSearchService:
                 .distinct()
             )
             return [{"sector": s} for s in sorted(set(sectors)) if s]
-        except Exception:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
             return []
 
     def get_exchanges(self) -> List[Dict]:
@@ -306,7 +306,7 @@ class UniversalSearchService:
                 .distinct()
             )
             return [{"exchange": e} for e in sorted(set(exchanges)) if e]
-        except Exception:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
             return []
 
     def get_screen_templates(self, category: Optional[str] = None) -> List[Dict]:
@@ -328,7 +328,7 @@ class UniversalSearchService:
                 }
                 for t in templates.order_by("-is_featured", "-use_count")[:20]
             ]
-        except Exception:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
             return []
 
     def get_filter_options(self) -> Dict:
@@ -394,7 +394,7 @@ class UniversalSearchService:
                 }
                 for s in searches.order_by("-is_default", "-use_count")
             ]
-        except Exception:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
             return []
 
     def create_comparison(

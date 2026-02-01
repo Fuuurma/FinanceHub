@@ -101,7 +101,7 @@ class PatternRecognition:
             return savgol_filter(
                 prices, min(self.smoothing_window, len(prices) // 2 * 2 + 1), 3
             )
-        except Exception:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
             return gaussian_filter1d(prices, sigma=1)
 
     def _find_peaks_and_troughs(

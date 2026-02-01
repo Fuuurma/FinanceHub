@@ -70,7 +70,7 @@ class WebSocketAuthMiddleware(BaseMiddleware):
         except jwt.InvalidTokenError as e:
             logger.warning(f"WebSocket: Invalid token - {e}")
             return AnonymousUser()
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             logger.error(f"WebSocket auth error: {e}")
             return AnonymousUser()
 

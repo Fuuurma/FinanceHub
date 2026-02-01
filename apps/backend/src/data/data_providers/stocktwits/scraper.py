@@ -32,6 +32,6 @@ class StockTwitsAPI:
                 'bearish': bearish,
                 'bullish_ratio': bullish / total if total > 0 else 0
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching StockTwits data: {str(e)}")
             return {}

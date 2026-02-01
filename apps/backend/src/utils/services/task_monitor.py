@@ -115,7 +115,7 @@ class TaskMonitor:
                 if ttl == -1:
                     self.redis_client.delete(key)
                     cleaned += 1
-            except Exception:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
                 pass
         return cleaned
 

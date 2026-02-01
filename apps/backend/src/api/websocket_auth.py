@@ -17,7 +17,7 @@ def verify_websocket_token(token: str) -> Optional[Dict[str, Any]]:
     try:
         payload = auth_service.verify_token(token)
         return payload
-    except Exception:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
         return None
 
 

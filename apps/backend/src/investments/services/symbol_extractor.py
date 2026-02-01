@@ -582,7 +582,7 @@ class SentimentAnalyzer:
                     return "negative", compound
                 else:
                     return "neutral", compound
-            except Exception:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
                 pass
 
         # Fallback to keyword-based

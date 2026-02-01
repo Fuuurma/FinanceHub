@@ -58,7 +58,7 @@ class CoinGeckoFetcher:
 
                 return data
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"CoinGecko API error: {str(e)}")
             raise
 

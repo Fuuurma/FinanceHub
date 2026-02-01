@@ -93,7 +93,7 @@ class RateLimitMiddleware:
             if hasattr(user, "subscription_tier"):
                 tier = user.subscription_tier
                 return self.RATE_LIMITS.get(tier, self.RATE_LIMITS["free"])
-        except Exception:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
             pass
 
         return self.RATE_LIMITS["free"]

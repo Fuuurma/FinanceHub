@@ -519,7 +519,7 @@ class ATLASNewsCrawler:
                                     "published": datetime.now().isoformat(),
                                 }
                             )
-                    except Exception:
+                    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
                         continue
 
                 logger.info(f"Crawled {len(articles)} articles from CoinDesk")
@@ -560,7 +560,7 @@ class ATLASNewsCrawler:
                                     "published": datetime.now().isoformat(),
                                 }
                             )
-                    except Exception:
+                    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError):
                         continue
 
                 logger.info(f"Crawled {len(articles)} articles from The Block")

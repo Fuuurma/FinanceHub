@@ -135,7 +135,7 @@ async def get_historical_data(
             for d in data
         ]
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching historical data for {symbol}: {e}")
         return []
 

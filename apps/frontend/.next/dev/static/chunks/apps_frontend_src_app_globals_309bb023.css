@@ -6092,6 +6092,18 @@
   }
 
   @media (hover: hover) {
+    .hover\:bg-foreground\/90:hover {
+      background-color: var(--foreground);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-foreground\/90:hover {
+        background-color: color-mix(in oklab, var(--foreground) 90%, transparent);
+      }
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:bg-gray-50:hover {
       background-color: var(--color-gray-50);
     }

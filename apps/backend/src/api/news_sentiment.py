@@ -165,7 +165,7 @@ async def get_sentiment_analysis(
             analyzed_at=timezone.now().isoformat()
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error analyzing sentiment for {symbol}: {e}")
         raise ExternalAPIException("sentiment_analysis", str(e))
 
@@ -257,7 +257,7 @@ async def get_market_trends(
             fetched_at=timezone.now().isoformat()
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching market trends: {e}")
         raise ExternalAPIException("market_trends", str(e))
 

@@ -125,7 +125,7 @@ def get_macro_dashboard(request) -> Dict[str, Any]:
         try:
             scraper = get_fred_scraper()
             return scraper.get_latest_macro_data()
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             return None
 
     dashboard_data = get_cached_or_fetch(cache_key, fetch_dashboard, CACHE_TTL_MEDIUM)
@@ -371,7 +371,7 @@ def refresh_dashboard(request) -> Dict[str, Any]:
             "success": True,
             "message": "Dashboard refresh initiated. Check back in a few moments.",
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         return {
             "success": False,
             "message": f"Failed to refresh: {str(e)}",

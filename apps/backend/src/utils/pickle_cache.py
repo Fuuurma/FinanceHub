@@ -243,7 +243,7 @@ class NewsPickleCache:
                     header = pickle.load(h).get("header", {})
                 total_articles += header.get("article_count", 0)
                 total_size += header.get("file_size_bytes", os.path.getsize(f))
-            except Exception:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
                 total_size += os.path.getsize(f)
 
         file_times = [(f, os.path.getmtime(f)) for f in files]

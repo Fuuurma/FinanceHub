@@ -118,7 +118,7 @@ def create_alert(request, data: CreateAlertRequest):
             "status": "created",
             "message": "Alert created successfully",
         }
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error creating alert: {e}")
         return {"error": str(e)}, 400
 

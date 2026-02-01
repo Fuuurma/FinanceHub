@@ -143,7 +143,7 @@ class PaperTradingEngine:
                 return self._execute_sell_order(
                     portfolio, order, Decimal(str(current_price))
                 )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             order.reject(str(e))
             return order
 

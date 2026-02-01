@@ -82,7 +82,7 @@ def metrics_view(request):
             cursor.execute("SELECT count(*) FROM pg_stat_activity")
             db_conn = cursor.fetchone()[0]
             DB_CONNECTIONS.set(db_conn)
-    except Exception:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError):
         pass
 
     return HttpResponse(generate_latest(), content_type="text/plain")

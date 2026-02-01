@@ -40,7 +40,7 @@ class DeFiLlamaFetcher:
                 await asyncio.sleep(0.3)
                 return data
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"DeFi Llama API error: {str(e)}")
             raise
 

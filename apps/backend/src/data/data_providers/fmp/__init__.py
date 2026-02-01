@@ -49,7 +49,7 @@ class FMPFetcher:
                 await asyncio.sleep(0.5)
                 return data
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"FMP API error: {str(e)}")
             raise
 

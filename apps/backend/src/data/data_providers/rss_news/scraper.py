@@ -34,7 +34,7 @@ class RSSNewsScraper:
             
             logger.info(f"Retrieved {len(articles)} articles from {source}")
             return articles
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching RSS feed from {source}: {str(e)}")
             return []
     

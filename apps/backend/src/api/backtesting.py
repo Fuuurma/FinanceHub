@@ -64,7 +64,7 @@ def create_backtest(request, data: BacktestCreateSchema):
 
         return {"id": str(backtest.id), "status": "pending"}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Backtest creation error: {e}")
         return {"error": str(e)}, 500
 
