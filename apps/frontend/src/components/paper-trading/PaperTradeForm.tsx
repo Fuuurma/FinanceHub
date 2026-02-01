@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { RefreshCw, TrendingUp, TrendingDown, DollarSign, Wallet } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { RefreshCw, TrendingUp, TrendingDown, DollarSign, Wallet, AlertTriangle } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { OrderConfirmationDialog } from './OrderConfirmationDialog'
 
 interface PaperTradeFormProps {
   onSuccess?: () => void
@@ -27,25 +29,68 @@ interface TradeResult {
   remaining_cash?: number
 }
 
+type OrderSide = 'BUY' | 'SELL'
+type OrderType = 'MARKET' | 'LIMIT' | 'STOP'
+
 export function PaperTradeForm({ onSuccess, className }: PaperTradeFormProps) {
   const [asset, setAsset] = React.useState('')
   const [quantity, setQuantity] = React.useState('')
-  const [tradeType, setTradeType] = React.useState<'BUY' | 'SELL'>('BUY')
+  const [tradeType, setTradeType] = React.useState<OrderSide>('BUY')
+  const [orderType, setOrderType] = React.useState<OrderType>('MARKET')
+  const [price, setPrice] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [result, setResult] = React.useState<TradeResult | null>(null)
   const [cashBalance, setCashBalance] = React.useState(100000)
+  const [confirmationOpen, setConfirmationOpen] = React.useState(false)
+  const [validationError, setValidationError] = React.useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const estimatedValue = React.useMemo(() => {
+    const qty = parseFloat(quantity) || 0
+    const prc = parseFloat(price) || 0
+    return orderType === 'MARKET' ? 0 : qty * prc
+  }, [quantity, price, orderType])
+
+  const handleSubmit = async () => {
+    const qty = parseFloat(quantity)
+    const prc = parseFloat(price)
+
+    if (!asset || !quantity) {
+      setValidationError('Please enter symbol and quantity')
+      return
+    }
+
+    if (qty <= 0) {
+      setValidationError('Quantity must be greater than 0')
+      return
+    }
+
+    if (orderType !== 'MARKET' && (!price || prc <= 0)) {
+      setValidationError(`Please enter a valid ${orderType.toLowerCase()} price`)
+      return
+    }
+
+    setValidationError(null)
+    setConfirmationOpen(true)
+  }
+
+  const executeOrder = async () => {
     setLoading(true)
     setResult(null)
+    setConfirmationOpen(false)
+
+    const qty = parseFloat(quantity)
+    const prc = parseFloat(price)
 
     const endpoint = tradeType === 'BUY'
       ? '/paper-trading/buy'
       : '/paper-trading/sell'
 
     try {
-      const data = await apiClient.post<TradeResult>(endpoint, { asset, quantity: parseFloat(quantity) })
+      const data = await apiClient.post<TradeResult>(endpoint, {
+        asset,
+        quantity: qty,
+        ...(orderType !== 'MARKET' && { price: prc }),
+      })
       setResult(data)
 
       if (data.success && data.remaining_cash) {
@@ -108,7 +153,53 @@ export function PaperTradeForm({ onSuccess, className }: PaperTradeFormProps) {
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4">
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <Button
+              type="button"
+              variant={tradeType === 'BUY' ? 'default' : 'outline'}
+              onClick={() => setTradeType('BUY')}
+              className={cn(
+                'flex-1 font-black uppercase rounded-none',
+                tradeType === 'BUY' ? 'bg-green-600 hover:bg-green-700' : 'border-2'
+              )}
+            >
+              <TrendingUp className="h-4 w-4 mr-2" />
+              BUY
+            </Button>
+            <Button
+              type="button"
+              variant={tradeType === 'SELL' ? 'default' : 'outline'}
+              onClick={() => setTradeType('SELL')}
+              className={cn(
+                'flex-1 font-black uppercase rounded-none',
+                tradeType === 'SELL' ? 'bg-red-600 hover:bg-red-700' : 'border-2'
+              )}
+            >
+              <TrendingDown className="h-4 w-4 mr-2" />
+              SELL
+            </Button>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase mb-2">
+              Order Type
+            </label>
+            <Select
+              value={orderType}
+              onValueChange={(v) => setOrderType(v as OrderType)}
+            >
+              <SelectTrigger className="rounded-none border-2 font-mono">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MARKET">Market</SelectItem>
+                <SelectItem value="LIMIT">Limit</SelectItem>
+                <SelectItem value="STOP">Stop</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div>
             <label className="block text-xs font-bold uppercase mb-2">
               Asset Symbol
@@ -138,6 +229,29 @@ export function PaperTradeForm({ onSuccess, className }: PaperTradeFormProps) {
             />
           </div>
 
+          {(orderType === 'LIMIT' || orderType === 'STOP') && (
+            <div>
+              <label className="block text-xs font-bold uppercase mb-2">
+                {orderType === 'LIMIT' ? 'Limit Price' : 'Stop Price'}
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="150.00"
+                className="rounded-none border-2 font-mono"
+                required
+              />
+            </div>
+          )}
+
+          {validationError && (
+            <div className="bg-red-50 border border-red-500 p-3">
+              <p className="text-red-700 font-mono text-xs">{validationError}</p>
+            </div>
+          )}
+
           <Button
             type="submit"
             disabled={loading}
@@ -156,7 +270,7 @@ export function PaperTradeForm({ onSuccess, className }: PaperTradeFormProps) {
             ) : (
               <>
                 <DollarSign className="h-4 w-4 mr-2" />
-                {tradeType} {asset || 'ASSET'}
+                Review Order
               </>
             )}
           </Button>
@@ -195,6 +309,22 @@ export function PaperTradeForm({ onSuccess, className }: PaperTradeFormProps) {
           </div>
         )}
       </CardContent>
+
+      <OrderConfirmationDialog
+        open={confirmationOpen}
+        onOpenChange={setConfirmationOpen}
+        order={asset && quantity ? {
+          symbol: asset,
+          side: tradeType,
+          type: orderType,
+          quantity: parseFloat(quantity),
+          ...(orderType !== 'MARKET' && price && { price: parseFloat(price) }),
+        } : null}
+        onConfirm={executeOrder}
+        isExecuting={loading}
+        result={result}
+        onResultClose={() => setResult(null)}
+      />
     </Card>
   )
 }
