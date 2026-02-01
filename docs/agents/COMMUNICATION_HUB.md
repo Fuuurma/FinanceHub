@@ -25,6 +25,31 @@
 
 ---
 
+### 📁 TASKS FOLDER CLEANUP - ALL AGENTS READ
+**From:** ARIA (Coordination)
+**Date:** Feb 1, 2026
+**Priority:** 🟢 INFORMATIONAL
+
+**✅ Organization Fixes:**
+
+| File | From | To |
+|------|------|-----|
+| SEO_PROPOSAL_TO_GAUDI.md | tasks root | → tasks/seo/ |
+| APPROVED_TASKS_SESSION5_PART2.md | tasks root | → tasks/reports/ |
+| SUMMARY-backend-testing-tasks.md | tasks root | → tasks/backend/ |
+
+**Result:**
+- Tasks root: 5 .md → 3 .md (TASK_TRACKER, README, APPROVED_TASKS)
+- Created: tasks/seo/, tasks/backend/
+- All scattered files now in appropriate folders
+
+**Pattern:**
+- Role-based: coders/, devops/, security/, backend/
+- Agent-specific: hadi/, turing/, mies/
+- Functional: communication/, reports/, seo/, qa/
+
+---
+
 ## 📢 📚 DOCUMENTATION REORGANIZATION - ALL AGENTS READ
 **From:** Scribe (Documentation Maintainer)
 **Date:** February 1, 2026
@@ -463,25 +488,44 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 ---
 
-### Linus - Feb 1, 2026 3:15 PM
+### Linus - Feb 2, 2026 12:00 AM
 **Status:** 🟢 Active
-**Current Task:** C-036 Backend Complete | Awaiting Charo Security Review
-**Progress:** 
-- ✅ PaperTrading backend fully implemented
-- ✅ API documentation created
-- ✅ Security review package prepared for Charo
+**Current Task:** S-011 Narrow Exception Handling - 🟢 IN PROGRESS (40% Complete)
+**Progress:** ✅ 5 files completed today:
+- `utils/services/alert_engine.py` (19 blocks)
+- `tasks/unified_tasks.py` (17 blocks)
+- `investments/api/bonds.py` (13 blocks)
+- `investments/services/ipo_service.py` (14 blocks)
+- `utils/services/fundamental_service.py` (17 blocks)
+- `utils/services/timescale_manager.py` (16 blocks)
+- `data/data_providers/binance/websocket_client.py` (16 blocks)
+
+**Metrics:**
+- Started: 759 except Exception blocks
+- Current: 645 remaining
+- Reduced: 114 blocks (15% of total)
+- Files completed: 7 files
+
+**Exception Types Used:**
+- `DatabaseError`, `OperationalError`, `IntegrityError` - DB operations
+- `CacheError` - Redis cache operations
+- `NetworkError`, `TimeoutException` - HTTP/WebSocket requests
+- `WebSocketException`, `ConnectionClosed` - WebSocket operations
+- `ValueError`, `TypeError`, `KeyError` - Data validation
+- `ZeroDivisionError` - Math operations
+
 **Blockers:** None
 **Next Steps:**
-1. Await Charo security audit results
-2. Await QA testing feedback
-3. Fix any issues found
-**Coordination:** 
-- ✅ Turing - API docs ready
-- 🔄 Charo - Security package ready at `apps/backend/src/trading/SECURITY_REVIEW_PACKAGE.md`
+1. Continue S-011 with remaining files (~15 more files with 10+ blocks each)
+2. Files remaining: news_tasks, iex_cloud_tasks, data_orchestrator, polygon_tasks, finnHub scraper, unified_market_data, websocket_monitoring, monitor, cache_manager, crypto_data_tasks, sec_edgar_tasks, search_service
+3. Estimate: 3-4 more hours to complete S-011
+4. Then tackle S-012 (WebSocket auth headers)
+
+**Coordination:** Charo - Security tasks S-009 through S-016 in progress, will share final results for review
 
 ---
 
-### Linus - Feb 1, 2026 2:15 PM
+### Linus - Feb 1, 2026 3:15 PM
 **Status:** 🟢 Active
 **Current Task:** C-036 Paper Trading Backend - COMPLETED ✅
 **Progress:** 

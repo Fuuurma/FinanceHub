@@ -106,7 +106,7 @@ def fetch_newsapi_news(
                     is_active=True,
                 )
                 saved_count += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.debug(f"Error saving article: {e}")
                 continue
 
@@ -120,7 +120,7 @@ def fetch_newsapi_news(
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching NewsAPI news: {e}")
         raise self.retry(exc=e)
 
@@ -176,7 +176,7 @@ def fetch_finnhub_news(self, symbol: str = None, limit: int = 50) -> Dict[str, A
                     is_active=True,
                 )
                 saved_count += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.debug(f"Error saving Finnhub article: {e}")
                 continue
 
@@ -189,7 +189,7 @@ def fetch_finnhub_news(self, symbol: str = None, limit: int = 50) -> Dict[str, A
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching Finnhub news: {e}")
         raise self.retry(exc=e)
 
@@ -260,7 +260,7 @@ def fetch_atlas_news(self, categories: List[str] = None) -> Dict[str, Any]:
                         is_active=True,
                     )
                     total_saved += 1
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                     logger.debug(f"Error saving ATLAS article: {e}")
                     continue
 
@@ -282,7 +282,7 @@ def fetch_atlas_news(self, categories: List[str] = None) -> Dict[str, Any]:
                     )
 
             cache.save_articles(all_articles)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error saving to pickle cache: {e}")
 
         return {
@@ -294,7 +294,7 @@ def fetch_atlas_news(self, categories: List[str] = None) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching ATLAS news: {e}")
         raise self.retry(exc=e)
 
@@ -333,7 +333,7 @@ def fetch_all_news_sources(self) -> Dict[str, Any]:
                 logger.info(f"{task_name}: {result}")
             else:
                 logger.warning(f"{task_name}: {result}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error waiting for {task_name}: {e}")
 
     return {
@@ -382,7 +382,7 @@ def analyze_sentiment_batch(self, hours: int = 24) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error in sentiment batch: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -440,7 +440,7 @@ def extract_symbols_batch(self, hours: int = 24) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error in symbol extraction batch: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -494,7 +494,7 @@ def create_pickle_cache_dump() -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error creating pickle dump: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -536,7 +536,7 @@ def cleanup_old_news(days: int = 30) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error in cleanup: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -569,7 +569,7 @@ def sync_news_provider_status() -> Dict[str, Any]:
 
             status[code] = {"name": name, "is_active": is_active}
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error checking {name}: {e}")
             status[code] = {"name": name, "is_active": False, "error": str(e)}
 
@@ -611,7 +611,7 @@ def fetch_news_for_symbol(self, symbol: str, limit: int = 20) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching news for {symbol}: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -678,6 +678,6 @@ def generate_news_summary(self, hours: int = 24) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error generating news summary: {e}")
         return {"status": "error", "message": str(e)}
