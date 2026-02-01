@@ -157,7 +157,7 @@ class CacheManager:
     def _serialize(value: Any) -> str:
         try:
             return json.dumps(value, default=str)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Failed to serialize value: {e}")
             raise
 
@@ -165,7 +165,7 @@ class CacheManager:
     def _deserialize(value: str) -> Any:
         try:
             return json.loads(value)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Failed to deserialize value: {e}")
             raise
 
@@ -223,7 +223,7 @@ class CacheManager:
 
             self.statistics.record_miss(CacheLevel.L2_REDIS, cache_key)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"L2 cache error: {e}")
             self.statistics.record_error()
 
@@ -263,7 +263,7 @@ class CacheManager:
 
             self.statistics.record_miss(CacheLevel.L3_DATABASE, cache_key)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"L3 cache error: {e}")
             self.statistics.record_error()
 
@@ -298,7 +298,7 @@ class CacheManager:
             django_cache.set(cache_key, serialized, timeout=ttl)
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Failed to set cache value: {e}")
             self.statistics.record_error()
             return False
@@ -314,7 +314,7 @@ class CacheManager:
         try:
             django_cache.delete(cache_key)
             return True
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Failed to delete cache value: {e}")
             self.statistics.record_error()
             return False
@@ -338,7 +338,7 @@ class CacheManager:
             else:
                 logger.warning("Cache backend doesn't support pattern deletion")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Failed to invalidate cache pattern: {e}")
             self.statistics.record_error()
 
@@ -351,7 +351,7 @@ class CacheManager:
             try:
                 await self.set("warm", cache_key, value=value, ttl=ttl)
                 warmed += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
                 logger.error(f"Failed to warm cache for key {cache_key}: {e}")
 
         logger.info(f"Warmed {warmed}/{len(warm_data)} cache entries")
@@ -364,7 +364,7 @@ class CacheManager:
         try:
             django_cache.clear()
             logger.info("Cleared all cache levels")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Failed to clear cache: {e}")
             self.statistics.record_error()
 

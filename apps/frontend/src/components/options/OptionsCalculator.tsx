@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useApi } from '@/hooks/useApi';
+import { Calculator, TrendingUp, TrendingDown, Zap } from 'lucide-react';
 
 interface OptionResult {
   price: number;
@@ -56,67 +58,75 @@ export function OptionsCalculator({ symbol = 'AAPL', currentPrice = 150 }: Optio
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Options Pricing Calculator</CardTitle>
+      <Card className="rounded-none border-1">
+        <CardHeader className="border-b-1">
+          <CardTitle className="font-black uppercase flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
+            Options Pricing Calculator
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <Label>Stock Price ($)</Label>
+              <Label className="text-xs font-bold uppercase mb-2 block">Stock Price ($)</Label>
               <Input
                 type="number"
                 value={params.S}
                 onChange={(e) => setParams({ ...params, S: parseFloat(e.target.value) })}
+                className="rounded-none border-1 font-mono"
               />
             </div>
             <div>
-              <Label>Strike Price ($)</Label>
+              <Label className="text-xs font-bold uppercase mb-2 block">Strike Price ($)</Label>
               <Input
                 type="number"
                 value={params.K}
                 onChange={(e) => setParams({ ...params, K: parseFloat(e.target.value) })}
+                className="rounded-none border-1 font-mono"
               />
             </div>
             <div>
-              <Label>Time to Expiry (Years)</Label>
+              <Label className="text-xs font-bold uppercase mb-2 block">Time to Expiry (Years)</Label>
               <Input
                 type="number"
                 step="0.01"
                 value={params.T}
                 onChange={(e) => setParams({ ...params, T: parseFloat(e.target.value) })}
+                className="rounded-none border-1 font-mono"
               />
             </div>
             <div>
-              <Label>Risk-Free Rate (%)</Label>
+              <Label className="text-xs font-bold uppercase mb-2 block">Risk-Free Rate (%)</Label>
               <Input
                 type="number"
                 step="0.01"
                 value={params.r * 100}
                 onChange={(e) => setParams({ ...params, r: parseFloat(e.target.value) / 100 })}
+                className="rounded-none border-1 font-mono"
               />
             </div>
             <div>
-              <Label>Volatility (%)</Label>
+              <Label className="text-xs font-bold uppercase mb-2 block">Volatility (%)</Label>
               <Input
                 type="number"
                 step="0.01"
                 value={params.sigma * 100}
                 onChange={(e) => setParams({ ...params, sigma: parseFloat(e.target.value) / 100 })}
+                className="rounded-none border-1 font-mono"
               />
             </div>
             <div>
-              <Label>Option Type</Label>
+              <Label className="text-xs font-bold uppercase mb-2 block">Option Type</Label>
               <Select
                 value={params.option_type}
                 onValueChange={(value) => setParams({ ...params, option_type: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="rounded-none border-1 font-mono">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="call">Call</SelectItem>
-                  <SelectItem value="put">Put</SelectItem>
+                  <SelectItem value="call" className="font-mono">Call</SelectItem>
+                  <SelectItem value="put" className="font-mono">Put</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -125,35 +135,45 @@ export function OptionsCalculator({ symbol = 'AAPL', currentPrice = 150 }: Optio
       </Card>
 
       {result && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Results</CardTitle>
+        <Card className="rounded-none border-1">
+          <CardHeader className="border-b-1 bg-muted/30">
+            <CardTitle className="font-black uppercase flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              Results
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="text-sm text-muted-foreground">Option Price</div>
-                <div className="text-2xl font-bold">${result.price.toFixed(2)}</div>
+              <div className="border-1 p-4">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-1">Option Price</div>
+                <div className="text-2xl font-black font-mono">${result.price.toFixed(2)}</div>
               </div>
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="text-sm text-muted-foreground">Delta</div>
-                <div className="text-2xl font-bold">{result.delta.toFixed(4)}</div>
+              <div className="border-1 p-4">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-1">Delta</div>
+                <div className="text-2xl font-black font-mono flex items-center gap-1">
+                  {result.delta >= 0 ? (
+                    <TrendingUp className="h-4 w-4 text-success" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4 text-destructive" />
+                  )}
+                  {result.delta.toFixed(4)}
+                </div>
               </div>
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="text-sm text-muted-foreground">Gamma</div>
-                <div className="text-2xl font-bold">{result.gamma.toFixed(4)}</div>
+              <div className="border-1 p-4">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-1">Gamma</div>
+                <div className="text-2xl font-black font-mono">{result.gamma.toFixed(4)}</div>
               </div>
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="text-sm text-muted-foreground">Theta</div>
-                <div className="text-2xl font-bold">{result.theta.toFixed(4)}</div>
+              <div className="border-1 p-4">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-1">Theta</div>
+                <div className="text-2xl font-black font-mono">{result.theta.toFixed(4)}</div>
               </div>
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="text-sm text-muted-foreground">Vega</div>
-                <div className="text-2xl font-bold">{result.vega.toFixed(4)}</div>
+              <div className="border-1 p-4">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-1">Vega</div>
+                <div className="text-2xl font-black font-mono">{result.vega.toFixed(4)}</div>
               </div>
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="text-sm text-muted-foreground">Rho</div>
-                <div className="text-2xl font-bold">{result.rho.toFixed(4)}</div>
+              <div className="border-1 p-4">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-1">Rho</div>
+                <div className="text-2xl font-black font-mono">{result.rho.toFixed(4)}</div>
               </div>
             </div>
           </CardContent>

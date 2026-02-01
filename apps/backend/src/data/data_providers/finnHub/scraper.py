@@ -94,7 +94,7 @@ class FinnhubScraper(BaseAPIFetcher):
             logger.info("Successfully connected to Finnhub WebSocket")
             return True
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to connect to Finnhub WebSocket: {str(e)}")
             return False
     
@@ -129,7 +129,7 @@ class FinnhubScraper(BaseAPIFetcher):
             logger.info(f"Subscribed to trades for {symbol}")
             return True
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error subscribing to trades for {symbol}: {str(e)}")
             return False
     
@@ -157,7 +157,7 @@ class FinnhubScraper(BaseAPIFetcher):
             logger.info(f"Subscribed to quote for {symbol}")
             return True
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error subscribing to quote for {symbol}: {str(e)}")
             return False
     
@@ -189,7 +189,7 @@ class FinnhubScraper(BaseAPIFetcher):
             logger.info(f"Subscribed to candles ({resolution}) for {symbol}")
             return True
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error subscribing to candles for {symbol}: {str(e)}")
             return False
     
@@ -201,7 +201,7 @@ class FinnhubScraper(BaseAPIFetcher):
             self.subscribed_symbols.discard(symbol)
             logger.info(f"Unsubscribed from trades for {symbol}")
             return True
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error unsubscribing trades for {symbol}: {str(e)}")
             return False
     
@@ -223,7 +223,7 @@ class FinnhubScraper(BaseAPIFetcher):
         except websockets.exceptions.ConnectionClosed:
             logger.warning("Finnhub WebSocket connection closed")
             self.is_connected = False
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error in listen loop: {str(e)}")
     
     async def _process_websocket_message(self, message):
@@ -256,7 +256,7 @@ class FinnhubScraper(BaseAPIFetcher):
             
             logger.debug(f"Processed WebSocket message: {data.get('type')}")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error processing WebSocket message: {str(e)}")
     
     async def _run_callback(self, callback: Callable, data: dict):
@@ -266,7 +266,7 @@ class FinnhubScraper(BaseAPIFetcher):
                 await callback(data)
             else:
                 callback(data)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error in callback: {str(e)}")
     
     async def get_quote(self, symbol: str) -> Optional[Dict]:
@@ -513,13 +513,13 @@ class FinnhubScraper(BaseAPIFetcher):
                                 volume=float(candle.get('v', 0) or 0),
                             )
                             count += 1
-                        except Exception as e:
+                        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                             logger.debug(f"Error saving candle for {symbol}: {str(e)}")
                             continue
                     
                     logger.info(f"Saved {count} historical prices for {symbol}")
             
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error fetching historical data for {symbol}: {str(e)}")
             
             # Get news
@@ -528,13 +528,13 @@ class FinnhubScraper(BaseAPIFetcher):
                 
                 if news and isinstance(news, dict) and 'data' in news:
                     logger.info(f"Fetched {len(news['data'])} news articles for {symbol}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error fetching news for {symbol}: {str(e)}")
             
             logger.info(f"Successfully fetched and saved data for stock {symbol} (created: {created})")
             return True
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error fetching/saving stock {symbol}: {str(e)}")
             return False
     

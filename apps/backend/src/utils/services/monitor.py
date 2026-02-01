@@ -167,7 +167,7 @@ class PerformanceMonitor:
             
             cache.set(cache_key, data, timeout=300)
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error storing metrics: {e}")
     
     async def get_provider_metrics(self, provider: str) -> Optional[Dict]:
@@ -196,7 +196,7 @@ class PerformanceMonitor:
             
             return None
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting provider metrics: {e}")
             return None
     
@@ -211,7 +211,7 @@ class PerformanceMonitor:
             
             return results
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting all provider metrics: {e}")
             return []
     
@@ -224,7 +224,7 @@ class PerformanceMonitor:
             
             return scores
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting health scores: {e}")
             return {}
     
@@ -240,7 +240,7 @@ class PerformanceMonitor:
             
             return sorted_providers[:limit]
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting slowest providers: {e}")
             return []
     
@@ -261,7 +261,7 @@ class PerformanceMonitor:
             
             return sorted_providers[:limit]
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting error-prone providers: {e}")
             return []
     
@@ -270,7 +270,7 @@ class PerformanceMonitor:
             cache_key = f"cache_hits_{cache_level}"
             current = cache.get(cache_key) or 0
             cache.set(cache_key, current + 1, timeout=3600)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error recording cache hit: {e}")
     
     async def record_cache_miss(self, cache_level: str):
@@ -278,7 +278,7 @@ class PerformanceMonitor:
             cache_key = f"cache_misses_{cache_level}"
             current = cache.get(cache_key) or 0
             cache.set(cache_key, current + 1, timeout=3600)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error recording cache miss: {e}")
     
     async def get_cache_stats(self) -> Dict[str, Any]:
@@ -304,7 +304,7 @@ class PerformanceMonitor:
             
             return stats
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting cache stats: {e}")
             return {}
     
@@ -354,7 +354,7 @@ class PerformanceMonitor:
                 'health_scores': await self.get_health_scores()
             }
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting overall statistics: {e}")
             return {'error': str(e)}
     
@@ -385,7 +385,7 @@ class PerformanceMonitor:
             
             except asyncio.CancelledError:
                 break
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
                 logger.error(f"Error in health check: {e}")
     
     def get_status(self) -> Dict[str, Any]:

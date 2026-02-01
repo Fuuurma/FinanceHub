@@ -124,7 +124,7 @@ async def fetch_crypto_batch(
             "timestamp": datetime.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error in fetch_crypto_batch: {str(e)}")
         return {"error": str(e)}
 
@@ -164,7 +164,7 @@ async def fetch_crypto_quotes(
 
         return data
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error fetching quote for {symbol}: {str(e)}")
         return None
 
@@ -193,7 +193,7 @@ async def fetch_trending_cryptos(limit: int = 10) -> List[dict]:
 
         return trending
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error fetching trending cryptos: {str(e)}")
         return []
 
@@ -225,7 +225,7 @@ async def fetch_top_cryptos(
 
         return top_cryptos
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error fetching top cryptos: {str(e)}")
         return []
 
@@ -283,7 +283,7 @@ async def validate_crypto_batch(symbols: List[str]) -> dict:
             "timestamp": datetime.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error in validate_crypto_batch: {str(e)}")
         return {"error": str(e)}
 
@@ -324,7 +324,7 @@ async def detect_crypto_anomalies(
 
         return anomalies
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error detecting crypto anomalies: {str(e)}")
         return []
 
@@ -351,7 +351,7 @@ async def get_provider_health() -> dict:
 
         return summary
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error getting provider health: {str(e)}")
         return {"error": str(e)}
 
@@ -373,7 +373,7 @@ async def get_validation_summary() -> dict:
 
         return summary
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error getting validation summary: {str(e)}")
         return {"error": str(e)}
 
@@ -398,7 +398,7 @@ async def clear_validation_cache() -> dict:
             "timestamp": datetime.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error clearing validation cache: {str(e)}")
         return {"error": str(e)}
 
@@ -424,7 +424,7 @@ async def periodic_crypto_update() -> dict:
 
         return result
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error in periodic_crypto_update: {str(e)}")
         return {"error": str(e)}
 
@@ -448,6 +448,6 @@ async def periodic_health_check() -> dict:
 
         return health
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error in periodic_health_check: {str(e)}")
         return {"error": str(e)}

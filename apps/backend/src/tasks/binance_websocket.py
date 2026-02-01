@@ -91,7 +91,7 @@ async def start_binance_websocket_stream(symbols: Optional[List[str]] = None) ->
             'timestamp': datetime.now().isoformat()
         }
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error starting Binance WebSocket stream: {str(e)}")
         return {'error': str(e)}
 
@@ -137,7 +137,7 @@ async def _broadcast_ticker_update(symbol: str, data: dict):
         
         logger.debug(f"Broadcasted ticker update for {symbol}: {price}")
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error broadcasting ticker update: {str(e)}")
 
 
@@ -175,7 +175,7 @@ async def _broadcast_trade_update(symbol: str, data: dict):
         
         logger.debug(f"Broadcasted trade update for {symbol}: {quantity} @ {price}")
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error broadcasting trade update: {str(e)}")
 
 
@@ -212,7 +212,7 @@ async def start_binance_order_book_stream(symbols: Optional[List[str]] = None, l
             'timestamp': datetime.now().isoformat()
         }
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error starting Binance order book stream: {str(e)}")
         return {'error': str(e)}
 
@@ -241,7 +241,7 @@ async def get_order_book_snapshot(symbol: str, levels: int = 10) -> Optional[dic
         
         return order_book
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error getting order book snapshot for {symbol}: {str(e)}")
         return None
 
@@ -269,7 +269,7 @@ async def get_trade_stats(symbol: str) -> Optional[dict]:
         
         return stats
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error getting trade stats for {symbol}: {str(e)}")
         return None
 
@@ -298,7 +298,7 @@ async def get_trade_flow(symbol: str, window: int = 100) -> Optional[dict]:
         
         return flow
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error getting trade flow for {symbol}: {str(e)}")
         return None
 
@@ -326,7 +326,7 @@ async def get_large_trades(symbol: str, threshold: float = 5.0, limit: int = 20)
         
         return large_trades
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error finding large trades for {symbol}: {str(e)}")
         return []
 
@@ -354,7 +354,7 @@ async def get_volume_profile(symbol: str, interval: str = '1h', bins: int = 50) 
         
         return volume_profile
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error calculating volume profile for {symbol}: {str(e)}")
         return None
 
@@ -375,7 +375,7 @@ async def get_binance_websocket_stats() -> dict:
         
         return stats
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error getting WebSocket stats: {str(e)}")
         return {'error': str(e)}
 
@@ -409,7 +409,7 @@ async def stop_binance_websocket() -> dict:
             'timestamp': datetime.now().isoformat()
         }
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error stopping Binance WebSocket: {str(e)}")
         return {'error': str(e)}
 
@@ -447,6 +447,6 @@ async def periodic_websocket_health_check() -> dict:
             'timestamp': datetime.now().isoformat()
         }
     
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error in WebSocket health check: {str(e)}")
         return {'error': str(e), 'healthy': False}

@@ -50,6 +50,27 @@
 
 ---
 
+### 📝 TASK ASSIGNED TO SCRIBE - Communication & Docs Review
+**From:** ARIA (Coordination)
+**Date:** Feb 1, 2026
+**Priority:** 🟢 TASK
+
+**Task File:** `tasks/communication/MESSAGE_TO_SCRIBE_DOCUMENTATION_TASKS.md`
+
+**Your Tasks:**
+1. **Archive old communication messages** - Review 27 files in `tasks/communication/`, create archive subfolders
+2. **Update docs/INDEX.md** - Ensure documentation index is current
+3. **Create docs/DOCUMENTATION_GUIDE.md** - Guide for agents on file organization
+
+**Findings Shared:**
+- Tasks folder organized (17 directories, pattern: role/agent/functional)
+- Communication folder is bulky (27 files, mixed messages/announcements/reports)
+- Documentation structure needs audit
+
+**Action Required:** Read task file, complete checklist, report in Agent Updates
+
+---
+
 ## 📢 📚 DOCUMENTATION REORGANIZATION - ALL AGENTS READ
 **From:** Scribe (Documentation Maintainer)
 **Date:** February 1, 2026
@@ -124,7 +145,7 @@ ls /Users/sergi/Desktop/Projects/development-guides/
 | **Charo** | 🟢 Active | Security audits | Today | None | 🔄 Ready for C-036 review |
 | **GRACE** | 🟢 Active | Phase 1 QA Tests Created | Now | None | - |
 | **HADI** | 🟢 Active | Accessibility | Today | None | ⏳ Read Phase 1 tasks |
-| **MIES** | ✅ Complete | Phase 1 Design - DONE | Today | None | - |
+| **MIES** | 🟢 Active | Design System Standardization | Now | None | ✅ Phase 1 done, updating existing components |
 | **Scribe** | 🟢 Active | Documentation reorganization | NEW | None | ✅ Update complete |
 | **Karen** | 🟢 Active | DevOps tickets | Today | None | - |
 
@@ -566,6 +587,33 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 2. Coordinate with Linus on API data structures matching
 3. HADI accessibility audit
 **Coordination:** ✅ Linus - APIs ready, awaiting backend test
+
+---
+
+### MIES - Feb 2, 2026 12:30 AM
+**Status:** 🟢 Active - Additional Design Work
+**Current Task:** Design System Standardization
+
+**Additional Progress (Post Phase 1):**
+- ✅ Updated DrawingTools.tsx - Minimalistic brutalist design system applied
+- ✅ Updated OptionsCalculator.tsx - All inputs, cards, results styled
+- ✅ Created ADDITIONAL_DESIGN_UPDATES.md - Documentation of changes
+
+**Design System Compliance:**
+- Phase 1 Components: 100% compliant
+- C-014 DrawingTools: Updated to brutalist
+- Phase 3 OptionsCalculator: Updated to brutalist
+- Pending: RiskDashboard, BacktestResults, MarketHeatmap
+
+**Components Status:**
+| Category | Total | Compliant |
+|----------|-------|-----------|
+| Phase 1 (C-036, C-037, C-030) | 15 | 100% |
+| Charts (C-014) | 1 | 100% |
+| Options (Phase 3) | 1 | 100% |
+| Risk (existing) | 12 | Partial |
+
+**Next:** Continue standardizing existing components or await Phase 2 (Mobile Apps)
 
 ---
 

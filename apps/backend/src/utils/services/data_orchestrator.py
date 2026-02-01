@@ -186,7 +186,7 @@ class DataOrchestrator:
 
             return None
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Cache lookup failed: {e}")
             return None
 
@@ -215,7 +215,7 @@ class DataOrchestrator:
             )
             if asset and asset.asset_type:
                 return asset.asset_type.name.lower() in ["crypto", "cryptocurrency"]
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error checking asset type: {e}")
 
         return symbol.upper() in ["BTC", "ETH", "SOL", "ADA", "DOGE", "XRP"]
@@ -249,7 +249,7 @@ class DataOrchestrator:
                 else DataFreshness.CACHED,
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to fetch crypto data: {e}")
             raise
 
@@ -292,7 +292,7 @@ class DataOrchestrator:
                 else DataFreshness.CACHED,
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to fetch stock data from Polygon.io: {e}")
 
             try:
@@ -344,7 +344,7 @@ class DataOrchestrator:
                 freshness=DataFreshness.CACHED,
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to fetch news: {e}")
             raise
 
@@ -374,7 +374,7 @@ class DataOrchestrator:
                 freshness=DataFreshness.RECENT,
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to fetch technical indicators: {e}")
             raise
 
@@ -399,7 +399,7 @@ class DataOrchestrator:
                 logger.info("Connected to CoinGecko WebSocket for real-time prices")
 
             return connected
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Failed to connect to CoinGecko WebSocket: {e}")
             return False
 
@@ -447,7 +447,7 @@ class DataOrchestrator:
             )
 
             logger.debug(f"Real-time price update: {symbol} = ${update.price}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
             logger.error(f"Error handling real-time price update: {e}")
 
     def get_websocket_status(self) -> Dict[str, Any]:
@@ -488,7 +488,7 @@ class DataOrchestrator:
                         timestamp=timezone.now(),
                     )
                     count += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Error updating price for {symbol}: {e}")
 
         return {"count": count, "provider": provider}
@@ -546,7 +546,7 @@ class DataOrchestrator:
                     "healthy": is_healthy,
                     "last_checked": timezone.now().isoformat(),
                 }
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 health_status[source.value] = {
                     "healthy": False,
                     "error": str(e),

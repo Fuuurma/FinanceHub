@@ -367,7 +367,7 @@ class PortfolioAnalyticsService:
                     beta=weighted_beta,
                     calculation_period_days=252,
                 )
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
                 logger.error(f"Error saving portfolio beta: {e}")
 
         return result
@@ -457,7 +457,7 @@ class PortfolioAnalyticsService:
                     var_99=None,
                     calculation_period_days=252,
                 )
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
                 logger.error(f"Error saving risk metrics: {e}")
 
         return result
@@ -495,7 +495,7 @@ class PortfolioAnalyticsService:
             monitor.end_operation(f"analytics:{portfolio.id}", success=True)
             return analytics
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             monitor.end_operation(f"analytics:{portfolio.id}", success=False)
             logger.error(
                 f"Error calculating analytics for portfolio {portfolio.id}: {e}"

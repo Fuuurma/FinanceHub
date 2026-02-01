@@ -11,14 +11,20 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     libpq-dev \
     libmariadb-dev \
     pkg-config \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -m venv /opt/venv
+# Install uv (8-10x faster than pip)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
+# Create venv with uv (80x faster than python -m venv)
+RUN uv venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Use uv pip install (8-10x faster than pip)
+RUN uv pip install -r requirements.txt
 
 # =============================================================================
 # Stage 2: Runtime

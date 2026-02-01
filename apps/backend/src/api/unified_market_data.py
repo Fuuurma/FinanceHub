@@ -107,7 +107,7 @@ async def get_unified_market_data(request, payload: MarketDataRequest):
         
     except ExternalAPIException:
         raise
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to fetch market data for {payload.symbol}: {e}")
         raise ServiceException(f"Failed to fetch market data for {payload.symbol}")
 
@@ -172,7 +172,7 @@ async def get_batch_market_data(request, payload: BatchMarketDataRequest):
             failed=failed
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Batch market data fetch failed: {e}")
         raise ServiceException("Batch market data fetch failed")
 
@@ -216,7 +216,7 @@ async def get_price(request, symbol: str, force_refresh: bool = False):
         raise NotFoundException("Asset", symbol)
     except NotFoundException:
         raise
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to fetch price for {symbol}: {e}")
         raise ServiceException(f"Failed to fetch price for {symbol}")
 
@@ -255,7 +255,7 @@ async def get_historical(request, symbol: str, days: int = 30, timespan: str = '
         raise NotFoundException("Asset", symbol)
     except NotFoundException:
         raise
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to fetch historical data for {symbol}: {e}")
         raise ServiceException(f"Failed to fetch historical data for {symbol}")
 
@@ -302,7 +302,7 @@ async def get_news(
         raise NotFoundException("Asset", symbol)
     except ExternalAPIException:
         raise
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to fetch news: {e}")
         raise ServiceException("Failed to fetch news")
 
@@ -343,7 +343,7 @@ async def get_technical_indicators(
         raise NotFoundException("Asset", symbol)
     except NotFoundException:
         raise
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to fetch technical indicators for {symbol}: {e}")
         raise ServiceException(f"Failed to fetch technical indicators for {symbol}")
 
@@ -376,7 +376,7 @@ async def get_fundamentals(request, symbol: str):
         raise NotFoundException("Asset", symbol)
     except NotFoundException:
         raise
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to fetch fundamentals for {symbol}: {e}")
         raise ServiceException(f"Failed to fetch fundamentals for {symbol}")
 
@@ -387,7 +387,7 @@ async def get_cache_statistics(request):
     """Get cache statistics"""
     try:
         return await orchestrator.cache_manager.get_statistics()
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to get cache statistics: {e}")
         raise DatabaseException("Failed to retrieve cache statistics")
 
@@ -403,7 +403,7 @@ async def clear_cache(request, pattern: Optional[str] = None):
         else:
             await orchestrator.cache_manager.clear_all()
             return {"message": "All cache cleared"}
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to clear cache: {e}")
         raise DatabaseException("Failed to clear cache")
 
@@ -424,7 +424,7 @@ async def get_market_statistics(request):
             call_planner_stats=stats['call_planner_stats']
         )
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to get market statistics: {e}")
         raise ServiceException("Failed to get market statistics")
 
@@ -447,7 +447,7 @@ async def get_provider_health(request):
         
         return responses
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to get provider health: {e}")
         raise ServiceException("Failed to get provider health")
 
@@ -468,6 +468,6 @@ async def prefetch_data(request, symbols: List[str], data_types: List[str]):
             "data_types": data_types
         }
         
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Failed to prefetch data: {e}")
         raise ServiceException("Failed to prefetch data")

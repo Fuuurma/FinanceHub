@@ -80,9 +80,9 @@ export function OrderBook({
     return Math.max(maxBid, maxAsk)
   }, [data])
 
-  const spread = data?.metrics.spread
-  const spreadPct = data?.metrics.spread_pct
-  const imbalance = data?.metrics.order_imbalance
+  const spread = data?.metrics.spread ?? null
+  const spreadPct = data?.metrics.spread_pct ?? null
+  const imbalance = data?.metrics.order_imbalance ?? null
 
   const getDepthBarWidth = (total: number) => {
     if (maxTotal === 0) return '0%'

@@ -178,25 +178,35 @@ export function DrawingTools({
 
   return (
     <div className={cn('space-y-4', className)}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="rounded-none border-1">
+        <CardHeader className="border-b-1">
+          <CardTitle className="flex items-center gap-2 font-black uppercase">
             <Type className="h-5 w-5" />
             Drawing Tools
-            <Badge variant="secondary">{drawings.length} drawings</Badge>
+            <Badge variant="outline" className="rounded-none font-mono text-xs">{drawings.length} drawings</Badge>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="font-mono text-xs">
             Draw support, resistance, and annotations on charts
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'tools' | 'manage')}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="tools">Tools</TabsTrigger>
-              <TabsTrigger value="manage">Manage</TabsTrigger>
+            <TabsList className="rounded-none border-2 bg-transparent p-0 h-auto w-full justify-start mb-4">
+              <TabsTrigger 
+                value="tools"
+                className="rounded-none border-2 border-b-0 data-[state=active]:bg-foreground data-[state=active]:text-background px-4 py-2 font-black uppercase text-xs"
+              >
+                Tools
+              </TabsTrigger>
+              <TabsTrigger 
+                value="manage"
+                className="rounded-none border-2 border-b-0 data-[state=active]:bg-foreground data-[state=active]:text-background px-4 py-2 font-black uppercase text-xs"
+              >
+                Manage
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="tools" className="space-y-4 mt-4">
+            <TabsContent value="tools" className="space-y-4 mt-0">
               <div className="grid grid-cols-2 gap-2">
                 {DRAWING_TOOLS.map((tool) => (
                   <Button
@@ -204,8 +214,10 @@ export function DrawingTools({
                     variant={selectedTool === tool.type ? 'default' : 'outline'}
                     onClick={() => handleSelectTool(tool.type as DrawingType)}
                     className={cn(
-                      'gap-2 justify-start',
-                      selectedTool === tool.type && 'bg-primary text-primary-foreground'
+                      'gap-2 justify-start rounded-none font-bold uppercase text-xs',
+                      selectedTool === tool.type 
+                        ? 'bg-foreground text-background' 
+                        : 'border-2'
                     )}
                   >
                     {getToolIcon(tool.type as DrawingType)}
@@ -215,14 +227,14 @@ export function DrawingTools({
               </div>
 
               {selectedTool && (
-                <Card className="bg-muted/30 border-2 border-primary">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">
+                <Card className="rounded-none border-2 border-foreground bg-muted/30">
+                  <CardHeader className="pb-3 border-b-2">
+                    <CardTitle className="text-sm font-black uppercase">
                       Selected: {getToolLabel(selectedTool)}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="text-sm text-muted-foreground">
+                  <CardContent className="space-y-3 p-4">
+                    <div className="text-sm text-muted-foreground font-mono text-xs">
                       {selectedTool === 'horizontal_line' && 'Click to set price level'}
                       {selectedTool === 'vertical_line' && 'Click to set time point'}
                       {selectedTool === 'trend_line' && 'Drag to draw trend line'}
@@ -232,10 +244,10 @@ export function DrawingTools({
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => onToolSelect?.(null)}>
+                      <Button variant="outline" size="sm" onClick={() => onToolSelect?.(null)} className="rounded-none border-2 font-bold uppercase text-xs">
                         Cancel
                       </Button>
-                      <Button size="sm" className="flex-1">
+                      <Button size="sm" className="flex-1 rounded-none font-black uppercase text-xs">
                         <Save className="h-4 w-4 mr-2" />
                         Save Drawing
                       </Button>
@@ -244,14 +256,14 @@ export function DrawingTools({
                 </Card>
               )}
 
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                <p className="text-xs text-blue-600 dark:text-blue-500">
+              <div className="bg-primary/10 border-2 border-primary/30 p-3">
+                <p className="text-xs text-foreground font-mono">
                   <strong>Tip:</strong> Select a drawing tool, then click and drag on the chart to create. Drawings are saved per symbol and timeframe.
                 </p>
               </div>
 
-              <div className="border-t pt-4">
-                <Label className="text-xs font-medium text-muted-foreground mb-2 block">
+              <div className="border-t-2 pt-4">
+                <Label className="text-xs font-bold uppercase text-muted-foreground mb-2 block">
                   Export & Share
                 </Label>
                 <div className="grid grid-cols-2 gap-2">
@@ -260,6 +272,7 @@ export function DrawingTools({
                     size="sm"
                     onClick={handleScreenshot}
                     disabled={isTakingScreenshot || !onScreenshot}
+                    className="rounded-none border-2 font-bold uppercase text-xs"
                   >
                     {isTakingScreenshot ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -273,6 +286,7 @@ export function DrawingTools({
                     size="sm"
                     onClick={handleShare}
                     disabled={isSharing || !onShare}
+                    className="rounded-none border-2 font-bold uppercase text-xs"
                   >
                     {isSharing ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -285,12 +299,12 @@ export function DrawingTools({
               </div>
             </TabsContent>
 
-            <TabsContent value="manage" className="space-y-4 mt-4">
+            <TabsContent value="manage" className="space-y-4 mt-0">
               {drawings.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground border-2 border-dashed p-8">
                   <Type className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No drawings yet</p>
-                  <p className="text-sm">Use drawing tools to create annotations</p>
+                  <p className="font-black uppercase">No drawings yet</p>
+                  <p className="text-sm font-mono text-muted-foreground">Use drawing tools to create annotations</p>
                 </div>
               ) : (
                 <>
@@ -299,7 +313,7 @@ export function DrawingTools({
                       variant="outline"
                       size="sm"
                       onClick={handleClearAll}
-                      className="text-destructive"
+                      className="rounded-none border-2 font-bold uppercase text-xs text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Clear All
@@ -310,15 +324,15 @@ export function DrawingTools({
                     {drawings.map((drawing) => (
                       <div
                         key={drawing.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                        className="flex items-center justify-between p-3 border-2 rounded-none hover:bg-muted/50"
                       >
                         <div className="flex items-center gap-3">
                           {getToolIcon(drawing.type)}
                           <div>
-                            <p className="font-medium text-sm">
+                            <p className="font-bold uppercase text-sm">
                               {getToolLabel(drawing.type)}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs font-mono text-muted-foreground">
                               {new Date(drawing.created_at).toLocaleString()}
                             </p>
                           </div>
@@ -327,11 +341,13 @@ export function DrawingTools({
                           <Switch
                             checked={drawing.visible}
                             onCheckedChange={() => handleToggleVisibility(drawing.id)}
+                            className="rounded-none"
                           />
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteDrawing(drawing.id)}
+                            className="rounded-none"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

@@ -76,7 +76,7 @@ class UniversalSearchService:
                 "total_count": total_count,
                 "suggestions": suggestions,
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             return {"results": [], "total_count": 0, "suggestions": [], "error": str(e)}
 
     def _annotate_relevance(self, queryset, query: str):
@@ -223,7 +223,7 @@ class UniversalSearchService:
                 "filters_applied": filters or {},
                 "sort": {"field": sort_field, "order": sort_order},
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             return {"results": [], "total_count": 0, "error": str(e)}
 
     def _apply_filters(self, queryset, filters: Dict):
@@ -370,7 +370,7 @@ class UniversalSearchService:
             )
 
             return {"success": True, "id": search.id, "name": search.name}
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             return {"success": False, "error": str(e)}
 
     def get_saved_searches(self, user_id: int) -> List[Dict]:
@@ -412,7 +412,7 @@ class UniversalSearchService:
             )
 
             return {"success": True, "id": comparison.id, "name": comparison.name}
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             return {"success": False, "error": str(e)}
 
     def get_comparison(self, comparison_id: int) -> Dict:
@@ -450,5 +450,5 @@ class UniversalSearchService:
             }
         except AssetComparison.DoesNotExist:
             return {"error": "Comparison not found"}
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             return {"error": str(e)}

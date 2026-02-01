@@ -56,7 +56,7 @@ def fetch_company_info_sec(self, symbol: str) -> Dict[str, Any]:
         else:
             return {"status": "error", "message": f"No company info found for {symbol}"}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching SEC company info for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -102,7 +102,7 @@ def fetch_company_filings_sec(
             "count": len(filings),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching SEC filings for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -148,7 +148,7 @@ def fetch_all_filings_sec(self, symbol: str, count: int = 20) -> Dict[str, Any]:
             "count": len(filings),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching all SEC filings for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -192,7 +192,7 @@ def fetch_insider_transactions_sec(
             "count": len(transactions),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching insider transactions for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -234,7 +234,7 @@ def fetch_quarterly_reports_sec(self, symbol: str, count: int = 8) -> Dict[str, 
             "count": len(reports),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching quarterly reports for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -276,7 +276,7 @@ def fetch_annual_reports_sec(self, symbol: str, count: int = 5) -> Dict[str, Any
             "count": len(reports),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching annual reports for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -318,7 +318,7 @@ def fetch_current_reports_sec(self, symbol: str, count: int = 10) -> Dict[str, A
             "count": len(reports),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching current reports for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -358,7 +358,7 @@ def fetch_filings_summary_sec(self, symbol: str) -> Dict[str, Any]:
             "symbol": symbol,
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error fetching filings summary for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -388,7 +388,7 @@ def fetch_filing_document_sec(self, url: str) -> Dict[str, Any]:
         else:
             return {"status": "error", "message": "Failed to download document"}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error downloading filing document: {e}")
         raise self.retry(exc=e)
 
@@ -416,7 +416,7 @@ def sync_sec_provider_status(self) -> Dict[str, Any]:
             "checked_at": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
         logger.error(f"Error checking SEC Edgar status: {e}")
         return {
             "status": "error",
@@ -461,7 +461,7 @@ def fetch_filings_batch_sec(
                 "status": "success",
                 "summary": summary,
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, DatabaseError, OperationalError) as e:
             results[symbol] = {
                 "status": "error",
                 "message": str(e),

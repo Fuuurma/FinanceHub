@@ -60,7 +60,7 @@ class WebSocketConnectionMetrics:
             
             self._connections[channel_name] = connection_info
             logger.info(f"Recorded connection for user {user_id}: {channel_name}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error recording connection: {e}")
     
     def record_disconnection(self, user_id: str):
@@ -73,7 +73,7 @@ class WebSocketConnectionMetrics:
         try:
             disconnected_at = datetime.utcnow().isoformat()
             logger.info(f"Recorded disconnection for user {user_id} at {disconnected_at}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error recording disconnection: {e}")
     
     def record_error(self, error: str, context: Optional[Dict[str, Any]] = None):
@@ -98,7 +98,7 @@ class WebSocketConnectionMetrics:
                 self._errors = self._errors[-self._max_error_entries:]
             
             logger.error(f"Recorded error: {error}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error recording error: {e}")
     
     def update_activity(self, channel_name: str):
@@ -111,7 +111,7 @@ class WebSocketConnectionMetrics:
         try:
             if channel_name in self._connections:
                 self._connections[channel_name]['last_activity'] = datetime.utcnow().isoformat()
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error updating activity: {e}")
     
     def add_subscription(self, user_id: str, data_type: str, symbol: str):
@@ -127,7 +127,7 @@ class WebSocketConnectionMetrics:
             subscription_key = f"{data_type}:{symbol}"
             self._subscriptions[user_id].add(subscription_key)
             logger.debug(f"Added subscription for {user_id}: {subscription_key}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error adding subscription: {e}")
     
     def remove_subscription(self, user_id: str, data_type: str, symbol: str):
@@ -143,7 +143,7 @@ class WebSocketConnectionMetrics:
             subscription_key = f"{data_type}:{symbol}"
             self._subscriptions[user_id].discard(subscription_key)
             logger.debug(f"Removed subscription for {user_id}: {subscription_key}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error removing subscription: {e}")
     
     def get_metrics_summary(self) -> Dict[str, Any]:
@@ -170,7 +170,7 @@ class WebSocketConnectionMetrics:
                 'total_errors': len(self._errors),
                 'timestamp': datetime.utcnow().isoformat()
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting metrics summary: {e}")
             return {}
     
@@ -203,7 +203,7 @@ class WebSocketConnectionMetrics:
                 'subscriptions': user_subscriptions,
                 'timestamp': datetime.utcnow().isoformat()
             }
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting connection info: {e}")
             return {}
     
@@ -229,7 +229,7 @@ class WebSocketConnectionMetrics:
             
             if to_remove:
                 logger.info(f"Cleaned up {len(to_remove)} old connection records")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error cleaning up old records: {e}")
     
     def get_all_connections(self) -> List[Dict[str, Any]]:
@@ -250,7 +250,7 @@ class WebSocketConnectionMetrics:
                     'user_agent': conn_info.get('user_agent')
                 })
             return connections
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
             logger.error(f"Error getting all connections: {e}")
             return []
 
@@ -264,6 +264,6 @@ def get_websocket_metrics() -> Optional[WebSocketConnectionMetrics]:
     """
     try:
         return WebSocketConnectionMetrics()
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, CacheError) as e:
         logger.error(f"Error getting websocket metrics: {e}")
         return None
