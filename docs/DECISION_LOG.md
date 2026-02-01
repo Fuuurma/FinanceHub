@@ -8,10 +8,86 @@
 | 2026-01-31 | Karen as 2nd in Command | Need coordination layer | GAUDÍ manages all | ✅ Karen handles DevOps + coder coordination |
 | 2026-01-31 | S-008 Docker Base Image | 4 CRITICAL, 7 HIGH vulns | Stay on bullseye, fix manually | ✅ Update to python:3.11-slim-bookworm |
 | 2026-01-31 | Coder Task Enhancement | Coders struggling | Full code examples vs specs | ✅ 12,000+ lines of guidance added |
+| **2026-02-01** | **Strategic Direction 2026** | **Needed clear roadmap** | **Open-source vs commercial** | ✅ **Commercial platform, phased priorities** |
+| **2026-02-01** | **Design System Architecture** | **70+ design inconsistencies** | **Brutalist vs clean vs hybrid** | ✅ **Hybrid: Brutalist (marketing) + Clean (dashboard)** |
+| **2026-02-01** | **Security Implementation Order** | **Critical vulnerabilities** | **Fix all vs prioritize** | ✅ **Token rotation + Decimal first, others defer** |
 
 ---
 
-## Recent Decisions
+## Recent Decisions (Latest First)
+
+### 7. Strategic Direction 2026 (Feb 1, 2026) ⭐
+**Decision:** Position FinanceHub as commercial platform with phased feature rollout
+
+**Context:**
+- Competitor analysis revealed feature gaps
+- Needed clear strategic direction for 2026
+- User input required on business positioning
+
+**Alternatives Considered:**
+- Open-source platform - REJECTED (user wants business)
+- All features at once - REJECTED (unfocused)
+- **Phased approach: Paper Trading → Social Sentiment → Broker** - APPROVED ✅
+
+**Outcome:**
+- Business positioning: Commercial platform (NOT open-source)
+- Phase 1: C-036 (Paper Trading) → C-037 (Social Sentiment) → C-030 (Broker)
+- Phase 2: Mobile apps (iOS/Android) - USER APPROVED
+- Quality-driven (no artificial timelines)
+
+**Made By:** GAUDÍ + USER
+**Documents:** `tasks/architect/STRATEGIC_ROADMAP_2026.md`
+
+---
+
+### 8. Design System Architecture (Feb 1, 2026) ⭐
+**Decision:** Hybrid design system with clear brutalist/clean separation
+
+**Context:**
+- MIES identified 70+ instances of design inconsistency
+- Two competing design languages (brutalist vs clean)
+- 60% consistency - needed improvement
+
+**Alternatives Considered:**
+- Fully brutalist - REJECTED (too harsh for dashboard)
+- Fully clean/shadcn - REJECTED (loses brand identity)
+- **Hybrid with clear rules** - APPROVED ✅
+
+**Outcome:**
+- Marketing pages: Brutalist design (bold, sharp edges)
+- Dashboard/app: Clean shadcn/ui (consistent, usable)
+- Target: 95% consistency (up from 60%)
+- MIES empowered to fix inconsistencies
+
+**Made By:** GAUDÍ + MIES
+**Documents:** `tasks/architect/DECISION_DESIGN_DIRECTION.md`
+
+---
+
+### 9. Security Implementation Order (Feb 1, 2026) ⭐
+**Decision:** Implement critical security first, defer others to coders
+
+**Context:**
+- Token replay attacks possible (S-008)
+- Float precision errors in financial calculations (S-009)
+- 654 broad exception handlers (S-011)
+
+**Alternatives Considered:**
+- Fix all security issues at once - REJECTED (too much work)
+- **Fix critical first, defer others** - APPROVED ✅
+
+**Outcome:**
+- Created `BlacklistedToken` model for token rotation
+- Created `utils/financial.py` for decimal utilities
+- Updated middleware for token rotation
+- S-010, S-011 deferred to coders (not blocking)
+
+**Made By:** GAUDÍ
+**Documents:** Commit `a193382`
+
+---
+
+## Historical Decisions
 
 ### 1. Agent Communication Protocol (Jan 31, 2026)
 **Decision:** Establish daily reports from all agents at 5:00 PM
@@ -141,5 +217,8 @@
 
 ---
 
-**Last Updated:** January 31, 2026
+**Last Updated:** February 1, 2026
 **Next Review:** February 7, 2026
+
+**Total Decisions:** 9
+**Recent Decisions (Feb 1):** 3 major strategic decisions

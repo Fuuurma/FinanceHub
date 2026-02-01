@@ -1,7 +1,7 @@
 # FinanceHub Documentation Index
 
-**Last Updated:** January 30, 2026
-**Status:** 100% Migration Complete
+**Last Updated:** February 1, 2026
+**Status:** Strategic Phase - Roadmap Approved
 
 ---
 
@@ -9,6 +9,8 @@
 
 - [Getting Started](#-getting-started)
 - [Architecture](#-architecture)
+- [Design](#-design)
+- [Strategic Planning](#-strategic-planning)
 - [Development](#-development)
 - [Operations](#-operations)
 - [Security](#-security)
@@ -45,11 +47,59 @@ System design, database schema, and implementation plans.
 - [IMPLEMENTATION_ROADMAP.md](architecture/IMPLEMENTATION_ROADMAP.md) - Feature implementation plan
 - [FEATURES_SPECIFICATION.md](architecture/FEATURES_SPECIFICATION.md) - Feature specifications
 - [FEATURE_IMPLEMENTATION_GUIDES.md](architecture/FEATURE_IMPLEMENTATION_GUIDES.md) - Implementation guides
+- [../../tasks/architect/STRATEGIC_ROADMAP_2026.md](../tasks/architect/STRATEGIC_ROADMAP_2026.md) - **2026 Strategic Roadmap** ⭐ NEW
+
+### Planning & Roadmap
+- [IMPLEMENTATION_ROADMAP.md](architecture/IMPLEMENTATION_ROADMAP.md) - Feature implementation plan
+- [FEATURES_SPECIFICATION.md](architecture/FEATURES_SPECIFICATION.md) - Feature specifications
+- [FEATURE_IMPLEMENTATION_GUIDES.md](architecture/FEATURE_IMPLEMENTATION_GUIDES.md) - Implementation guides
 
 ### Issue Tracking
 - [ARCHITECTURAL_ORDERS.md](architecture/ARCHITECTURAL_ORDERS.md) - Architectural decisions
 - [ARCHITECTURAL_ISSUE_DOUBLE_EXCHANGE_TABLES.md](architecture/ARCHITECTURAL_ISSUE_DOUBLE_EXCHANGE_TABLES.md) - Known issue documentation
 - [INFRASTRUCTURE_CLARIFICATION_PLAN.md](architecture/INFRASTRUCTURE_CLARIFICATION_PLAN.md) - Infrastructure clarifications
+
+---
+
+## 🎨 Design
+
+UI/UX design system and component architecture.
+
+- [../../tasks/architect/DECISION_DESIGN_DIRECTION.md](../tasks/architect/DECISION_DESIGN_DIRECTION.md) - **Design System Decision** ⭐ NEW
+- [../../docs/design/DESIGN_SYSTEM.md](design/DESIGN_SYSTEM.md) - Design system documentation
+- [../../tasks/reports/MIES_INITIAL_REPORT.md](../tasks/reports/MIES_INITIAL_REPORT.md) - Design audit report
+
+---
+
+## 🎯 Strategic Planning
+
+Competitive analysis, feature gaps, and strategic direction.
+
+- [../../tasks/architect/COMPETITIVE_ANALYSIS_FEB1.md](../tasks/architect/COMPETITIVE_ANALYSIS_FEB1.md) - **Competitor Research & Feature Gaps** ⭐ NEW
+- [../../tasks/architect/STRATEGIC_ROADMAP_2026.md](../tasks/architect/STRATEGIC_ROADMAP_2026.md) - **Strategic Roadmap** ⭐ NEW
+- [../../tasks/architect/DECISION_DESIGN_DIRECTION.md](../tasks/architect/DECISION_DESIGN_DIRECTION.md) - **Design System Decision** ⭐ NEW
+
+**Key Strategic Decisions:**
+- Business positioning: Commercial platform (NOT open-source)
+- Phase 1 priorities: Paper Trading → Social Sentiment → Broker Integration
+- Phase 2: Mobile Apps (iOS/Android) - APPROVED
+- Quality-driven development (no artificial deadlines)
+
+---
+
+## 💻 Development
+- [ARCHITECTURAL_ORDERS.md](architecture/ARCHITECTURAL_ORDERS.md) - Architectural decisions
+- [ARCHITECTURAL_ISSUE_DOUBLE_EXCHANGE_TABLES.md](architecture/ARCHITECTURAL_ISSUE_DOUBLE_EXCHANGE_TABLES.md) - Known issue documentation
+- [INFRASTRUCTURE_CLARIFICATION_PLAN.md](architecture/INFRASTRUCTURE_CLARIFICATION_PLAN.md) - Infrastructure clarifications
+
+---
+
+## 🎨 Design
+
+UI/UX design system, guidelines, and component patterns.
+
+### Design System
+- [DESIGN_SYSTEM.md](design/DESIGN_SYSTEM.md) - Complete design system documentation
 
 ---
 
@@ -168,6 +218,7 @@ Reference guides, onboarding, and status documents.
 docs/
 ├── agents/           # Agent communication, instructions, workflows
 ├── architecture/     # System design, database schema, roadmaps
+├── design/           # Design system, UI guidelines, component patterns
 ├── development/      # Development guides, implementation docs
 ├── migration/        # Migration records, progress summaries
 ├── operations/       # DevOps, infrastructure, cost analysis
@@ -201,13 +252,14 @@ docs/
 | Category | Files |
 |----------|-------|
 | Architecture | 9 |
+| Design | 1 |
 | Development | 7 |
 | Operations | 9 |
 | Security | 8 |
 | Agents | 3 |
 | References | 6 |
 | Root Docs | 6 |
-| **Total** | **48+** |
+| **Total** | **49+** |
 
 ---
 
