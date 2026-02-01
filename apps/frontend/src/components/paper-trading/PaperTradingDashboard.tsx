@@ -12,6 +12,7 @@ import {
   TrendingUp, TrendingDown, RefreshCw, AlertTriangle, Info,
   DollarSign, Trophy, Target, Zap
 } from 'lucide-react'
+import { apiClient } from '@/lib/api/client'
 
 interface PaperTradingDashboardProps {
   className?: string
@@ -27,10 +28,8 @@ export function PaperTradingDashboard({ className }: PaperTradingDashboardProps)
 
     setResetting(true)
     try {
-      const response = await fetch('/api/paper-trading/reset', { method: 'POST' })
-      if (response.ok) {
-        window.location.reload()
-      }
+      await apiClient.post('/paper-trading/reset')
+      window.location.reload()
     } catch (error) {
       console.error('Reset failed:', error)
     } finally {

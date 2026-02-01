@@ -497,6 +497,7 @@ export function OptionsChain() {
                       step="0.01"
                       value={filters.strike_range_min}
                       onChange={(e) => handleFilterChange('strike_range_min', parseFloat(e.target.value) || 0)}
+                      aria-label="Minimum strike price"
                     />
                   </div>
                   <div>
@@ -508,6 +509,7 @@ export function OptionsChain() {
                       step="0.01"
                       value={filters.strike_range_max}
                       onChange={(e) => handleFilterChange('strike_range_max', parseFloat(e.target.value) || 0)}
+                      aria-label="Maximum strike price"
                     />
                   </div>
                   <div>
@@ -518,6 +520,7 @@ export function OptionsChain() {
                       type="number"
                       value={filters.volume_min}
                       onChange={(e) => handleFilterChange('volume_min', parseFloat(e.target.value) || 0)}
+                      aria-label="Minimum volume"
                     />
                   </div>
                 </div>
@@ -658,6 +661,7 @@ function OptionChainTable({ options, symbol, onSelect, getStrikeClass }: OptionC
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10"
+          aria-label="Search options by symbol, name, or strike price"
         />
       </div>
 

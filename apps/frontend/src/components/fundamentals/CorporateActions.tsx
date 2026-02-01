@@ -203,7 +203,7 @@ export function CorporateActions({ symbol = 'AAPL', className }: CorporateAction
           </CardTitle>
           <div className="flex items-center gap-2">
             <Select value={actionType} onValueChange={setActionType}>
-              <SelectTrigger className="w-36 h-8">
+              <SelectTrigger className="w-36 h-8" aria-label="Corporate action type filter">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>

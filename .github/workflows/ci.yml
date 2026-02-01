@@ -48,9 +48,52 @@ jobs:
       - name: MyPy type check
         run: |
           cd apps/backend/src
-          mypy . --ignore-missing-imports || true
+          mypy . --ignore-missing-imports
+
+  migration-check:
+    name: Check Migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: finance_hub_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgres://test:test@localhost:5432/finance_hub_test
+      DJANGO_SECRET_KEY: test-secret-key-for-ci
+      DJANGO_SETTINGS_MODULE: core.settings
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd apps/backend
+          pip install -r requirements-testing.txt
+
+      - name: Check for unapplied migrations
+        run: |
+          cd apps/backend/src
+          python manage.py makemigrations --check --dry-run
 
   backend-test:
+    needs: [backend-lint, migration-check]
     name: apps/backend Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -58,7 +58,7 @@ export function PositionSizeCalculator({ onCalculate, className }: PositionSizeC
     }
 
     try {
-      const response = await fetch('/api/risk/position-size', {
+      const response = await fetch('/risk/position-size', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input)

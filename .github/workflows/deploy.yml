@@ -55,10 +55,6 @@ jobs:
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
 
-      - name: Wait for deployment
-        run: |
-          sleep 30
-
       - name: Run smoke tests with retry
         run: |
           # Health check with retry
@@ -151,10 +147,6 @@ jobs:
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
 
-      - name: Wait for deployment
-        run: |
-          sleep 60
-
       - name: Verify deployment with retry
         run: |
           for i in {1..3}; do
@@ -212,12 +204,10 @@ jobs:
           done
 
       - name: Create GitHub release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
           body: |
             ## Release v${{ github.run_number }}
 
@@ -233,6 +223,8 @@ jobs:
             - [x] Deployment successful
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify team
         uses: 8398a7/action-slack@v3
@@ -241,6 +233,138 @@ jobs:
           status: ${{ job.status }}
           text: |
             Production deployment ${{ job.status }}
+            Release: v${{ github.run_number }}
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  rollback-staging:
+    name: Rollback Staging on Failure
+    if: failure()
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get previous stable task definition
+        id: get-previous
+        run: |
+          # Get last successful deployment
+          PREV_TASK=$(aws ecs describe-services \
+            --cluster finance-hub-staging \
+            --services finance-hub-api \
+            --region ${{ env.AWS_REGION }} \
+            --query 'services[0].deployments[0].taskDefinition' \
+            --output text)
+
+          echo "Previous task: $PREV_TASK"
+          echo "PREV_TASK=$PREV_TASK" >> $GITHUB_OUTPUT
+
+      - name: Rollback to previous version
+        run: |
+          aws ecs update-service \
+            --cluster finance-hub-staging \
+            --service finance-hub-api \
+            --task-definition ${{ steps.get-previous.outputs.PREV_TASK }} \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Verify rollback
+        run: |
+          for i in {1..5}; do
+            if curl -f https://staging.financehub.com/health; then
+              echo "Rollback successful (attempt $i)"
+              exit 0
+            fi
+            echo "Waiting for rollback... ($i/5)"
+            sleep 10
+          done
+          echo "Rollback verification failed"
+          exit 1
+
+      - name: Notify team of rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'failure'
+          text: |
+            🚨 ROLLBACK TRIGGERED - Staging
+            Previous version restored
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  rollback-production:
+    name: Rollback Production on Failure
+    if: failure()
+    needs: deploy-production
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get previous stable task definition
+        id: get-previous
+        run: |
+          PREV_TASK=$(aws ecs describe-services \
+            --cluster finance-hub-production \
+            --services finance-hub-api \
+            --region ${{ env.AWS_REGION }} \
+            --query 'services[0].deployments[0].taskDefinition' \
+            --output text)
+
+          echo "Previous task: $PREV_TASK"
+          echo "PREV_TASK=$PREV_TASK" >> $GITHUB_OUTPUT
+
+      - name: Rollback to previous version
+        run: |
+          aws ecs update-service \
+            --cluster finance-hub-production \
+            --service finance-hub-api \
+            --task-definition ${{ steps.get-previous.outputs.PREV_TASK }} \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Verify rollback
+        run: |
+          for i in {1..10}; do
+            if curl -f https://financehub.com/health; then
+              echo "Rollback successful (attempt $i)"
+              exit 0
+            fi
+            echo "Waiting for rollback... ($i/10)"
+            sleep 10
+          done
+          echo "Rollback verification failed"
+          exit 1
+
+      - name: Notify team of rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'failure'
+          text: |
+            🚨🚨 URGENT ROLLBACK - Production 🚨🚨
+            Previous version restored
             Release: v${{ github.run_number }}
             Commit: ${{ github.sha }}
             Actor: ${{ github.actor }}

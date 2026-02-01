@@ -41,26 +41,60 @@ export function BacktestRunner({ className }: BacktestRunnerProps) {
   const runBacktest = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/backtest/run', {
+      const response = await fetch('/backtesting/backtests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           strategy_type: strategy,
-          symbol,
+          asset_ids: [symbol],
           start_date: startDate,
           end_date: endDate,
           initial_capital: parseFloat(capital),
+          config: {},
         }),
       });
       const data = await response.json();
-      if (data.metrics) {
-        setResult(data.metrics);
+      if (data.id) {
+        // Backtest created, now run it
+        await fetch(`/backtesting/backtests/${data.id}/run`, { method: 'POST' });
+        // Poll for results
+        const pollResult = await pollBacktestResult(data.id);
+        if (pollResult && pollResult.metrics) {
+          setResult({
+            total_return_pct: parseFloat(pollResult.metrics.total_return) || 0,
+            annual_return_pct: 0,
+            max_drawdown_pct: parseFloat(pollResult.metrics.max_drawdown) || 0,
+            sharpe_ratio: parseFloat(pollResult.metrics.sharpe_ratio) || 0,
+            win_rate: parseFloat(pollResult.metrics.win_rate) || 0,
+            total_trades: pollResult.total_trades || 0,
+            profit_factor: parseFloat(pollResult.metrics.profit_factor) || 0,
+          });
+        }
       }
     } catch (error) {
       console.error('Backtest failed:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const pollBacktestResult = async (backtestId: string, maxAttempts = 30): Promise<any> => {
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const response = await fetch(`/backtesting/backtests/${backtestId}`);
+        const data = await response.json();
+        if (data.status === 'completed' && data.metrics) {
+          return data;
+        }
+        if (data.status === 'failed') {
+          return null;
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    return null;
   };
 
   const getReturnColor = (value: number) => {

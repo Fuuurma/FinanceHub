@@ -272,7 +272,7 @@ def populate_stocks_sync():
                         )
                     except Exception as e:
                         # If creation fails (e.g., multi-table inheritance issue), continue without StockAsset
-                        print(
+                        logger.warning(
                             f"  Warning: Could not create StockAsset for {symbol}: {e}"
                         )
 
@@ -352,12 +352,12 @@ def populate_stocks_sync():
                         },
                     )
 
-            print(
+            logger.info(
                 f"[{i + 1}/{total}] {symbol}: {info.get('longName', symbol)} - {len(hist)} prices"
             )
 
         except Exception as e:
-            print(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
+            logger.error(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
             continue
 
 
@@ -366,7 +366,7 @@ async def populate_stocks():
     loop = asyncio.get_event_loop()
     with ThreadPoolExecutor(max_workers=2) as pool:
         await loop.run_in_executor(pool, populate_stocks_sync)
-    print("Stock population complete!")
+    logger.info("Stock population complete!")
 
 
 if __name__ == "__main__":

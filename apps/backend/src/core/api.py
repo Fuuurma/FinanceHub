@@ -30,6 +30,7 @@ from api.news_sentiment import router as news_sentiment_router
 from api.portfolio_analytics import router as portfolio_analytics_router
 from api.realtimedata import router as realtimedata_router
 from api.health import router as health_router
+from api.enhanced_health import router as enhanced_health_router
 from api.watchlist import router as watchlist_router
 from api.analytics import router as analytics_router
 from api.optimization import router as optimization_router
@@ -42,6 +43,7 @@ from ai_advisor.api.templates import router as ai_templates_router
 from ai_advisor.api.reports import router as ai_reports_router
 from api.quantitative_models import router as quantitative_models_router
 from trading.api.trading import router as trading_router
+from trading.api.paper_trading import router as paper_trading_router
 from api.charts import router as charts_router
 from api.currency import router as currency_router
 from api.reference import router as reference_router
@@ -85,6 +87,7 @@ api.add_router("/news", news_sentiment_router)
 api.add_router("/analytics", portfolio_analytics_router)
 api.add_router("/realtime", realtimedata_router)
 api.add_router("/health", health_router)
+api.add_router("/health/v2", enhanced_health_router)
 api.add_router("/analytics/v2", analytics_router)
 api.add_router("/optimization", optimization_router)
 api.add_router("/options", options_pricing_router)
@@ -96,6 +99,7 @@ api.add_router("/ai/v2/templates", ai_templates_router)
 api.add_router("/ai/v2/reports", ai_reports_router)
 api.add_router("/quantitative", quantitative_models_router)
 api.add_router("/trading", trading_router)
+api.add_router("/paper-trading", paper_trading_router)
 api.add_router("/charts", charts_router)
 api.add_router("/currency", currency_router)
 api.add_router("/reference", reference_router)

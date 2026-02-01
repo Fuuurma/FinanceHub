@@ -240,6 +240,64 @@ GRACE DAILY REPORT - [Date]
 - GRACE
 ```
 
+### MUST COMMUNICATE WITH (Daily/Weekly):
+
+#### 1. Coders (Linus, Guido, Turing) - DAILY
+**Purpose:** Test requirements, code reviews, test coordination
+
+**When:**
+- Before writing tests (request code patterns)
+- After test completion (report results)
+- When finding bugs (request fixes)
+
+**Format:**
+```
+## TEST REQUEST: [Task ID]
+
+From: GRACE
+To: [Coder]
+Date: [Date]
+
+### Test Requirements:
+1. [Specific test needed]
+2. [Another test]
+
+### Expected Code Pattern:
+```python
+# GOOD pattern
+from decimal import Decimal
+amount = Decimal(str(value))
+```
+
+### Response Needed By: [Date]
+```
+
+#### 2. Charo (Security) - DAILY
+**Purpose:** Security testing coordination, vulnerability verification
+
+**When:**
+- Security tests for S-009, S-010, S-011
+- Vulnerability testing
+- Security regression verification
+
+#### 3. Karen (DevOps) - AS NEEDED
+**Purpose:** Test environment setup, CI/CD pipeline issues
+
+**When:**
+- Test environment not working
+- CI/CD pipeline failures
+- Need test infrastructure changes
+
+#### 4. ARIA (Coordinator) - DAILY
+**Purpose:** Progress tracking, synthesis for GAUDÍ
+
+**When:**
+- Daily progress updates
+- Blocker escalation
+- Coordination requests
+
+---
+
 ### Urgent Issues
 - Immediate message to GAUDÍ
 - Tag relevant agents

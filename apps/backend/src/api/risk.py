@@ -14,6 +14,68 @@ try:
 except ImportError:
     pass
 
+risk_service = None
+
+try:
+    from investments.services.risk_service import RiskManagementService
+
+    risk_service = RiskManagementService()
+except ImportError:
+    pass
+
+
+class PositionSizeInput(Schema):
+    portfolio_value: float = Field(..., description="Total portfolio value")
+    account_balance: float = Field(..., description="Available cash for trading")
+    risk_per_trade: float = Field(
+        ..., gt=0, le=1, description="Risk per trade as decimal (e.g., 0.01 for 1%)"
+    )
+    entry_price: float = Field(..., gt=0, description="Entry price per share")
+    stop_loss_price: float = Field(..., gt=0, description="Stop loss price per share")
+    position_type: str = Field(
+        default="LONG", description="Position type: LONG or SHORT"
+    )
+
+
+class PositionSizeOutput(Schema):
+    position_shares: float
+    position_value: float
+    position_percentage: float
+    risk_amount: float
+    risk_per_share: float
+    max_loss: float
+    stop_loss_distance: float
+
+
+class StopLossInput(Schema):
+    entry_price: float = Field(..., gt=0, description="Entry price per share")
+    stop_loss_pct: float = Field(
+        ..., gt=0, le=1, description="Stop loss percentage as decimal"
+    )
+    position_type: str = Field(
+        default="LONG", description="Position type: LONG or SHORT"
+    )
+
+
+class StopLossOutput(Schema):
+    stop_loss_price: float
+    stop_loss_pct: float
+    position_type: str
+
+
+class RiskRewardInput(Schema):
+    entry_price: float = Field(..., gt=0, description="Entry price per share")
+    stop_loss: float = Field(..., gt=0, description="Stop loss price per share")
+    target_price: float = Field(..., gt=0, description="Target price per share")
+
+
+class RiskRewardOutput(Schema):
+    risk_reward_ratio: float
+    verdict: str
+    color: str
+    risk_per_share: float
+    reward_per_share: float
+
 
 class VaRCalculateSchema(Schema):
     method: str = Field(
@@ -43,7 +105,7 @@ class StressTestSchema(Schema):
     )
 
 
-@router.get("/risk/scenarios")
+@router.get("/scenarios")
 def list_stress_scenarios(request):
     """Get available historical stress test scenarios"""
     if not var_service:
@@ -51,7 +113,7 @@ def list_stress_scenarios(request):
     return {"scenarios": var_service.get_available_scenarios()}
 
 
-@router.post("/risk/var/{portfolio_id}")
+@router.post("/var/{portfolio_id}")
 def calculate_var(request, portfolio_id: int, data: VaRCalculateSchema):
     """Calculate Value-at-Risk for a portfolio"""
     if not var_service:
@@ -83,7 +145,7 @@ def calculate_var(request, portfolio_id: int, data: VaRCalculateSchema):
         return {"error": str(e)}, 500
 
 
-@router.post("/risk/stress-test/{portfolio_id}/historical")
+@router.post("/stress-test/{portfolio_id}/historical")
 def historical_stress_test(
     request, portfolio_id: int, scenario: str = "2008_financial_crisis"
 ):
@@ -116,7 +178,7 @@ def historical_stress_test(
         return {"error": str(e)}, 500
 
 
-@router.post("/risk/stress-test/{portfolio_id}/custom")
+@router.post("/stress-test/{portfolio_id}/custom")
 def custom_stress_test(request, portfolio_id: int, data: StressTestSchema):
     """Run custom stress test scenario"""
     if not var_service:
@@ -179,7 +241,7 @@ def _get_portfolio_positions(request, portfolio_id: int) -> dict:
         return {"error": str(e)}
 
 
-@router.get("/risk/var/methods")
+@router.get("/var/methods")
 def get_var_methods(request):
     """Get available VaR calculation methods"""
     return {
@@ -219,3 +281,86 @@ def get_var_methods(request):
             },
         ],
     }
+
+
+@router.post("/position-size", response=PositionSizeOutput)
+def calculate_position_size(request, data: PositionSizeInput):
+    """Calculate optimal position size based on risk parameters"""
+    if not risk_service:
+        return {"error": "Risk management service not available"}, 503
+
+    try:
+        result = risk_service.calculate_position_size(
+            portfolio_value=data.portfolio_value,
+            account_balance=data.account_balance,
+            risk_per_trade=data.risk_per_trade,
+            entry_price=data.entry_price,
+            stop_loss_price=data.stop_loss_price,
+        )
+
+        if "error" in result:
+            return {"error": result["error"]}, 400
+
+        return {
+            "position_shares": result.get("position_shares", 0),
+            "position_value": result.get("position_value", 0),
+            "position_percentage": result.get("position_percentage", 0),
+            "risk_amount": result.get("risk_amount", 0),
+            "risk_per_share": result.get("risk_per_share", 0),
+            "max_loss": result.get("max_loss", 0),
+            "stop_loss_distance": result.get("stop_loss_distance", 0),
+        }
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+@router.post("/stop-loss", response=StopLossOutput)
+def calculate_stop_loss_price(request, data: StopLossInput):
+    """Calculate stop loss price based on percentage"""
+    if not risk_service:
+        return {"error": "Risk management service not available"}, 503
+
+    try:
+        result = risk_service.calculate_stop_loss(
+            entry_price=data.entry_price,
+            stop_loss_pct=data.stop_loss_pct,
+            position_type=data.position_type,
+        )
+
+        if "error" in result:
+            return {"error": result["error"]}, 400
+
+        return {
+            "stop_loss_price": result.get("stop_loss_price", 0),
+            "stop_loss_pct": result.get("stop_loss_pct", 0),
+            "position_type": result.get("position_type", "LONG"),
+        }
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+@router.post("/risk-reward", response=RiskRewardOutput)
+def calculate_risk_reward(request, data: RiskRewardInput):
+    """Calculate risk/reward ratio"""
+    if not risk_service:
+        return {"error": "Risk management service not available"}, 503
+
+    try:
+        result = risk_service.calculate_risk_reward_ratio(
+            entry_price=data.entry_price,
+            stop_loss=data.stop_loss,
+            target_price=data.target_price,
+        )
+
+        if "error" in result:
+            return {"error": result["error"]}, 400
+
+        return {
+            "risk_reward_ratio": result.get("risk_reward_ratio", 0),
+            "verdict": result.get("verdict", "FAIR"),
+            "color": result.get("color", "yellow"),
+            "risk_per_share": result.get("risk_per_share", 0),
+            "reward_per_share": result.get("reward_per_share", 0),
+        }
+    except Exception as e:
+        return {"error": str(e)}, 500

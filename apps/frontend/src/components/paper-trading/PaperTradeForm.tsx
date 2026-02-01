@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { RefreshCw, TrendingUp, TrendingDown, DollarSign, Wallet } from 'lucide-react'
+import { apiClient } from '@/lib/api/client'
 
 interface PaperTradeFormProps {
   onSuccess?: () => void
@@ -40,17 +41,11 @@ export function PaperTradeForm({ onSuccess, className }: PaperTradeFormProps) {
     setResult(null)
 
     const endpoint = tradeType === 'BUY'
-      ? '/api/paper-trading/buy'
-      : '/api/paper-trading/sell'
+      ? '/paper-trading/buy'
+      : '/paper-trading/sell'
 
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ asset, quantity: parseFloat(quantity) })
-      })
-
-      const data = await response.json()
+      const data = await apiClient.post<TradeResult>(endpoint, { asset, quantity: parseFloat(quantity) })
       setResult(data)
 
       if (data.success && data.remaining_cash) {

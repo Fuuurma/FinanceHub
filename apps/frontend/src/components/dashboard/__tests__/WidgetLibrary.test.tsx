@@ -82,7 +82,7 @@ describe('WidgetLibrary', () => {
     );
     const chartWidget = screen.getByText('Price Chart');
     fireEvent.click(chartWidget);
-    expect(screen.getByText('Add Widget')).toBeInTheDocument();
+    expect(screen.getAllByText('Add Widget').length).toBeGreaterThanOrEqual(1);
   });
 
   it('allows custom title input', () => {

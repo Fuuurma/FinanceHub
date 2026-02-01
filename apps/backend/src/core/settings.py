@@ -151,6 +151,11 @@ DATABASES = {
         "HOST": os.getenv("DB_HOST", "postgres"),
         "PORT": os.getenv("DB_PORT", "5432"),
         "CONN_MAX_AGE": 600,
+        "OPTIONS": {
+            "sslmode": os.getenv("DB_SSLMODE", "prefer"),
+            "connect_timeout": 10,
+        },
+        "ATOMIC_REQUESTS": False,
     },
     "test": {
         "ENGINE": "django.db.backends.postgresql",
@@ -159,9 +164,6 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST", "127.0.0.1"),
         "PORT": os.getenv("DB_PORT", "5432"),
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
     },
 }
 
@@ -306,7 +308,7 @@ LOGGING = {
     "loggers": {
         "django.db.backends": {
             "handlers": ["console", "file"],
-            "level": "DEBUG",
+            "level": "WARNING",
             "propagate": False,
         },
     },

@@ -27,7 +27,9 @@ def parse_decimal(value):
     if value is None:
         return None
     try:
-        return float(value)
+        from decimal import Decimal
+
+        return Decimal(str(value))
     except (ValueError, TypeError):
         return None
 

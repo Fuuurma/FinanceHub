@@ -6,6 +6,7 @@ Alert monitoring and notification delivery.
 import logging
 from datetime import timedelta
 from typing import List, Optional, Dict, Any
+from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Q
 from django.utils import timezone
 from django.db import transaction
@@ -19,6 +20,7 @@ from investments.models.alerts import (
 from investments.services.market_data_service import MarketDataService
 from assets.models import Asset
 from assets.models.historic.prices import AssetPricesHistoric
+from utils.financial import to_decimal, round_decimal
 
 logger = logging.getLogger(__name__)
 
@@ -151,19 +153,20 @@ class AlertService:
         if not current_price:
             return False
 
-        value = float(alert.condition_value)
+        current = to_decimal(current_price)
+        threshold = to_decimal(alert.condition_value)
         operator = alert.condition_operator
 
         if operator == ">":
-            return current_price > value
+            return current > threshold
         elif operator == ">=":
-            return current_price >= value
+            return current >= threshold
         elif operator == "<":
-            return current_price < value
+            return current < threshold
         elif operator == "<=":
-            return current_price <= value
+            return current <= threshold
         elif operator == "==":
-            return current_price == value
+            return current == threshold
 
         return False
 
@@ -173,17 +176,17 @@ class AlertService:
             return False
 
         change = alert.asset.percent_change or 0
-        value = float(alert.condition_value)
+        threshold = to_decimal(alert.condition_value)
         operator = alert.condition_operator
 
         if operator == ">":
-            return change > value
+            return change > threshold
         elif operator == ">=":
-            return change >= value
+            return change >= threshold
         elif operator == "<":
-            return change < value
+            return change < threshold
         elif operator == "<=":
-            return change <= value
+            return change <= threshold
 
         return False
 
@@ -193,15 +196,15 @@ class AlertService:
             return False
 
         volume = alert.asset.volume or 0
-        value = float(alert.condition_value)
+        threshold = to_decimal(alert.condition_value)
         operator = alert.condition_operator
 
         if operator == ">":
-            return volume > value
+            return volume > threshold
         elif operator == ">=":
-            return volume >= value
+            return volume >= threshold
         elif operator == "<":
-            return volume < value
+            return volume < threshold
 
         return False
 
@@ -211,15 +214,15 @@ class AlertService:
             return False
 
         current_value = alert.portfolio.total_value or 0
-        value = float(alert.condition_value)
+        threshold = to_decimal(alert.condition_value)
         operator = alert.condition_operator
 
         if operator == ">":
-            return current_value > value
+            return current_value > threshold
         elif operator == ">=":
-            return current_value >= value
+            return current_value >= threshold
         elif operator == "<":
-            return current_value < value
+            return current_value < threshold
 
         return False
 
@@ -300,11 +303,11 @@ class AlertService:
         asset_name = trigger.asset_name or "Portfolio"
 
         if alert.alert_type == "price_above":
-            return f"{asset_name} price is above ${float(alert.condition_value):.2f}"
+            return f"{asset_name} price is above ${round_decimal(alert.condition_value):,.2f}"
         elif alert.alert_type == "price_below":
-            return f"{asset_name} price is below ${float(alert.condition_value):.2f}"
+            return f"{asset_name} price is below ${round_decimal(alert.condition_value):,.2f}"
         elif alert.alert_type == "percent_change":
-            return f"{asset_name} has changed by {float(alert.condition_value):.2f}%"
+            return f"{asset_name} has changed by {round_decimal(alert.condition_value):,.2f}%"
         else:
             return f"Alert triggered: {alert.name}"
 

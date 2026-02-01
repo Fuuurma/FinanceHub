@@ -11,6 +11,7 @@ import {
   Wallet, TrendingUp, TrendingDown, RefreshCw, Trophy, Target,
   DollarSign, PieChart, BarChart3
 } from 'lucide-react'
+import { apiClient } from '@/lib/api/client'
 
 interface PaperPortfolioSummaryProps {
   onRefresh?: () => void
@@ -48,8 +49,7 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
   const fetchSummary = React.useCallback(async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/paper-trading/account')
-      const data = await response.json()
+      const data = await apiClient.get<{ summary: PortfolioSummary }>('/paper-trading/account')
       setSummary(data.summary)
     } catch (error) {
       console.error('Failed to fetch portfolio:', error)

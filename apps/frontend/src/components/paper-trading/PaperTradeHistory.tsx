@@ -11,6 +11,7 @@ import {
   History, TrendingUp, TrendingDown, RefreshCw, Filter,
   ArrowUpDown, Calendar, DollarSign
 } from 'lucide-react'
+import { apiClient } from '@/lib/api/client'
 
 interface PaperTradeHistoryProps {
   onRefresh?: () => void
@@ -37,8 +38,7 @@ export function PaperTradeHistory({ onRefresh, className }: PaperTradeHistoryPro
   const fetchTrades = React.useCallback(async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/paper-trading/history?limit=${limit}`)
-      const data = await response.json()
+      const data = await apiClient.get<{ trades: Trade[] }>(`/paper-trading/history?limit=${limit}`)
       setTrades(data.trades || [])
     } catch (error) {
       console.error('Failed to fetch trades:', error)

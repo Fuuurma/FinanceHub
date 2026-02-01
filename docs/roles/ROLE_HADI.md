@@ -230,14 +230,102 @@ HADI DAILY REPORT - [Date]
 - Accessibility obstacles
 - Help needed
 
+📊 METRICS:
+- Pages Audited: X/Y
+- Issues Found: N (Critical: A, Serious: B, Moderate: C, Minor: D)
+- Issues Fixed: M/N
+- WCAG Compliance: P% (vs target 100%)
+
 ⏰ TOMORROW:
 - Next accessibility tasks
 
 ❓ QUESTIONS:
 - Accessibility questions
 
-- HADI
+- HADI ♿
 ```
+
+### MUST COMMUNICATE WITH (Daily/Weekly):
+
+#### 1. MIES (Design) - DAILY ✅ ACTIVE
+**Purpose:** Design accessibility review, color contrast, interactive elements
+
+**When:**
+- Review MIES design proposals for accessibility
+- Coordinate on color contrast issues
+- Joint accessibility-design reviews
+
+**Format:**
+```
+From: HADI
+To: MIES
+Date: [Date]
+
+### Accessibility Review: [Design Element]
+
+**WCAG Criteria:** [2.1.1, 2.4.7, etc.]
+**Issue:** [Description]
+**Impact:** [Which users affected]
+**Fix:** [Suggested solution]
+```
+
+**Status:** ✅ COMMUNICATING - See `tasks/reports/MIES_DAILY_REPORT_*.md`
+
+#### 2. Karen (DevOps) - IMMEDIATE (BLOCKED)
+**Purpose:** Docker environment fix, testing tools setup
+
+**When:**
+- Docker build failing (CURRENT BLOCKER - see `tasks/communication/HADI_TO_KAREN_DOCKER_FIX.md`)
+- Need accessibility testing tools installed
+- CI/CD accessibility integration
+
+**Format:**
+```
+## SUPPORT REQUEST: Docker Environment
+
+From: HADI
+To: Karen
+Date: [Date]
+Priority: HIGH
+
+### Issue:
+[Error description]
+
+### Impact:
+[Cannot test X, Y]
+
+### Request:
+[What needs fixing]
+
+### Timeline:
+Blocking [task completion]
+```
+
+#### 3. Turing (Frontend) - AS NEEDED
+**Purpose:** Frontend accessibility fixes, ARIA labels, keyboard navigation
+
+**When:**
+- Finding accessibility issues in frontend code
+- Requesting ARIA label additions
+- Fixing keyboard navigation problems
+
+#### 4. Charo (Security) - AS NEEDED
+**Purpose:** Security-a11y intersection, XSS via accessibility features
+
+**When:**
+- Accessibility features introducing security risks
+- Secure coding practices for a11y
+- Input validation in accessible forms
+
+#### 5. ARIA (Coordinator) - DAILY
+**Purpose:** Progress tracking, synthesis for GAUDÍ
+
+**When:**
+- Daily progress updates
+- Blocker escalation (Docker issue)
+- Coordination requests
+
+---
 
 ### Accessibility Issues
 - Severity level (Critical/High/Medium/Low)
@@ -245,6 +333,13 @@ HADI DAILY REPORT - [Date]
 - User impact explanation
 - Suggested fix
 - Code examples if possible
+
+---
+
+### Urgent Issues
+- Critical WCAG violation found → Message GAUDÍ + Charo immediately
+- Keyboard navigation completely broken → Message GAUDÍ immediately
+- Screen reader unusable feature → Message GAUDÍ immediately
 
 ---
 

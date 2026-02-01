@@ -56,7 +56,6 @@ const calculateTreemapLayout = (
   const sortedNodes = [...nodes].sort((a, b) => b.value - a.value);
   const layout: HeatMapLayoutNode[] = [];
 
-  const aspectRatio = containerWidth / containerHeight;
   const area = containerWidth * containerHeight;
 
   const squarify = (
@@ -65,112 +64,102 @@ const calculateTreemapLayout = (
     y: number,
     width: number,
     height: number
-  ): HeatMapLayoutNode[] => {
-    if (children.length === 0) return [];
-
-    const childAreas = children.map(child => ({
-      node: child,
-      area: (child.value / totalValue) * area
-    }));
+  ): void => {
+    if (children.length === 0) return;
 
     if (children.length === 1) {
-      return [{
+      layout.push({
         node: children[0],
         x,
         y,
         width,
         height
-      }];
+      });
+      return;
     }
 
     const longerSide = width > height ? height : width;
-    let row: typeof childAreas = [];
+    let row: Array<{ node: HeatMapNode; area: number }> = [];
     let rowArea = 0;
 
-    for (const childArea of childAreas) {
-      row.push(childArea);
-      rowArea += childArea.area;
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const childArea = (child.value / totalValue) * area;
+      
+      if (row.length === 0) {
+        row.push({ node: child, area: childArea });
+        rowArea = childArea;
+        continue;
+      }
 
+      const testRow = [...row, { node: child, area: childArea }];
+      const testRowArea = testRow.reduce((sum, item) => sum + item.area, 0);
+      
       const worstRatio = Math.max(
-        (longerSide * longerSide) / (rowArea / row.length) || 0,
-        (rowArea / (longerSide * longerSide)) * row.length || 0
+        (longerSide * longerSide) / (testRowArea / testRow.length),
+        (testRowArea / (longerSide * longerSide)) * testRow.length
       );
 
-      const rowWithChild = [...row];
-      const prevWorstRatio = worstRatio;
-
-      row = rowWithChild.slice(0, -1);
-      rowArea = row.reduce((sum, ca) => sum + ca.area, 0);
-
-      const finalWorstRatio = Math.max(
-        (longerSide * longerSide) / (rowArea / row.length) || 0,
-        (rowArea / (longerSide * longerSide)) * row.length || 0
+      const currentWorstRatio = Math.max(
+        (longerSide * longerSide) / (rowArea / row.length),
+        (rowArea / (longerSide * longerSide)) * row.length
       );
 
-      if (row.length > 0 && (finalWorstRatio > prevWorstRatio || row.length === 1)) {
-        row.pop();
-        rowArea = row.reduce((sum, ca) => sum + ca.area, 0);
-
+      if (worstRatio >= currentWorstRatio || row.length === testRow.length - 1) {
         const remainingWidth = width - x;
         const remainingHeight = height - y;
         const isHorizontal = remainingWidth >= remainingHeight;
 
-        let posX = x;
-        let posY = y;
-
-        if (row.length > 0) {
-          const rowLength = row.length === 1 ? remainingWidth : remainingWidth * (rowArea / (rowArea + childArea.area));
-
-          if (isHorizontal) {
-            const colHeight = remainingHeight / rowArea;
-            for (const ca of row) {
-              const boxWidth = (ca.area / rowArea) * rowLength;
-              layout.push({
-                node: ca.node,
-                x: posX,
-                y: posY,
-                width: boxWidth,
-                height: remainingHeight
-              });
-              posX += boxWidth;
-            }
-          } else {
-            const colWidth = remainingWidth / rowArea;
-            for (const ca of row) {
-              const boxHeight = (ca.area / rowArea) * remainingHeight;
-              layout.push({
-                node: ca.node,
-                x: posX,
-                y: posY,
-                width: remainingWidth,
-                height: boxHeight
-              });
-              posY += boxHeight;
-            }
-          }
-        }
-
-        const remainingChildren = children.slice(row.length);
         if (isHorizontal) {
-          const usedWidth = posX - x;
-          return [
-            ...layout,
-            ...squarify(remainingChildren, x + usedWidth, y, width - usedWidth, height)
-          ];
+          const rowLength = remainingWidth * (rowArea / (rowArea + childArea));
+          const colHeight = remainingHeight;
+          
+          let posX = x;
+          for (const item of row) {
+            const boxWidth = (item.area / rowArea) * rowLength;
+            layout.push({
+              node: item.node,
+              x: posX,
+              y,
+              width: boxWidth,
+              height: colHeight
+            });
+            posX += boxWidth;
+          }
+          
+          const remainingChildren = children.slice(row.length);
+          squarify(remainingChildren, x + rowLength, y, width - rowLength, height);
+          return;
         } else {
-          const usedHeight = posY - y;
-          return [
-            ...layout,
-            ...squarify(remainingChildren, x, y + usedHeight, width, height - usedHeight)
-          ];
+          const rowLength = remainingHeight * (rowArea / (rowArea + childArea));
+          const colWidth = remainingWidth;
+          
+          let posY = y;
+          for (const item of row) {
+            const boxHeight = (item.area / rowArea) * rowLength;
+            layout.push({
+              node: item.node,
+              x,
+              y: posY,
+              width: colWidth,
+              height: boxHeight
+            });
+            posY += boxHeight;
+          }
+          
+          const remainingChildren = children.slice(row.length);
+          squarify(remainingChildren, x, y + rowLength, width, height - rowLength);
+          return;
         }
+      } else {
+        row = testRow;
+        rowArea = testRowArea;
       }
     }
-
-    return [...layout, ...squarify([], x, y, width, height)];
   };
 
-  return squarify(sortedNodes, 0, 0, containerWidth, containerHeight);
+  squarify(sortedNodes, 0, 0, containerWidth, containerHeight);
+  return layout;
 };
 
 const HeatMapNodeComponent = ({

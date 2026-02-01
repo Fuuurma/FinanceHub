@@ -3,10 +3,13 @@ Celery configuration for FinanceHub.
 """
 
 import os
+import logging
 from celery import Celery
 from celery.schedules import crontab
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+
+logger = logging.getLogger(__name__)
 
 app = Celery("FinanceHub")
 app.config_from_object("django.conf:settings", namespace="CELERY")
@@ -101,4 +104,4 @@ app.conf.update(
 
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
-    print(f"Request: {self.request!r}")
+    logger.debug(f"Request: {self.request!r}")

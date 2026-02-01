@@ -249,7 +249,7 @@ export function OptionsPayoffChart({ symbol, currentPrice, legs: propLegs, strat
         </div>
         <div className="flex items-center gap-2">
           <Select value={strategy} onValueChange={handleStrategyChange}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-40" aria-label="Select strategy">
               <SelectValue placeholder="Strategy" />
             </SelectTrigger>
             <SelectContent>

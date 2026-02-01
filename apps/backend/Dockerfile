@@ -1,11 +1,11 @@
 # =============================================================================
 # Stage 1: Builder
 # =============================================================================
-FROM python:3.11-slim as builder
+FROM python:3.11-slim-bookworm AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     libpq-dev \
@@ -23,11 +23,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # =============================================================================
 # Stage 2: Runtime
 # =============================================================================
-FROM python:3.11-slim as runtime
+FROM python:3.11-slim-bookworm AS runtime
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libpq5 \
     libmariadb3 \
     curl \

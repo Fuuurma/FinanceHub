@@ -170,7 +170,7 @@ export function DividendHistory({ symbol = 'AAPL', className }: DividendHistoryP
           </CardTitle>
           <div className="flex items-center gap-2">
             <Select value={frequency} onValueChange={setFrequency}>
-              <SelectTrigger className="w-32 h-8">
+              <SelectTrigger className="w-32 h-8" aria-label="Dividend frequency filter">
                 <SelectValue placeholder="Frequency" />
               </SelectTrigger>
               <SelectContent>

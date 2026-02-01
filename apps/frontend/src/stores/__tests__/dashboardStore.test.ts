@@ -3,6 +3,13 @@ import { useDashboardStore } from '../dashboardStore';
 describe('DashboardStore', () => {
   beforeEach(() => {
     localStorage.clear();
+    useDashboardStore.setState({
+      widgets: [],
+      activeDashboard: 'Default',
+      dashboards: ['Default'],
+      isEditMode: false,
+      isLoading: false,
+    });
   });
 
   it('has default values', () => {

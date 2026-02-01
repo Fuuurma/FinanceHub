@@ -3,101 +3,86 @@
 **Date:** February 1, 2026
 **From:** GAUDÍ (Architect)
 **To:** MIES (UI/UX Designer)
-**Status:** ✅ APPROVED
+**Status:** ✅ APPROVED (REVISED)
 
 ---
 
-## 🚨 DECISION: Hybrid Design System
+## 🚨 DECISION: Unified Minimalistic Brutalism
 
-**RECOMMENDATION APPROVED:** Unified Brutalist + Clean Hybrid
+**RECOMMENDATION APPROVED:** Minimalistic Brutalism Across Entire Application
 
 ### Design System Architecture
 
-**Two Design Languages, Clear Separation:**
+**Single Unified Design Language:**
 
-| Context | Design System | Components | Usage |
-|---------|--------------|------------|-------|
-| **Marketing/Public Pages** | **Brutalist** | `.brutalist-glass`, `.brutalist-interactive`, `rounded-none` | Landing, pricing, about, public features |
-| **Dashboard/App Pages** | **Modern Clean** | Standard shadcn/ui with CVA variants | All user-facing app functionality |
-| **Auth Pages** | **Brutalist** | Bold, distinctive | Login, signup, password reset (first impression) |
+| Principle | Implementation | Notes |
+|-----------|----------------|-------|
+| **Brutalist Foundation** | Sharp edges, bold typography, high contrast | Applied consistently across ALL pages |
+| **Minimalistic Approach** | Clean spacing, restrained use of brutalist elements | Essential for data-dense interfaces |
+| **Unified Experience** | No separation between marketing and dashboard | Seamless transition from landing to app |
 
-### Rules of Thumb
+### What is "Minimalistic Brutalism"?
 
-**When to Use Brutalist:**
-- ✅ Landing page (`/`)
-- ✅ Pricing page (`/pricing`)
-- ✅ About page (`/about`)
-- ✅ Auth pages (`/login`, `/signup`, `/reset`)
-- ✅ Public feature pages
-- ✅ Marketing materials
+**Core Principles:**
+1. **Brutalist Base:** Sharp edges (`rounded-none`), bold borders, high contrast
+2. **Minimalistic Application:** Use restraint despite data density
+3. **Clean Despite Complexity:** Strategic use of whitespace prevents visual chaos
+4. **Bold Doesn't Mean Busy:** Brutalist elements used deliberately, not excessively
 
-**When to Use Clean (shadcn):**
-- ✅ Dashboard (`/dashboard`)
-- ✅ Portfolio pages
-- ✅ Trading interface
-- ✅ Settings/Preferences
-- ✅ All internal app pages
-- ✅ User workflows
+**Rules of Thumb:**
+- ✅ Landing page: Prominent brutalist elements (bold borders, sharp edges)
+- ✅ Dashboard: Restrained brutalist (same base, lighter application)
+- ✅ Trading interface: Minimal brutalism (focus on data clarity)
+- ✅ All pages: Unified design language, no jarring transitions
 
-**Never Mix:**
-- ❌ Don't use brutalist classes in dashboard components
-- ❌ Don't use clean components on landing page (unless intentional)
-- ❌ Don't create hybrid components (choose one system per component)
+### Why Minimalistic Brutalism?
+
+**Challenge:** Financial interfaces are data-dense
+**Solution:** Brutalist base + minimalistic application
+**Result:** Bold, distinctive brand without sacrificing usability
+
+**Example Application:**
+```
+Landing Page:          Border-4, high contrast, large typography
+Dashboard:             Border-2, subtle contrast, medium typography
+Trading Interface:     Border-1, standard contrast, focus on data
+```
+
+All use brutalist foundation, but with restraint appropriate to context.
 
 ---
 
 ## ✅ APPROVED ACTIONS
 
-### 1. Fix Radius Inconsistency (M-001)
+### 1. Delete Test Pages (M-001)
 
-**Decision:**
-- **Landing/Marketing:** `rounded-none` is ACCEPTABLE (brutalist aesthetic)
-- **Dashboard/App:** MUST use `--radius: 0.25rem` consistently
-- **Remove** `rounded-none` from dashboard components
+**Decision:** Remove experimental test pages
 
-**Implementation:**
-```css
-/* Dashboard components */
-.dashboard-component {
-  border-radius: var(--radius); /* 0.25rem */
-}
+**Pages to Delete:**
+- `apps/frontend/src/app/(dashboard)/palete/page.tsx`
+- `apps/frontend/src/app/(dashboard)/bruta/page.tsx`
 
-/* Landing/Marketing components */
-.marketing-component {
-  border-radius: 0; /* Brutalist sharp edges */
-}
-```
+**Reasoning:**
+- Test pages were style exploration for UI
+- Design direction now unified (no need for test pages)
+- Clean up codebase, remove experimental code
 
-### 2. Standardize Buttons (M-001)
+### 2. Unified Button System (M-001)
 
-**Decision:** Create TWO button variants in CVA
+**Decision:** Create single button system with brutalist variants
 
 ```typescript
 // components/ui/button.tsx
 
-// Variant 1: Standard (for dashboard)
 const buttonVariants = cva(
-  // ... base styles
+  "rounded-none", // Brutalist base
   {
     variants: {
       variant: {
-        default: "...",
-        outline: "...",
-        ghost: "...",
-        // Standard shadcn variants
-      }
-    }
-  }
-)
-
-// Variant 2: Brutalist (for marketing)
-const brutalistButtonVariants = cva(
-  "brutalist-interactive rounded-none border-4",
-  {
-    variants: {
-      variant: {
-        default: "border-primary bg-primary text-primary-foreground",
-        outline: "border-primary bg-transparent text-primary",
+        default: "border-2 bg-primary text-primary-foreground",
+        outline: "border-2 bg-transparent",
+        ghost: "border-0 bg-transparent",
+        brutalist: "border-4 bg-primary text-primary-foreground", // For landing
       }
     }
   }
@@ -105,17 +90,43 @@ const brutalistButtonVariants = cva(
 ```
 
 **Usage Rules:**
-- Dashboard → `Button` component (standard)
-- Landing/Marketing → `BrutalistButton` component (or `Button variant="brutalist"`)
+- All buttons use brutalist base (`rounded-none`)
+- Landing pages: `variant="brutalist"` (bold borders)
+- Dashboard: `variant="default"` (standard borders)
+- Trading interface: `variant="outline"` (subtle borders)
 
-### 3. Test Pages Clarification
+### 3. Consistent Border System (M-001)
 
-**Decision:** Test pages (`/palete`, `/bruta`) are EXPERIMENTAL and can be exceptions
+**Decision:** Unified border system across all components
 
-**Action:**
-- Keep test pages as-is (they're for design exploration)
-- Add comment at top of file: `/* TEST PAGE - Design exploration, not production */`
-- Don't count toward consistency metrics
+```css
+/* Brutalist base - all components */
+:root {
+  --border-width-landing: 4px;
+  --border-width-dashboard: 2px;
+  --border-width-subtle: 1px;
+}
+
+/* Landing pages */
+.landing-element {
+  border: var(--border-width-landing) solid var(--primary);
+  border-radius: 0;
+}
+
+/* Dashboard elements */
+.dashboard-element {
+  border: var(--border-width-dashboard) solid var(--border);
+  border-radius: 0;
+}
+
+/* Data-dense elements (trading interface) */
+.data-element {
+  border: var(--border-width-subtle) solid var(--muted);
+  border-radius: 0;
+}
+```
+
+**Key Point:** All elements have `border-radius: 0` (brutalist), but border width varies by context.
 
 ---
 
@@ -124,37 +135,40 @@ const brutalistButtonVariants = cva(
 ### Immediate (This Week)
 
 1. ✅ **Component Inventory** - COMPLETED
-2. ⏳ **Document Design System** - Create `docs/design/DESIGN_SYSTEM.md`
-   - Clear rules for when to use brutalist vs clean
-   - Examples of correct usage
-   - Do's and don'ts
+2. 🗑️ **Delete Test Pages** - Remove `/palete` and `/bruta` pages
+3. ⏳ **Document Unified Design System** - Create `docs/design/DESIGN_SYSTEM.md`
+   - Explain minimalistic brutalism approach
+   - Show how to apply restraint despite data density
+   - Examples of appropriate use across contexts
 
-3. ⏳ **Fix Critical Inconsistencies**
-   - Remove `rounded-none` from dashboard components (keep only in marketing)
-   - Create brutalist button variant
-   - Document component usage rules
+4. ⏳ **Implement Unified Button System**
+   - Update `components/ui/button.tsx` with brutalist variants
+   - Apply `rounded-none` as base for all buttons
+   - Create variant system for different contexts
 
-4. ⏳ **Accessibility Review** (with HADI)
-   - Test both design systems for WCAG compliance
-   - Ensure brutalist doesn't break accessibility
-   - Check color contrast in both systems
+5. ⏳ **Update Component Library**
+   - Apply `border-radius: 0` to all components
+   - Implement tiered border width system
+   - Ensure consistent brutalist foundation
 
 ### This Month
 
-5. **Component Standardization** (M-004)
-   - Fix all 8 critical inconsistencies
-   - Fix all 15 medium inconsistencies
+6. **Component Standardization** (M-004)
+   - Update all components to unified brutalist base
+   - Fix inconsistent border radii
    - Target: 95% consistency (up from 60%)
 
-6. **Design Guidelines Document** (M-003)
+7. **Design Guidelines Document** (M-003)
+   - Minimalistic brutalism principles
    - Spacing rules (8px grid)
    - Typography scale
    - Color palette with OKLCH values
-   - Component patterns
+   - When to use bold vs subtle brutalism
 
-7. **Accessibility Audit** (H-001, H-002)
-   - Full WCAG 2.1 Level AA audit
-   - Fix critical accessibility issues (5 priority)
+8. **Accessibility Review** (with HADI)
+   - Test brutalist design for WCAG compliance
+   - Ensure sharp edges don't break accessibility
+   - Check color contrast with bold borders
    - Keyboard navigation testing
 
 ---
@@ -167,43 +181,45 @@ const brutalistButtonVariants = cva(
 - **Target (Month 2):** 95% consistent
 
 **Design System Health:**
-- ✅ Clear separation of brutalist vs clean
-- ✅ No mixed components
-- ✅ Documented usage rules
-- ✅ All components follow one system or the other
+- ✅ Unified brutalist foundation across all components
+- ✅ Minimalistic application for data-dense interfaces
+- ✅ Documented usage rules (when to be bold vs subtle)
+- ✅ Seamless user experience (no jarring transitions)
 
 ---
 
 ## 🚨 CRITICAL REMINDERS
 
-1. **Dashboard = Clean** - Users spend 95% of time here, must be consistent
-2. **Landing = Brutalist** - First impression, should be bold and distinctive
-3. **No Hybrids** - Components should be ONE system or the OTHER
-4. **Document Everything** - Clear rules prevent future inconsistency
+1. **Unified Foundation** - All pages use brutalist base (`rounded-none`)
+2. **Contextual Application** - Landing=bold, Dashboard=standard, Trading=subtle
+3. **Minimalistic Restraint** - Data density requires careful use of brutalist elements
+4. **Document Everything** - Clear examples of appropriate usage
+5. **Delete Test Pages** - Remove `/palete` and `/bruta` pages immediately
 
 ---
 
-## 📊 DESIGN SYSTEM COMPARISON
+## 📊 DESIGN SYSTEM UNIFICATION
 
-| Aspect | Brutalist (Marketing) | Clean (Dashboard) |
-|--------|---------------------|-------------------|
-| **Radius** | `rounded-none` (sharp) | `0.25rem` (subtle) |
-| **Borders** | `border-4` (bold) | `border` (standard) |
-| **Shadows** | Minimal/none | Liquid glass effects |
-| **Colors** | High contrast | Professional palette |
-| **Usage** | 5% of pages | 95% of pages |
-| **Goal** | Bold, memorable | Consistent, usable |
+| Aspect | Landing Pages | Dashboard | Trading Interface |
+|--------|--------------|-----------|-------------------|
+| **Radius** | `rounded-none` | `rounded-none` | `rounded-none` |
+| **Borders** | `border-4` (bold) | `border-2` (standard) | `border-1` (subtle) |
+| **Typography** | Large, bold | Medium, professional | Standard, data-focused |
+| **Contrast** | High contrast | Standard contrast | Careful contrast (data clarity) |
+| **Goal** | Bold, memorable | Usable, consistent | Clear, functional |
+
+**Key Insight:** Same brutalist foundation, different level of application based on context.
 
 ---
 
-**Decision:** ✅ APPROVED - Proceed with Hybrid Design System
-**Next Step:** MIES to implement fixes and document design system
+**Decision:** ✅ APPROVED - Proceed with Unified Minimalistic Brutalism
+**Next Step:** MIES to delete test pages, update components, document design system
 **Review Date:** February 15, 2026 (check progress)
 
 ---
 
 🎨 *GAUDÍ - Architect*
 
-🏗️ *Design Foundation: Consistency Where It Matters Most*
+🏗️ *Design Foundation: Unified Brutalism with Minimalistic Restraint*
 
 *"Less is more. God is in the details." - Mies van der Rohe*

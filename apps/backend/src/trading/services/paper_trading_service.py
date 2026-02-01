@@ -5,11 +5,23 @@ from django.db import transaction
 from django.utils import timezone
 from trading.models import PaperTradingAccount, PaperTrade
 from assets.models.asset import Asset
+from assets.models.historic.prices import AssetPricesHistoric
 
 
 class MarketDataService:
     def get_current_price(self, symbol: str) -> Optional[float]:
-        return None
+        try:
+            asset = Asset.objects.get(symbol__iexact=symbol, is_active=True)
+            latest_price = (
+                AssetPricesHistoric.objects.filter(asset=asset)
+                .order_by("-timestamp")
+                .first()
+            )
+            if latest_price:
+                return float(latest_price.close)
+            return None
+        except Asset.DoesNotExist:
+            return None
 
 
 class PaperTradingService:

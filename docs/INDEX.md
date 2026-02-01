@@ -100,6 +100,9 @@ UI/UX design system, guidelines, and component patterns.
 
 ### Design System
 - [DESIGN_SYSTEM.md](design/DESIGN_SYSTEM.md) - Complete design system documentation
+- [DESIGN_STANDARDIZATION_PLAN.md](design/DESIGN_STANDARDIZATION_PLAN.md) - Unification recommendations
+- [ACCESSIBILITY_REVIEW.md](design/ACCESSIBILITY_REVIEW.md) - WCAG 2.1 AA checklist
+- [COMPONENT_USAGE_AUDIT.md](design/COMPONENT_USAGE_AUDIT.md) - Component pattern analysis
 
 ---
 
@@ -252,14 +255,14 @@ docs/
 | Category | Files |
 |----------|-------|
 | Architecture | 9 |
-| Design | 1 |
+| Design | 4 |
 | Development | 7 |
 | Operations | 9 |
 | Security | 8 |
 | Agents | 3 |
 | References | 6 |
 | Root Docs | 6 |
-| **Total** | **49+** |
+| **Total** | **52+** |
 
 ---
 

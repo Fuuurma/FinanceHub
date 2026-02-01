@@ -7,6 +7,13 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 }
 
+global.fetch = global.fetch || function() {
+  return Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({}),
+  });
+};
+
 window.matchMedia = window.matchMedia || function () {
   return {
     matches: false,

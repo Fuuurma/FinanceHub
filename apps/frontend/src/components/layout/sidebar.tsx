@@ -74,6 +74,14 @@ const navItems: NavItem[] = [
     badge: 'NEW'
   },
   {
+    title: 'Paper Trading',
+    href: '/paper-trading',
+    icon: Zap,
+    shortcut: 'P',
+    description: 'Practice trading with virtual money',
+    badge: 'DEMO'
+  },
+  {
     title: 'Charts',
     href: '/charts/advanced',
     icon: BarChart3,

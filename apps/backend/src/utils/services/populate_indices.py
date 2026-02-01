@@ -5,6 +5,7 @@ Populates market index assets with 1-year historical data from Yahoo Finance.
 
 import os
 import sys
+import logging
 from datetime import datetime
 from decimal import Decimal
 
@@ -25,7 +26,7 @@ from assets.models.historic.prices import AssetPricesHistoric
 from assets.models.asset_metrics import AssetMetrics
 from investments.models.data_provider import DataProvider
 
-logger = __name__
+logger = logging.getLogger(__name__)
 
 # Major Market Indices (30 global indices)
 MARKET_INDICES = [
@@ -172,12 +173,12 @@ def populate_indices_sync(historical_years: int = 1):
                 },
             )
 
-            print(
+            logger.info(
                 f"[{i + 1}/{total}] {symbol}: {info.get('longName', symbol)} - {len(hist)} prices"
             )
 
         except Exception as e:
-            print(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
+            logger.error(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
             continue
 
 
@@ -190,7 +191,7 @@ if __name__ == "__main__":
     historical_years = 1
     if len(sys.argv) > 1:
         historical_years = int(sys.argv[1])
-        print(f"Fetching {historical_years} year(s) of historical data")
+        logger.info(f"Fetching {historical_years} year(s) of historical data")
 
     populate_indices_sync(historical_years=historical_years)
-    print("Index population complete!")
+    logger.info("Index population complete!")

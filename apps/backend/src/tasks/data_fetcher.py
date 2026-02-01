@@ -483,17 +483,16 @@ def schedule_tasks():
 
 
 if __name__ == "__main__":
-    # Run a single task for testing
-    print("Testing background tasks...")
+    logger.info("Testing background tasks...")
 
     # Test stock fetch
     result = asyncio.run(fetch_stocks_alpha(["AAPL", "GOOGL", "MSFT"]))
-    print(f"Stock fetch result: {result}")
+    logger.debug(f"Stock fetch result: {result}")
 
     # Test single asset update
     result = asyncio.run(update_asset_price("TSLA", "alpha_vantage"))
-    print(f"Asset update result: {result}")
+    logger.debug(f"Asset update result: {result}")
 
     # Test batch update
     result = asyncio.run(batch_update_assets(["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA"]))
-    print(f"Batch update result: {result}")
+    logger.debug(f"Batch update result: {result}")

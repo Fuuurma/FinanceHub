@@ -135,12 +135,14 @@ export function ScreenerFilter() {
                 placeholder="Min"
                 value={localFilters.market_cap_min || ''}
                 onChange={(e) => updateFilter('market_cap_min', e.target.value ? Number(e.target.value) : undefined)}
+                aria-label="Minimum market cap"
               />
               <Input
                 type="number"
                 placeholder="Max"
                 value={localFilters.market_cap_max || ''}
                 onChange={(e) => updateFilter('market_cap_max', e.target.value ? Number(e.target.value) : undefined)}
+                aria-label="Maximum market cap"
               />
             </div>
             <div className="flex flex-wrap gap-1">
@@ -170,12 +172,14 @@ export function ScreenerFilter() {
               placeholder="Min"
               value={localFilters.price_min || ''}
               onChange={(e) => updateFilter('price_min', e.target.value ? Number(e.target.value) : undefined)}
+              aria-label="Minimum price"
             />
             <Input
               type="number"
               placeholder="Max"
               value={localFilters.price_max || ''}
               onChange={(e) => updateFilter('price_max', e.target.value ? Number(e.target.value) : undefined)}
+              aria-label="Maximum price"
             />
           </div>
         </FilterSection>
