@@ -114,6 +114,8 @@ def get_token(request, username: str, password: str):
 def refresh_token(request, refresh_data: RefreshTokenRequest):
     """
     Refresh access token using refresh token.
+    Implements token rotation - old refresh token is blacklisted,
+    new refresh token is returned.
     """
     from django.contrib.auth import get_user_model
 
@@ -128,19 +130,22 @@ def refresh_token(request, refresh_data: RefreshTokenRequest):
     except User.DoesNotExist:
         return {"error": "User not found"}, 401
 
-    new_access_token = auth_service.refresh_access_token(
+    # Implement token rotation - returns (access_token, new_refresh_token)
+    new_access_token, new_refresh_token = auth_service.refresh_access_token(
         refresh_data.refresh_token, user
     )
 
     if not new_access_token:
-        return {"error": "Token refresh failed"}, 401
+        # Token reuse detected - potential attack
+        logger.warning(f"Token refresh failed - reuse detected for user {user.id}")
+        return {"error": "Token refresh failed - possible token reuse detected"}, 401
 
     tier = getattr(user, "tier", "free")
     expiry_hours = getattr(request, "JWT_EXPIRY_HOURS", 24)
 
     return TokenResponse(
         access_token=new_access_token,
-        refresh_token=None,
+        refresh_token=new_refresh_token,  # New refresh token for continued rotation
         token_type="Bearer",
         expires_in=expiry_hours * 3600,
         user_id=str(user.id),

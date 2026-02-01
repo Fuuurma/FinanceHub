@@ -753,6 +753,6 @@ if __name__ == "__main__":
     }
 
     processed = pipeline.process_raw_data(test_data, "yahoo", "stock")
-    print(f"Processed: {processed}")
+    logger.info("Processed: %s", processed)
 
     pipeline.save_to_database(processed)

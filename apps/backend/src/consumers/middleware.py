@@ -182,26 +182,29 @@ class WebSocketAuthService:
             logger.warning(f"Token verification failed: {e}")
             return None
 
-    def refresh_access_token(self, refresh_token: str, user) -> Optional[str]:
+    def refresh_access_token(self, refresh_token: str, user) -> tuple:
         """
-        Generate new access token using refresh token.
-        IMPORTANT: Implements token rotation - old refresh token is blacklisted.
+        Generate new access and refresh tokens using refresh token.
+        Implements token rotation - old refresh token is blacklisted.
+
+        Returns:
+            Tuple of (access_token, new_refresh_token) or (None, None) on failure
         """
         from users.models.token_blacklist import BlacklistedToken
 
         # Check if token is already blacklisted
         if BlacklistedToken.is_blacklisted(refresh_token):
             logger.warning(f"Token reuse attempt for user {user.id}")
-            return None
+            return None, None
 
         # Verify refresh token
         payload = self.verify_token(refresh_token)
 
         if not payload or payload.get("type") != "refresh":
-            return None
+            return None, None
 
         if payload.get("user_id") != str(user.id):
-            return None
+            return None, None
 
         # Blacklist the old refresh token (token rotation)
         BlacklistedToken.blacklist_token(
@@ -212,7 +215,12 @@ class WebSocketAuthService:
         logger.info(f"Refresh token blacklisted for user {user.id}")
 
         # Generate new access token
-        return self.generate_access_token(user)
+        new_access_token = self.generate_access_token(user)
+
+        # Generate new refresh token
+        new_refresh_token = self.generate_refresh_token(user)
+
+        return new_access_token, new_refresh_token
 
     def get_token_expiry(self, token: str) -> Optional[datetime]:
         """Get expiry datetime from token."""

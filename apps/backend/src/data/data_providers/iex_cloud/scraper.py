@@ -677,24 +677,24 @@ if __name__ == "__main__":
         scraper = IEXCloudScraper()
 
         # Test with AAPL
-        print("Testing IEX Cloud scraper with AAPL...")
+        logger.info("Testing IEX Cloud scraper with AAPL...")
         result = await scraper.fetch_and_save_stock("AAPL")
-        print(f"AAPL Result: {result}")
+        logger.info("AAPL Result: %s", result)
 
         # Test with MSFT
-        print("\nTesting IEX Cloud scraper with MSFT...")
+        logger.info("Testing IEX Cloud scraper with MSFT...")
         result = await scraper.fetch_and_save_stock("MSFT")
-        print(f"MSFT Result: {result}")
+        logger.info("MSFT Result: %s", result)
 
         # Test with multiple stocks
-        print("\nTesting IEX Cloud scraper with popular stocks...")
+        logger.info("Testing IEX Cloud scraper with popular stocks...")
         popular = await get_popular_stocks(5)
         results = await scraper.fetch_multiple_stocks(popular)
-        print(f"Results: {results}")
+        logger.info("Results: %s", results)
 
         # Get financials
-        print("\nGetting financials for AAPL...")
+        logger.info("Getting financials for AAPL...")
         financials = await scraper.get_financials("AAPL")
-        print(f"Financials: {financials}")
+        logger.info("Financials: %s", financials)
 
     asyncio.run(main())

@@ -553,23 +553,23 @@ if __name__ == "__main__":
     
     async def test_search():
         """Test search functionality"""
-        print("Testing search functionality...")
+        logger.info("Testing search functionality...")
         
         # Test basic search
         results, metadata = search_assets("AAPL", limit=10)
-        print(f"Search results: {len(results)}")
-        print(f"Metadata: {metadata}")
+        logger.info("Search results: %d", len(results))
+        logger.debug("Metadata: %s", metadata)
         
         # Test suggestions
         suggestions = get_search_suggestions("AP")
-        print(f"Suggestions: {suggestions}")
+        logger.debug("Suggestions: %s", suggestions)
         
         # Test trending
         trending = get_trending_assets()
-        print(f"Trending: {len(trending)}")
+        logger.info("Trending: %d", len(trending))
         
         # Test cache stats
         stats = search_indexer.get_cache_stats()
-        print(f"Cache stats: {stats}")
+        logger.debug("Cache stats: %s", stats)
     
     asyncio.run(test_search())
