@@ -34,7 +34,7 @@
 | **GAUDÍ** | 🟢 Active | Phase 1 strategy | Now | None | - |
 | **ARIA** | 🟡 Waiting | Coordination | Today | Waiting for decision | ⏳ Your decision below |
 | **Karen** | 🟢 Active | DevOps tickets | Today | None | - |
-| **Charo** | 🟢 Active | Security audits | Today | None | - |
+| **Charo** | 🟢 Active | Security audits | Today | None | 🔄 Ready for C-036 review |
 | **MIES** | 🟢 Active | Design mockups | Today | None | ⏳ Read Phase 1 tasks |
 | **GRACE** | ⚠️ Overdue | QA planning | Yesterday | Report overdue | 🔴 URGENT - Respond now |
 | **HADI** | 🟢 Active | Accessibility | Today | None | ⏳ Read Phase 1 tasks |
@@ -201,18 +201,21 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 ---
 
-### Linus - Feb 1, 2026 3:00 PM
+### Linus - Feb 1, 2026 3:15 PM
 **Status:** 🟢 Active
-**Current Task:** C-036 Backend Complete | API Docs Created for Turing
+**Current Task:** C-036 Backend Complete | Awaiting Charo Security Review
 **Progress:** 
 - ✅ PaperTrading backend fully implemented
-- ✅ API documentation created at `trading/api/PAPER_TRADING_API_DOCS.md`
+- ✅ API documentation created
+- ✅ Security review package prepared for Charo
 **Blockers:** None
 **Next Steps:**
-1. Await Charo security review
+1. Await Charo security audit results
 2. Await QA testing feedback
 3. Fix any issues found
-**Coordination:** ✅ Turing - API docs ready at `apps/backend/src/trading/api/PAPER_TRADING_API_DOCS.md`
+**Coordination:** 
+- ✅ Turing - API docs ready
+- 🔄 Charo - Security package ready at `apps/backend/src/trading/SECURITY_REVIEW_PACKAGE.md`
 
 ---
 
