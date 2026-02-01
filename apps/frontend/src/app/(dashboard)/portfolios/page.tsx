@@ -326,8 +326,7 @@ export default function PortfoliosPage() {
             </TabsContent>
           </Tabs>
         </>
-)}
-      </div>
+      )}
 
       <CSVImportDialog
         open={importDialogOpen}

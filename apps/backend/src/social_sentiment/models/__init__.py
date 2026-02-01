@@ -162,6 +162,12 @@ class TickerMention(UUIDModel, TimestampedModel):
     period_start = models.DateTimeField()
     period_end = models.DateTimeField()
 
+    avg_sentiment = models.DecimalField(
+        max_digits=5, decimal_places=4, null=True, blank=True
+    )
+    sentiment_change = models.DecimalField(
+        max_digits=5, decimal_places=4, null=True, blank=True
+    )
     sentiment_distribution = models.JSONField(default=dict)
     top_posts = models.JSONField(default=list)
 
@@ -216,6 +222,18 @@ class SentimentAlert(UUIDModel, TimestampedModel):
     notification_channels = models.JSONField(default=list)
 
     expires_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def is_active(self) -> bool:
+        return self.status == "active"
+
+    @property
+    def is_triggered(self) -> bool:
+        return self.status == "triggered"
+
+    @property
+    def last_triggered_at(self):
+        return self.triggered_at
 
     class Meta:
         db_table = "sentiment_alerts"

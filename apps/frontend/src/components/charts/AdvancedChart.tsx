@@ -60,6 +60,7 @@ import {
 import { HelpCircle } from 'lucide-react'
 import { useDownloadFile } from '@/hooks/useDownload'
 import { cn } from '@/lib/utils'
+import { ChartScreenReader } from './ScreenReaderChart'
 
 export type ChartType = 'candlestick' | 'line' | 'area' | 'bar' | 'histogram'
 export type Timeframe = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w' | '1M'
@@ -685,6 +686,29 @@ export function AdvancedChart({
 
   return (
     <div className="w-full rounded-lg border bg-card overflow-hidden">
+      <ChartScreenReader
+        chartTitle={`${symbol} - ${CHART_TYPES.find(t => t.value === chartType)?.label} Chart`}
+        chartDescription={`Financial chart showing ${symbol} price movements on ${timeframe} timeframe`}
+        currentValue={latestData?.close}
+        change={priceChange}
+        changePercent={priceChangePercent}
+        timeframe={timeframe}
+        data={currentData.map(d => [
+          { label: 'Date', value: d.date },
+          { label: 'Open', value: d.open.toFixed(2) },
+          { label: 'High', value: d.high.toFixed(2) },
+          { label: 'Low', value: d.low.toFixed(2) },
+          { label: 'Close', value: d.close.toFixed(2) },
+          { label: 'Volume', value: (d.volume || 0).toLocaleString() },
+        ])}
+        summary={[
+          { label: 'Symbol', value: symbol },
+          { label: 'Chart Type', value: CHART_TYPES.find(t => t.value === chartType)?.label || chartType },
+          { label: 'Data Points', value: currentData.length.toString() },
+          { label: 'Latest Close', value: `$${latestData?.close.toFixed(2) || '--'}` },
+          { label: 'Change', value: priceChangePercent !== null ? `${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(2)}%` : '--' },
+        ]}
+      />
       <div className="p-3 border-b bg-muted/30 space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">

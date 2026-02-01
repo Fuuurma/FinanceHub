@@ -9,6 +9,7 @@
 ## Executive Summary
 
 This report documents all security findings identified during the comprehensive security audit of FinanceHub.
+WE SHOULD BE USING COOKIES AND NOT LOCALSTORAGE FOR JWT
 
 | Category | Status |
 |----------|--------|

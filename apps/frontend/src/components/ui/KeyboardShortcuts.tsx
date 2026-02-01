@@ -336,7 +336,9 @@ export function KeyboardShortcuts({
             </DialogTitle>
             <div className="relative mt-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <label htmlFor="shortcut-search" className="sr-only">Search keyboard shortcuts</label>
               <input
+                id="shortcut-search"
                 type="text"
                 placeholder="Search shortcuts..."
                 value={searchQuery}

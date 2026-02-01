@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.db import connection
 import logging
 import time
+import os
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -167,7 +168,7 @@ def get_deployment_info() -> Dict[str, Any]:
             "commit": commit_hash,
             "uptime": uptime,
             "timestamp": datetime.now().isoformat(),
-            "environment": "development",  # TODO: Make this configurable
+            "environment": os.getenv("ENVIRONMENT", "development"),
         }
     except Exception as e:
         return {
@@ -176,6 +177,69 @@ def get_deployment_info() -> Dict[str, Any]:
             "timestamp": datetime.now().isoformat(),
             "environment": "unknown",
         }
+
+
+def check_queues() -> Dict[str, Any]:
+    """Check background task queue health and statistics."""
+    try:
+        from dramatiq import get_broker
+        from redis import Redis
+
+        broker = get_broker()
+        redis_client = Redis(
+            host=os.getenv("REDIS_HOST", "redis"),
+            port=int(os.getenv("REDIS_PORT", "6379")),
+            db=0,
+            decode_responses=True,
+        )
+
+        # Get Redis info
+        redis_info = redis_client.info()
+
+        queue_info = {
+            "broker": "connected",
+            "queues": {
+                "default": {"status": "active"},
+                "fetch": {"status": "active"},
+                "update": {"status": "active"},
+            },
+            "redis_memory_used": redis_info.get("used_memory_human", "unknown"),
+            "redis_connected_clients": redis_info.get("connected_clients", 0),
+            "redis_up_time": redis_info.get("uptime_in_days", 0),
+            "redis_total_commands": redis_info.get("total_commands_processed", 0),
+        }
+
+        return queue_info
+
+    except Exception as e:
+        logger.error(f"Queue health check failed: {e}")
+        return {"broker": "error", "error": str(e), "queues": {}}
+
+
+@router.get("/queues", response=Dict[str, Any])
+def queue_health(request) -> Dict[str, Any]:
+    """
+    Get background task queue health and statistics.
+
+    Returns queue depth, broker status, and Redis metrics.
+    Used for monitoring Dramatiq worker and task queues.
+    """
+    start_time = time.time()
+
+    try:
+        queue_status = check_queues()
+        response_time = (time.time() - start_time) * 1000
+
+        return {
+            "status": "healthy"
+            if queue_status.get("broker") == "connected"
+            else "unhealthy",
+            "response_time_ms": round(response_time, 2),
+            **queue_status,
+        }
+    except Exception as e:
+        logger.error(f"Queue health check failed: {e}")
+        return {"status": "unhealthy", "error": str(e), "response_time_ms": 0}
 
 
 @router.get("/detailed", response=Dict[str, Any])

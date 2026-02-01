@@ -25,6 +25,7 @@ from .market_depth import (
     LargeOrders,
 )
 from .backtesting import TradingStrategy, Backtest, BacktestTrade
+from .bonds import Bond, BondCalculation, BondPortfolio
 
 __all__ = [
     "DataProvider",
@@ -58,4 +59,7 @@ __all__ = [
     "TradingStrategy",
     "Backtest",
     "BacktestTrade",
+    "Bond",
+    "BondCalculation",
+    "BondPortfolio",
 ]

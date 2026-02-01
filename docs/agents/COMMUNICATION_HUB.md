@@ -48,6 +48,20 @@
 
 ## 📨 BROADCAST MESSAGES (Most Recent First)
 
+### 📍 LOCATION UPDATE: Communication Hub - ALL AGENTS READ
+**From:** GAUDÍ
+**Date:** Feb 1, 2026 2:45 PM
+**Priority:** 🟡 IMPORTANT
+**Read Receipt:** 🟢 GAUDÍ | ⏳ Awaiting others
+
+**📍 LOCATION:** `docs/agents/COMMUNICATION_HUB.md`
+
+**Path:** `/Users/sergi/Desktop/Projects/FinanceHub/docs/agents/COMMUNICATION_HUB.md`
+
+**Note:** Root directory cleaned. All docs now organized in `docs/` folder.
+
+---
+
 ### 📢 NEW SYSTEM: Communication Hub - ALL AGENTS READ
 **From:** GAUDÍ
 **Date:** Feb 1, 2026 2:30 PM
@@ -58,10 +72,10 @@
 
 **What Changed:**
 - **OLD:** 10+ files scattered everywhere
-- **NEW:** ONE FILE - `COMMUNICATION_HUB.md` in root directory
+- **NEW:** ONE FILE - `docs/agents/COMMUNICATION_HUB.md` (organized documentation)
 
 **What You Need to Do:**
-1. **Check COMMUNICATION_HUB.md** - It's in the project root
+1. **Check docs/agents/COMMUNICATION_HUB.md** - Central coordination file
 2. **Read it daily** - Takes 5 minutes, keeps you aligned
 3. **Update your status** - Add updates in "Agent Updates" section
 
@@ -238,25 +252,27 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 **Jan 29, 2026:** Linus, Guido, Turing last active
 **Jan 31, 2026:** ARIA sent follow-up messages (0 responses)
-**Feb 1, 2026:** GAUDÍ created Phase 1 task assignments
+**Feb 1, 2026 2:00 PM:** GAUDÍ created Phase 1 task assignments
+**Feb 1, 2026 2:30 PM:** User approved Option 2 escalation with Option 3 backup
+**Feb 1, 2026 2:30 PM:** Final deadline set: 5:00 PM TODAY
 **Feb 1, 2026:** GRACE report overdue
-**Feb 1, 2026:** Awaiting GAUDÍ decision on silent coders
 
 ---
 
-## 🎯 DECISION POINTS (Awaiting User Input)
+## 🎯 DECISION POINTS
 
-### Decision 1: Silent Coders - What should we do?
+### Decision 1: Silent Coders - DECISION MADE ✅
 **Context:** Linus, Guido, Turing silent 72+ hours. Phase 1 tasks assigned to them.
 
-**Options:**
-1. **Wait 24-48h** - Give them chance to respond to Phase 1 tasks
-2. **Urgent escalation** - Send direct message demanding immediate response
-3. **Reassign to Auto-coder** - Acknowledge they're unavailable, reassign tasks
+**User Decision:** Option 2 with Option 3 backup ✅
 
-**ARIA's Recommendation:** Option 2 with Option 3 backup
+**Action Plan:**
+1. ✅ Urgent escalation sent (see broadcast above)
+2. ⏳ Deadline: 5:00 PM TODAY (Feb 1)
+3. ⏳ If no response → Reassign Phase 1 tasks to Auto-coder
+4. ⏳ Document decision if reassignment needed
 
-**User Decision Needed:** 👉 **YOUR CHOICE HERE**
+**Status:** Awaiting response from Linus, Guido, Turing (deadline 5 PM)
 
 ---
 

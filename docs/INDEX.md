@@ -103,6 +103,11 @@ UI/UX design system, guidelines, and component patterns.
 - [DESIGN_STANDARDIZATION_PLAN.md](design/DESIGN_STANDARDIZATION_PLAN.md) - Unification recommendations
 - [ACCESSIBILITY_REVIEW.md](design/ACCESSIBILITY_REVIEW.md) - WCAG 2.1 AA checklist
 - [COMPONENT_USAGE_AUDIT.md](design/COMPONENT_USAGE_AUDIT.md) - Component pattern analysis
+- [MIES_DESIGN_SYSTEM_AUDIT_REPORT.md](design/MIES_DESIGN_SYSTEM_AUDIT_REPORT.md) - Final audit report
+- [BRUTALIST_COMPONENT_VARIANTS.md](design/BRUTALIST_COMPONENT_VARIANTS.md) - Implementation proposal
+- [UI_REFACTORING_PROPOSAL.md](design/UI_REFACTORING_PROPOSAL.md) - Refactoring opportunities
+- [DESIGN_SYSTEM_GOVERNANCE.md](design/DESIGN_SYSTEM_GOVERNANCE.md) - Governance policies
+- [COMPONENT_STATUS_INVENTORY.md](design/COMPONENT_STATUS_INVENTORY.md) - Live component inventory
 
 ---
 
@@ -255,14 +260,14 @@ docs/
 | Category | Files |
 |----------|-------|
 | Architecture | 9 |
-| Design | 4 |
+| Design | 9 |
 | Development | 7 |
 | Operations | 9 |
 | Security | 8 |
 | Agents | 3 |
 | References | 6 |
 | Root Docs | 6 |
-| **Total** | **52+** |
+| **Total** | **57+** |
 
 ---
 

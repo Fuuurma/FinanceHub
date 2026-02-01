@@ -231,34 +231,85 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/backend
+          file: ./apps/backend/Dockerfile
+          push: false
+          load: true
+          tags: financehub-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy on backend Docker image
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
+          image-ref: financehub-backend:test
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'trivy-backend-results.sarif'
+          severity: 'CRITICAL,HIGH'
 
-      - name: Upload Trivy results to GitHub Security
+      - name: Upload Trivy backend results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'trivy-backend-results.sarif'
+          category: 'docker-backend'
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/frontend
+          file: ./apps/frontend/Dockerfile
+          push: false
+          load: true
+          tags: financehub-frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy on frontend Docker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: financehub-frontend:test
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy frontend results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+          category: 'docker-frontend'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Run pip-audit (Python)
         run: |
           pip install pip-audit
           cd apps/backend
-          pip-audit --format json > ../pip-audit-results.json || true
+          pip-audit --format json > ../../pip-audit-results.json || true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Run npm audit (Node)
         run: |
           cd apps/frontend
-          npm audit --json > ../npm-audit-results.json || true
+          npm audit --json > ../../npm-audit-results.json || true
 
       - name: Upload audit results
         uses: actions/upload-artifact@v4
@@ -268,6 +319,48 @@ jobs:
           path: |
             pip-audit-results.json
             npm-audit-results.json
+
+      - name: Comment PR with security summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let summary = '## 🔒 Security Scan Results\n\n';
+            
+            try {
+              const pipResults = JSON.parse(fs.readFileSync('pip-audit-results.json', 'utf8'));
+              summary += '### Python Dependencies\n';
+              if (pipResults.vulnerabilities && pipResults.vulnerabilities.length > 0) {
+                summary += `⚠️ Found ${pipResults.vulnerabilities.length} vulnerabilities\n`;
+              } else {
+                summary += '✅ No vulnerabilities found\n';
+              }
+            } catch (e) {
+              summary += '### Python Dependencies\nℹ️ Scan failed\n';
+            }
+            
+            try {
+              const npmResults = JSON.parse(fs.readFileSync('npm-audit-results.json', 'utf8'));
+              summary += '\n### Node Dependencies\n';
+              if (npmResults.vulnerabilities) {
+                const v = npmResults.metadata.vulnerabilities;
+                summary += `- Critical: ${v.critical}\n`;
+                summary += `- High: ${v.high}\n`;
+                summary += `- Moderate: ${v.moderate}\n`;
+              }
+            } catch (e) {
+              summary += '\n### Node Dependencies\nℹ️ Scan failed\n';
+            }
+            
+            summary += '\n[View full results in the Security tab](https://github.com/${{ github.repository }}/security)';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
 
   build-verification:
     name: Build Verification

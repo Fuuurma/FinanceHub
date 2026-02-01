@@ -109,7 +109,7 @@ class TickerTrendingSchema(BaseModel):
     volume_spike: bool
 
 
-@router.get("/sentiment/{symbol}", response=AggregatedSentimentSchema)
+@router.get("/{symbol}", response=AggregatedSentimentSchema)
 def get_symbol_sentiment(
     request, symbol: str, source: Optional[str] = None, timeframe: Optional[str] = "24h"
 ):
@@ -117,7 +117,7 @@ def get_symbol_sentiment(
     return analyzer.get_aggregated_sentiment(symbol, source, timeframe)
 
 
-@router.get("/sentiment/{symbol}/posts", response=List[SocialPostSchema])
+@router.get("/{symbol}/posts", response=List[SocialPostSchema])
 def get_symbol_posts(
     request, symbol: str, source: Optional[str] = None, limit: int = 50
 ):
@@ -163,7 +163,7 @@ def get_symbol_posts(
     return result
 
 
-@router.post("/sentiment/analyze", response=SentimentResponseSchema)
+@router.post("/analyze", response=SentimentResponseSchema)
 def analyze_sentiment(request, payload: SentimentRequestSchema):
     analyzer = SentimentAnalyzer()
     result = analyzer.analyze_text(payload.content)

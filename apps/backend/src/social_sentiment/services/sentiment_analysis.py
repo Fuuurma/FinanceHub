@@ -236,6 +236,169 @@ class SentimentAnalyzer:
         matches = re.findall(r"#(\w+)", text, re.IGNORECASE)
         return list(set([h.lower() for h in matches]))
 
+    def calculate_weight(self, post: Dict) -> float:
+        weight = 1.0
+
+        if post.get("followers_count", 0) > 10000:
+            weight *= 1.5
+        elif post.get("followers_count", 0) > 1000:
+            weight *= 1.2
+
+        engagement = post.get("engagement_score", 0)
+        if engagement > 1000:
+            weight *= 1.5
+        elif engagement > 100:
+            weight *= 1.2
+
+        if post.get("is_retweet", False):
+            weight *= 0.8
+
+        return weight
+
+    def analyze_text(self, text: str) -> Dict:
+        """
+        Analyze sentiment of text and return structured result.
+
+        Args:
+            text: Text to analyze
+
+        Returns:
+            Dictionary with sentiment analysis results
+        """
+        result = self.analyze(text)
+
+        vader_scores = self._analyze_vader(self._clean_text(text))
+        textblob_scores = self._analyze_textblob(self._clean_text(text))
+
+        combined_score = (
+            float(result.vader_compound) * 0.6 + float(result.textblob_polarity) * 0.4
+        )
+
+        return {
+            "vader": {
+                "positive": float(result.vader_positive),
+                "negative": float(result.vader_negative),
+                "neutral": float(result.vader_neutral),
+                "compound": float(result.vader_compound),
+            },
+            "textblob": {
+                "polarity": float(result.textblob_polarity),
+                "subjectivity": float(result.textblob_subjectivity),
+            },
+            "combined_score": combined_score,
+            "confidence": float(result.confidence),
+            "sentiment_label": result.sentiment,
+            "detected_symbols": result.mentions,
+        }
+
+    def get_aggregated_sentiment(
+        self, symbol: str, source: Optional[str] = None, timeframe: str = "24h"
+    ) -> Dict:
+        """
+        Get aggregated sentiment for a symbol.
+
+        Args:
+            symbol: Stock symbol (e.g., 'AAPL')
+            source: Source filter ('twitter', 'reddit', 'news', 'combined')
+            timeframe: Time window ('1h', '24h', '7d', '30d')
+
+        Returns:
+            Dictionary with aggregated sentiment data
+        """
+        from social_sentiment.models import SentimentAnalysis, SocialPost
+
+        symbol = symbol.upper()
+
+        hours_map = {"1h": 1, "24h": 24, "7d": 168, "30d": 720}
+        hours = hours_map.get(timeframe, 24)
+
+        from datetime import datetime, timedelta
+
+        cutoff = datetime.utcnow() - timedelta(hours=hours)
+
+        posts_query = SocialPost.objects.filter(symbol=symbol, posted_at__gte=cutoff)
+
+        if source:
+            posts_query = posts_query.filter(source=source)
+
+        posts = list(posts_query.order_by("-posted_at")[:500])
+
+        if not posts:
+            return {
+                "symbol": symbol,
+                "source": source or "combined",
+                "timeframe": timeframe,
+                "total_mentions": 0,
+                "avg_vader_compound": 0.0,
+                "avg_textblob_polarity": 0.0,
+                "combined_score": 0.0,
+                "sentiment_distribution": {
+                    "positive": 0,
+                    "negative": 0,
+                    "neutral": 0,
+                    "mixed": 0,
+                },
+                "top_influencers": [],
+                "last_updated": datetime.utcnow().isoformat(),
+            }
+
+        sentiment_analyses = SentimentAnalysis.objects.filter(
+            post_id__in=[p.id for p in posts]
+        )
+
+        post_sentiments = {sa.post_id: sa for sa in sentiment_analyses}
+
+        total_vader = 0
+        total_textblob = 0
+        sentiment_counts = {"positive": 0, "negative": 0, "neutral": 0, "mixed": 0}
+        total_posts = len(posts)
+
+        for post in posts:
+            sa = post_sentiments.get(post.id)
+            if sa and sa.vader_compound:
+                total_vader += float(sa.vader_compound)
+                total_textblob += (
+                    float(sa.textblob_polarity) if sa.textblob_polarity else 0
+                )
+                sentiment_counts[sa.sentiment] = (
+                    sentiment_counts.get(sa.sentiment, 0) + 1
+                )
+
+        avg_vader = total_vader / total_posts if total_posts else 0
+        avg_textblob = total_textblob / total_posts if total_posts else 0
+        combined_score = avg_vader * 0.6 + avg_textblob * 0.4
+
+        total_engagement = sum(p.upvotes + p.comments + p.shares for p in posts)
+
+        top_influencers = []
+        for post in sorted(posts, key=lambda x: x.followers_count, reverse=True)[:5]:
+            top_influencers.append(
+                {
+                    "author": post.author,
+                    "followers": post.followers_count,
+                    "engagement": float(post.engagement_score),
+                    "sentiment": post.sentiment,
+                }
+            )
+
+        return {
+            "symbol": symbol,
+            "source": source or "combined",
+            "timeframe": timeframe,
+            "total_mentions": total_posts,
+            "avg_vader_compound": round(avg_vader, 4),
+            "avg_textblob_polarity": round(avg_textblob, 4),
+            "combined_score": round(combined_score, 4),
+            "sentiment_distribution": sentiment_counts,
+            "top_influencers": top_influencers,
+            "total_engagement": total_engagement,
+            "last_updated": datetime.utcnow().isoformat(),
+        }
+
+    def detect_tickers(self, text: str) -> List[str]:
+        """Wrapper for TickerDetector.extract_tickers."""
+        return TickerDetector.extract_tickers(text)
+
 
 class AggregatedSentiment:
     @staticmethod
@@ -314,3 +477,147 @@ class AggregatedSentiment:
             weight *= 0.8
 
         return weight
+
+    def analyze_text(self, text: str) -> Dict:
+        """
+        Analyze sentiment of text and return structured result.
+
+        Args:
+            text: Text to analyze
+
+        Returns:
+            Dictionary with sentiment analysis results
+        """
+        result = self.analyze(text)
+
+        vader_scores = self._analyze_vader(self._clean_text(text))
+        textblob_scores = self._analyze_textblob(self._clean_text(text))
+
+        combined_score = (
+            float(result.vader_compound) * 0.6 + float(result.textblob_polarity) * 0.4
+        )
+
+        return {
+            "vader": {
+                "positive": float(result.vader_positive),
+                "negative": float(result.vader_negative),
+                "neutral": float(result.vader_neutral),
+                "compound": float(result.vader_compound),
+            },
+            "textblob": {
+                "polarity": float(result.textblob_polarity),
+                "subjectivity": float(result.textblob_subjectivity),
+            },
+            "combined_score": combined_score,
+            "confidence": float(result.confidence),
+            "sentiment_label": result.sentiment,
+            "detected_symbols": result.mentions,
+        }
+
+    def get_aggregated_sentiment(
+        self, symbol: str, source: Optional[str] = None, timeframe: str = "24h"
+    ) -> Dict:
+        """
+        Get aggregated sentiment for a symbol.
+
+        Args:
+            symbol: Stock symbol (e.g., 'AAPL')
+            source: Source filter ('twitter', 'reddit', 'news', 'combined')
+            timeframe: Time window ('1h', '24h', '7d', '30d')
+
+        Returns:
+            Dictionary with aggregated sentiment data
+        """
+        from social_sentiment.models import SentimentAnalysis, SocialPost
+
+        symbol = symbol.upper()
+
+        hours_map = {"1h": 1, "24h": 24, "7d": 168, "30d": 720}
+        hours = hours_map.get(timeframe, 24)
+
+        from datetime import datetime, timedelta
+
+        cutoff = datetime.utcnow() - timedelta(hours=hours)
+
+        posts_query = SocialPost.objects.filter(symbol=symbol, posted_at__gte=cutoff)
+
+        if source:
+            posts_query = posts_query.filter(source=source)
+
+        posts = list(posts_query.order_by("-posted_at")[:500])
+
+        if not posts:
+            return {
+                "symbol": symbol,
+                "source": source or "combined",
+                "timeframe": timeframe,
+                "total_mentions": 0,
+                "avg_vader_compound": 0.0,
+                "avg_textblob_polarity": 0.0,
+                "combined_score": 0.0,
+                "sentiment_distribution": {
+                    "positive": 0,
+                    "negative": 0,
+                    "neutral": 0,
+                    "mixed": 0,
+                },
+                "top_influencers": [],
+                "last_updated": datetime.utcnow().isoformat(),
+            }
+
+        sentiment_analyses = SentimentAnalysis.objects.filter(
+            post_id__in=[p.id for p in posts]
+        )
+
+        post_sentiments = {sa.post_id: sa for sa in sentiment_analyses}
+
+        total_vader = 0
+        total_textblob = 0
+        sentiment_counts = {"positive": 0, "negative": 0, "neutral": 0, "mixed": 0}
+        total_posts = len(posts)
+
+        for post in posts:
+            sa = post_sentiments.get(post.id)
+            if sa and sa.vader_compound:
+                total_vader += float(sa.vader_compound)
+                total_textblob += (
+                    float(sa.textblob_polarity) if sa.textblob_polarity else 0
+                )
+                sentiment_counts[sa.sentiment] = (
+                    sentiment_counts.get(sa.sentiment, 0) + 1
+                )
+
+        avg_vader = total_vader / total_posts if total_posts else 0
+        avg_textblob = total_textblob / total_posts if total_posts else 0
+        combined_score = avg_vader * 0.6 + avg_textblob * 0.4
+
+        total_engagement = sum(p.upvotes + p.comments + p.shares for p in posts)
+
+        top_influencers = []
+        for post in sorted(posts, key=lambda x: x.followers_count, reverse=True)[:5]:
+            top_influencers.append(
+                {
+                    "author": post.author,
+                    "followers": post.followers_count,
+                    "engagement": float(post.engagement_score),
+                    "sentiment": post.sentiment,
+                }
+            )
+
+        return {
+            "symbol": symbol,
+            "source": source or "combined",
+            "timeframe": timeframe,
+            "total_mentions": total_posts,
+            "avg_vader_compound": round(avg_vader, 4),
+            "avg_textblob_polarity": round(avg_textblob, 4),
+            "combined_score": round(combined_score, 4),
+            "sentiment_distribution": sentiment_counts,
+            "top_influencers": top_influencers,
+            "total_engagement": total_engagement,
+            "last_updated": datetime.utcnow().isoformat(),
+        }
+
+    def detect_tickers(self, text: str) -> List[str]:
+        """Wrapper for TickerDetector.extract_tickers."""
+        return TickerDetector.extract_tickers(text)
