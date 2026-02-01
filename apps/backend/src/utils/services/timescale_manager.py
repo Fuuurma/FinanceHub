@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
 import psycopg2
-from psycopg2 import sql
+from psycopg2 import sql, DatabaseError, OperationalError, DataError
 from psycopg2.extras import RealDictCursor, execute_values
 
 from django.conf import settings
@@ -62,10 +62,12 @@ class TimescaleDBManager:
         try:
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute("SELECT extname FROM pg_extension WHERE extname = 'timescaledb';")
+                    cur.execute(
+                        "SELECT extname FROM pg_extension WHERE extname = 'timescaledb';"
+                    )
                     result = cur.fetchone()
                     return result is not None
-        except Exception as e:
+        except (DatabaseError, OperationalError) as e:
             logger.error(f"TimescaleDB availability check failed: {e}")
             return False
 
@@ -75,11 +77,11 @@ class TimescaleDBManager:
         conn = None
         try:
             conn = psycopg2.connect(
-                host=getattr(settings, 'TIMESCALE_DB_HOST', 'localhost'),
-                port=getattr(settings, 'TIMESCALE_DB_PORT', 5432),
-                database=getattr(settings, 'TIMESCALE_DB_NAME', 'financehub'),
-                user=getattr(settings, 'TIMESCALE_DB_USER', 'postgres'),
-                password=getattr(settings, 'TIMESCALE_DB_PASSWORD', ''),
+                host=getattr(settings, "TIMESCALE_DB_HOST", "localhost"),
+                port=getattr(settings, "TIMESCALE_DB_PORT", 5432),
+                database=getattr(settings, "TIMESCALE_DB_NAME", "financehub"),
+                user=getattr(settings, "TIMESCALE_DB_USER", "postgres"),
+                password=getattr(settings, "TIMESCALE_DB_PASSWORD", ""),
             )
             yield conn
         finally:
@@ -88,7 +90,7 @@ class TimescaleDBManager:
 
     def get_django_connection_string(self) -> str:
         """Get Django database connection as a connection string."""
-        db_config = settings.DATABASES['default']
+        db_config = settings.DATABASES["default"]
         return (
             f"host={db_config['HOST']} port={db_config['PORT']} "
             f"dbname={db_config['NAME']} user={db_config['USER']} "
@@ -101,7 +103,7 @@ class TimescaleDBManager:
         time_column: str,
         chunk_time_interval: str = "1 day",
         migrate_data: bool = True,
-        if_not_exists: bool = True
+        if_not_exists: bool = True,
     ) -> bool:
         """
         Create a hypertable for time-series data.
@@ -124,26 +126,37 @@ class TimescaleDBManager:
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
                     if if_not_exists:
-                        cur.execute("""
+                        cur.execute(
+                            """
                             SELECT create_hypertable(%s, %s, migrate_data := %s, if_not_exists := true);
-                        """, (table_name, time_column, migrate_data))
+                        """,
+                            (table_name, time_column, migrate_data),
+                        )
                     else:
-                        cur.execute("""
+                        cur.execute(
+                            """
                             SELECT create_hypertable(%s, %s, migrate_data := %s);
-                        """, (table_name, time_column, migrate_data))
+                        """,
+                            (table_name, time_column, migrate_data),
+                        )
 
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT set_chunk_time_interval(%s, %s);
-                    """, (table_name, chunk_time_interval))
+                    """,
+                        (table_name, chunk_time_interval),
+                    )
 
                     conn.commit()
-                    logger.info(f"Successfully created hypertable '{table_name}' with time column '{time_column}'")
+                    logger.info(
+                        f"Successfully created hypertable '{table_name}' with time column '{time_column}'"
+                    )
                     return True
 
         except psycopg2.errors.DuplicateTable:
             logger.info(f"Hypertable '{table_name}' already exists")
             return True
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to create hypertable '{table_name}': {e}")
             return False
 
@@ -154,14 +167,11 @@ class TimescaleDBManager:
             time_column=config.time_column,
             chunk_time_interval=config.chunk_time_interval,
             migrate_data=config.migrate_data,
-            if_not_exists=config.if_not_exists
+            if_not_exists=config.if_not_exists,
         )
 
     def add_dimension(
-        self,
-        table_name: str,
-        column_name: str,
-        number_partitions: int = 2
+        self, table_name: str, column_name: str, number_partitions: int = 2
     ) -> bool:
         """
         Add an additional dimension to a hypertable for better query performance.
@@ -180,21 +190,24 @@ class TimescaleDBManager:
         try:
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT add_dimension(%s, %s, number_partitions => %s);
-                    """, (table_name, column_name, number_partitions))
+                    """,
+                        (table_name, column_name, number_partitions),
+                    )
                     conn.commit()
-                    logger.info(f"Added dimension '{column_name}' to hypertable '{table_name}'")
+                    logger.info(
+                        f"Added dimension '{column_name}' to hypertable '{table_name}'"
+                    )
                     return True
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to add dimension to '{table_name}': {e}")
             return False
 
     def set_retention_policy(
-        self,
-        table_name: str,
-        drop_after: str = "30 days"
+        self, table_name: str, drop_after: str = "30 days"
     ) -> bool:
         """
         Set a data retention policy for a hypertable.
@@ -212,14 +225,19 @@ class TimescaleDBManager:
         try:
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT add_retention_policy(%s, INTERVAL %s);
-                    """, (table_name, drop_after))
+                    """,
+                        (table_name, drop_after),
+                    )
                     conn.commit()
-                    logger.info(f"Set retention policy for '{table_name}': drop after {drop_after}")
+                    logger.info(
+                        f"Set retention policy for '{table_name}': drop after {drop_after}"
+                    )
                     return True
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to set retention policy for '{table_name}': {e}")
             return False
 
@@ -231,14 +249,17 @@ class TimescaleDBManager:
         try:
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT remove_retention_policy(%s);
-                    """, (table_name,))
+                    """,
+                        (table_name,),
+                    )
                     conn.commit()
                     logger.info(f"Removed retention policy from '{table_name}'")
                     return True
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to remove retention policy from '{table_name}': {e}")
             return False
 
@@ -248,7 +269,7 @@ class TimescaleDBManager:
         source_table: str,
         time_bucket: str,
         columns: List[str],
-        group_by_columns: List[str]
+        group_by_columns: List[str],
     ) -> bool:
         """
         Create a continuous aggregate for pre-computed aggregations.
@@ -299,21 +320,23 @@ class TimescaleDBManager:
         except psycopg2.errors.DuplicateTable:
             logger.info(f"Continuous aggregate '{aggregate_name}' already exists")
             return True
-        except Exception as e:
-            logger.error(f"Failed to create continuous aggregate '{aggregate_name}': {e}")
+        except (DatabaseError, OperationalError, DataError) as e:
+            logger.error(
+                f"Failed to create continuous aggregate '{aggregate_name}': {e}"
+            )
             return False
 
     def _get_aggregate_selections(self, columns: List[str]) -> str:
         """Generate aggregate function selections for columns."""
         selections = []
         for col in columns:
-            if col in ['open', 'low']:
+            if col in ["open", "low"]:
                 selections.append(f"MIN({col}) AS {col}")
-            elif col in ['high']:
+            elif col in ["high"]:
                 selections.append(f"MAX({col}) AS {col}")
-            elif col in ['close']:
+            elif col in ["close"]:
                 selections.append(f"LAST({col}, date) AS close")
-            elif col in ['volume']:
+            elif col in ["volume"]:
                 selections.append(f"SUM({col}) AS volume")
             else:
                 selections.append(f"AVG({col}) AS {col}")
@@ -326,7 +349,7 @@ class TimescaleDBManager:
         start_time: datetime,
         end_time: datetime,
         asset_id: Optional[str] = None,
-        aggregates: Optional[Dict[str, str]] = None
+        aggregates: Optional[Dict[str, str]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Query time-bucketed data from a hypertable.
@@ -374,16 +397,12 @@ class TimescaleDBManager:
 
                     return [dict(row) for row in results]
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to get time-bucketed data from '{table_name}': {e}")
             return []
 
     def get_ohlcv_data(
-        self,
-        symbol: str,
-        interval: str,
-        start_date: datetime,
-        end_date: datetime
+        self, symbol: str, interval: str, start_date: datetime, end_date: datetime
     ) -> List[Dict[str, Any]]:
         """
         Get OHLCV (Open, High, Low, Close, Volume) data with time bucketing.
@@ -401,23 +420,24 @@ class TimescaleDBManager:
             return []
 
         interval_map = {
-            '1min': '1 minute',
-            '5min': '5 minutes',
-            '15min': '15 minutes',
-            '30min': '30 minutes',
-            '1hour': '1 hour',
-            '4hour': '4 hours',
-            '1day': '1 day',
-            '1week': '1 week',
-            '1month': '1 month'
+            "1min": "1 minute",
+            "5min": "5 minutes",
+            "15min": "15 minutes",
+            "30min": "30 minutes",
+            "1hour": "1 hour",
+            "4hour": "4 hours",
+            "1day": "1 day",
+            "1week": "1 week",
+            "1month": "1 month",
         }
 
-        bucket_interval = interval_map.get(interval, '1 day')
+        bucket_interval = interval_map.get(interval, "1 day")
 
         try:
             with self.get_connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT
                             time_bucket(%s, date) AS bucket,
                             FIRST(open, date) AS open,
@@ -430,19 +450,19 @@ class TimescaleDBManager:
                         WHERE aa.ticker = %s AND date >= %s AND date < %s
                         GROUP BY bucket
                         ORDER BY bucket DESC
-                    """, (bucket_interval, symbol, start_date, end_date))
+                    """,
+                        (bucket_interval, symbol, start_date, end_date),
+                    )
 
                     results = cur.fetchall()
                     return [dict(row) for row in results]
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to get OHLCV data for {symbol}: {e}")
             return []
 
     def migrate_asset_prices_to_hypertable(
-        self,
-        batch_size: int = 10000,
-        create_hypertable: bool = True
+        self, batch_size: int = 10000, create_hypertable: bool = True
     ) -> Tuple[int, int]:
         """
         Migrate AssetPricesHistoric data to TimescaleDB hypertable.
@@ -471,18 +491,21 @@ class TimescaleDBManager:
                         self.create_hypertable(
                             table_name="asset_prices_historic",
                             time_column="date",
-                            chunk_time_interval="7 days"
+                            chunk_time_interval="7 days",
                         )
 
                     offset = 0
                     while True:
-                        cur.execute("""
+                        cur.execute(
+                            """
                             SELECT id, asset_id, date, open, high, low, close, volume,
                                    volatility, source_id, created_at, updated_at
                             FROM asset_prices_historic
                             ORDER BY id
                             LIMIT %s OFFSET %s
-                        """, (batch_size, offset))
+                        """,
+                            (batch_size, offset),
+                        )
 
                         rows = cur.fetchall()
 
@@ -491,15 +514,18 @@ class TimescaleDBManager:
 
                         for row in rows:
                             try:
-                                cur.execute("""
+                                cur.execute(
+                                    """
                                     INSERT INTO asset_prices_historic
                                     (id, asset_id, date, open, high, low, close, volume,
                                      volatility, source_id, created_at, updated_at)
                                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                                     ON CONFLICT (id) DO NOTHING
-                                """, row)
+                                """,
+                                    row,
+                                )
                                 migrated += 1
-                            except Exception as e:
+                            except (DatabaseError, OperationalError, DataError) as e:
                                 errors += 1
                                 logger.error(f"Error migrating row {row[0]}: {e}")
 
@@ -509,13 +535,15 @@ class TimescaleDBManager:
                         if len(rows) < batch_size:
                             break
 
-                    logger.info(f"Migration complete: {migrated} records migrated, {errors} errors")
+                    logger.info(
+                        f"Migration complete: {migrated} records migrated, {errors} errors"
+                    )
                     return (migrated, errors)
 
         except ImportError as e:
             logger.error(f"Import error during migration: {e}")
             return (0, 0)
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Migration failed: {e}")
             return (migrated, errors)
 
@@ -527,19 +555,22 @@ class TimescaleDBManager:
         try:
             with self.get_connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT
                             pg_total_relation_size(oid) AS total_size,
                             pg_relation_size(oid) AS table_size,
                             pg_total_relation_size(oid) - pg_relation_size(oid) AS index_size
                         FROM pg_class WHERE relname = %s
-                    """, (table_name,))
+                    """,
+                        (table_name,),
+                    )
 
                     result = cur.fetchone()
                     if result:
                         return dict(result)
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to get compression stats: {e}")
 
         return {}
@@ -552,22 +583,28 @@ class TimescaleDBManager:
         try:
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""
+                    cur.execute(
+                        """
                         ALTER TABLE %s SET (
                             timescaledb.compress,
                             timescaledb.compress_segmentby = 'asset_id'
                         );
-                    """, (table_name,))
+                    """,
+                        (table_name,),
+                    )
 
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT add_compression_policy(%s, INTERVAL '7 days');
-                    """, (table_name,))
+                    """,
+                        (table_name,),
+                    )
 
                     conn.commit()
                     logger.info(f"Enabled auto-compression for '{table_name}'")
                     return True
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to enable compression for '{table_name}': {e}")
             return False
 
@@ -579,7 +616,8 @@ class TimescaleDBManager:
         try:
             with self.get_connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT
                             chunk_name,
                             range_start,
@@ -590,12 +628,14 @@ class TimescaleDBManager:
                         FROM timescaledb_information.chunks
                         WHERE hypertable_name = %s
                         ORDER BY range_start DESC
-                    """, (table_name,))
+                    """,
+                        (table_name,),
+                    )
 
                     results = cur.fetchall()
                     return [dict(row) for row in results]
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to get chunks info: {e}")
             return []
 
@@ -616,15 +656,20 @@ class TimescaleDBManager:
         try:
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""
+                    cur.execute(
+                        """
                         SELECT drop_chunks(%s, INTERVAL %s);
-                    """, (table_name, older_than))
+                    """,
+                        (table_name, older_than),
+                    )
                     result = cur.fetchone()
                     dropped = result[0] if result else 0
-                    logger.info(f"Dropped {dropped} chunks from '{table_name}' older than {older_than}")
+                    logger.info(
+                        f"Dropped {dropped} chunks from '{table_name}' older than {older_than}"
+                    )
                     return dropped
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to drop chunks: {e}")
             return 0
 
@@ -650,11 +695,11 @@ class TimescaleDBManager:
 
                     results = cur.fetchall()
                     return {
-                        'hypertables': [dict(row) for row in results],
-                        'total_storage': sum(row['total_bytes'] for row in results)
+                        "hypertables": [dict(row) for row in results],
+                        "total_storage": sum(row["total_bytes"] for row in results),
                     }
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to get storage info: {e}")
             return {}
 
@@ -676,12 +721,11 @@ class TimescaleDBManager:
             self.create_hypertable(
                 table_name="asset_prices_historic",
                 time_column="date",
-                chunk_time_interval="7 days"
+                chunk_time_interval="7 days",
             )
 
             self.set_retention_policy(
-                table_name="asset_prices_historic",
-                drop_after="2 years"
+                table_name="asset_prices_historic", drop_after="2 years"
             )
 
             self.enable_auto_compression("asset_prices_historic")
@@ -691,7 +735,7 @@ class TimescaleDBManager:
                 source_table="asset_prices_historic",
                 time_bucket="1 hour",
                 columns=["open", "high", "low", "close", "volume"],
-                group_by_columns=["asset_id"]
+                group_by_columns=["asset_id"],
             )
 
             self.create_continuous_aggregate(
@@ -699,23 +743,27 @@ class TimescaleDBManager:
                 source_table="asset_prices_historic",
                 time_bucket="1 day",
                 columns=["open", "high", "low", "close", "volume"],
-                group_by_columns=["asset_id"]
+                group_by_columns=["asset_id"],
             )
 
             logger.info("TimescaleDB setup completed successfully")
             return True
 
-        except Exception as e:
+        except (DatabaseError, OperationalError, DataError) as e:
             logger.error(f"Failed to setup TimescaleDB functions: {e}")
             return False
 
     def health_check(self) -> Dict[str, Any]:
         """Check TimescaleDB health and return status information."""
         return {
-            'available': self.is_available,
-            'storage': self.get_storage_info() if self.is_available else {},
-            'compression': self.get_compression_stats('asset_prices_historic') if self.is_available else {},
-            'chunks': self.get_chunks_info('asset_prices_historic') if self.is_available else []
+            "available": self.is_available,
+            "storage": self.get_storage_info() if self.is_available else {},
+            "compression": self.get_compression_stats("asset_prices_historic")
+            if self.is_available
+            else {},
+            "chunks": self.get_chunks_info("asset_prices_historic")
+            if self.is_available
+            else [],
         }
 
 

@@ -113,7 +113,11 @@ ls /Users/sergi/Desktop/Projects/development-guides/
 - ✅ MCP tools configured (Brave Search + GLM-Vision)
 - ✅ Context management protocol active
 - ✅ File organization Phase 1 (ARIA) + Phase 2 (GAUDÍ) complete
-- ✅ Scribe: Documentation reorganization complete (QUICK_REFERENCE.md + PROMPTS_INDEX.md)
+- ✅ Scribe: Documentation reorganization complete
+  - QUICK_REFERENCE.md + PROMPTS_INDEX.md created
+  - development-guides/ linked from FinanceHub docs
+  - _docs/ moved to _archive/
+  - 2 .txt files converted to .md for consistency
   - Directories: 19 → 13 (32% reduction)
   - Empty folders deleted, singletons consolidated
 
