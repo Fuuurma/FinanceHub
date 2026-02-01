@@ -595,14 +595,14 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 6. ✅ **social-sentiment.ts** - API client for backend integration
 7. ✅ **/social/page.tsx** - Route page for social sentiment
 **API Ready:** Guido - Sentiment API ready at `/sentiment/`
+**API Status:** ✅ Fixed API client to match Guido's endpoints
 **Blockers:** None
 **Next Steps:**
-1. Coordinate with Guido on API endpoint mapping
-2. Connect API client to real endpoints
-3. Add WebSocket updates for trending assets
-4. Write component tests
-5. HADI accessibility audit
-**Coordination:** ✅ Guido - Backend complete, awaiting frontend integration
+1. Test API integration with backend
+2. Add WebSocket updates for trending assets
+3. Write component tests (Jest/React Testing Library)
+4. HADI accessibility audit
+**Coordination:** ✅ Guido - Endpoints matched: /sentiment/{symbol}, /sentiment/{symbol}/history, /sentiment/{symbol}/feed, /sentiment/trending
 
 ---
 
