@@ -19,6 +19,12 @@ try:
 except ImportError:
     HAS_SCIPY = False
 
+from utils.financial import (
+    to_decimal,
+    safe_divide,
+    round_decimal,
+)
+
 
 class ValueAtRiskService:
     HISTORICAL_SCENARIOS = {
@@ -98,10 +104,14 @@ class ValueAtRiskService:
             "method": method,
             "confidence_level": confidence_level,
             "time_horizon": time_horizon,
-            "var_amount": round(result["var_amount"], 2),
-            "var_percentage": round(result["var_percentage"] * 100, 4),
-            "expected_shortfall": round(result.get("expected_shortfall", 0), 2),
-            "portfolio_value": round(float(portfolio_value), 2),
+            "var_amount": round_decimal(result["var_amount"], 2),
+            "var_percentage": round_decimal(
+                result["var_percentage"] * Decimal("100"), 4
+            ),
+            "expected_shortfall": round_decimal(
+                result.get("expected_shortfall", Decimal("0")), 2
+            ),
+            "portfolio_value": round_decimal(portfolio_value, 2),
             "calculation_time_ms": calculation_time_ms,
             "portfolio_volatility": result.get("portfolio_volatility"),
             "z_score": result.get("z_score"),
@@ -180,9 +190,9 @@ class ValueAtRiskService:
         weights = np.array(
             [
                 float(
-                    Decimal(str(p.get("quantity", 0)))
-                    * Decimal(str(p.get("current_price", 0)))
-                    / portfolio_value
+                    to_decimal(p.get("quantity", 0))
+                    * to_decimal(p.get("current_price", 0))
+                    / to_decimal(portfolio_value)
                 )
                 for p in positions
             ]
@@ -194,11 +204,11 @@ class ValueAtRiskService:
 
         var_percentile = (100 - confidence_level) / 100
         var_percentage = np.percentile(portfolio_returns, var_percentile * 100)
-        var_amount = float(portfolio_value) * abs(var_percentage)
+        var_amount = float(to_decimal(portfolio_value)) * abs(var_percentage)
 
         tail_losses = portfolio_returns[portfolio_returns <= var_percentage]
         expected_shortfall = (
-            float(portfolio_value) * abs(np.mean(tail_losses))
+            float(to_decimal(portfolio_value)) * abs(np.mean(tail_losses))
             if len(tail_losses) > 0
             else var_amount
         )
