@@ -28,8 +28,9 @@ export function EarningsCalendar({ daysAhead = 30, portfolioOnly = false }: Earn
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/calendar/earnings?days_ahead=${selectedDays}&portfolio_only=${portfolioOnly}`);
-      setEvents(response as EarningsEvent[]);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/calendar/earnings?days_ahead=${selectedDays}&portfolio_only=${portfolioOnly}`);
+      const data = await response.json();
+      setEvents(data as EarningsEvent[]);
     } catch (error) {
       console.error('Error fetching earnings calendar:', error);
     }
@@ -43,7 +44,7 @@ export function EarningsCalendar({ daysAhead = 30, portfolioOnly = false }: Earn
   const getTimeBadge = (time: string) => {
     switch (time.toLowerCase()) {
       case 'pre-market':
-        return <Badge variant="warning">Pre-Market</Badge>;
+        return <Badge variant="secondary">Pre-Market</Badge>;
       case 'after-market':
         return <Badge variant="destructive">After Market</Badge>;
       default:

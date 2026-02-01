@@ -1,8 +1,30 @@
 # FinanceHub - AI Agent System Instructions
 
-**Last Updated:** 2026-01-30
+**Last Updated:** 2026-02-01
 **Status:** ACTIVE - Use before starting any FinanceHub task
 **Location:** `/Users/sergi/Desktop/Projects/FinanceHub/`
+
+---
+
+## 🚨 QUICK START (Most Agents Should Read This)
+
+```bash
+# FAST: Read only this for most tasks
+cat /Users/sergi/Desktop/Projects/FinanceHub/docs/agents/QUICK_REFERENCE.md
+
+# Your role-specific prompt
+cat /Users/sergi/Desktop/Projects/FinanceHub/docs/agents/*_INITIAL_PROMPT.md
+
+# Task list
+cat /Users/sergi/Desktop/Projects/FinanceHub/tasks/TASK_TRACKER.md
+```
+
+**The QUICK_REFERENCE.md has:**
+- Fast file search patterns
+- Common commands
+- Directory structure
+- Troubleshooting
+- Links to all development guides
 
 ---
 
@@ -140,6 +162,30 @@ git push
 
 ## 📚 MANDATORY DOCUMENTATION TO READ
 
+### Fast Lookup (Recommended)
+- ✅ **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Fast lookup for common needs
+
+### Standardized Development Guides (Portfolio-Wide)
+All FinanceHub agents MUST read these portfolio-wide guides:
+
+| Guide | Path | When |
+|-------|------|------|
+| **Introduction** | `~/Desktop/Projects/development-guides/00-INTRODUCTION.md` | First time |
+| **Code Standards** | `~/Desktop/Projects/development-guides/06-CODE-STANDARDS.md` | Every task |
+| **Backend Guide** | `~/Desktop/Projects/development-guides/01-BACKEND-DEVELOPMENT.md` | Backend tasks |
+| **Frontend Guide** | `~/Desktop/Projects/development-guides/02-FRONTEND-DEVELOPMENT.md` | Frontend tasks |
+| **Database** | `~/Desktop/Projects/development-guides/03-DATABASE-OPTIMIZATION.md` | DB tasks |
+| **Security** | `~/Desktop/Projects/development-guides/04-SECURITY-BEST-PRACTICES.md` | Every task |
+
+### Cheatsheets (Quick Reference)
+```
+~/Desktop/Projects/development-guides/cheatsheets/
+├── DJANGO-NINJA-CHEATSHEET.md
+├── NEXTJS-14-CHEATSHEET.md
+├── TYPESCRIPT-CHEATSHEET.md
+└── DJANGO-NINJA-FILTER-SCHEMA.md
+```
+
 ### For All Tasks
 - ✅ `~/Desktop/Projects/FinanceHub/tasks.md`
 - ✅ `~/Desktop/Projects/FinanceHub/FEATURES_SPECIFICATION.md`
@@ -164,26 +210,36 @@ git push
 
 ---
 
-## 🛠️ AVAILABLE SKILLS TO USE
+## 🛠️ AVAILABLE SKILLS & PROMPTS
 
-**BEFORE STARTING, CHECK IF A SKILL CAN HELP:**
+**Portfolio-wide resources are consolidated in `/Users/sergi/Desktop/Projects/PROMPTS_INDEX.md`**
 
-### macOS Productivity
-- `apple-notes` - For taking notes during development
-- `apple-reminders` - For task tracking
-- `things-mac` - For task management
+### AI Skills (`/Users/sergi/Desktop/Projects/AI/`)
 
-### Development
-- `github` - For PRs, issues, GitHub operations
-- `coding-agent` - For running Codex, Claude Code, OpenCode
+| Skill File | Purpose |
+|------------|---------|
+| `backend-skill.md` | Backend development patterns |
+| `frontend-skill.md` | Frontend development patterns |
+| `frontend-design-skill.md` | UI/UX design patterns |
+| `How-to-skill.md` | General how-to guides |
 
-### Documentation
-- `notion` - For documentation
-- `obsidian` - For notes and knowledge base
+**Usage:** Load skills as needed for your task type.
 
-### Reference
-- `summarize` - For summarizing documentation
-- `session-logs` - For searching previous work
+### Clawd Prompts (`/Users/sergi/clawd/prompts/`)
+
+| Prompt | When to Use |
+|--------|-------------|
+| `frontend-shadcn-builder.md` | Building UI with shadcn/ui (~21KB) |
+| `frontend-shadcn-quick.md` | Quick UI iterations |
+| `documentation-project-full.md` | Comprehensive documentation |
+
+### ATLAS Prompts (`/Users/sergi/clawd/ATLAS/prompts/`)
+
+| Prompt | When to Use |
+|--------|-------------|
+| `bug-fix.md` | Debugging and fixing issues |
+| `code-review.md` | Code quality review |
+| `feature-implementation.md` | Adding new features |
 
 ---
 

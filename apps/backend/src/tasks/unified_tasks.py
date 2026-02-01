@@ -7,9 +7,12 @@ Replaces duplicate Dramatiq + Celery systems
 from celery import Celery, shared_task
 from celery.schedules import crontab
 from django.conf import settings
+from django.db import DatabaseError, OperationalError
 from datetime import datetime, timedelta
 import logging
 import traceback
+from redis import RedisError as CacheError
+from httpx import NetworkError, TimeoutException
 
 from utils.helpers.logger.logger import get_logger
 
@@ -101,7 +104,7 @@ def get_active_symbols(asset_type="stock", limit=100):
                     "symbol", flat=True
                 )[:limit]
             )
-    except Exception as e:
+    except (DatabaseError, CacheError) as e:
         logger.error(f"Failed to get active symbols: {e}")
     return []
 
@@ -152,7 +155,7 @@ def send_to_dead_letter(task_name, args, kwargs, exception):
             traceback=traceback.format_exc(),
         )
         logger.warning(f"Task {task_name} sent to dead letter queue")
-    except Exception as e:
+    except (DatabaseError, ImportError) as e:
         logger.error(f"Failed to send to DLQ: {e}")
 
 
@@ -173,10 +176,10 @@ def fetch_yahoo_stocks_task(self, symbols=None, limit=20):
                     if processed.is_valid:
                         pipeline.save_to_database(processed)
                         logger.info(f"Updated Yahoo data for {symbol}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError) as e:
                 raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
         return {"symbols_processed": len(symbols)}
-    except Exception as e:
+    except (DatabaseError, ValueError) as e:
         logger.error(f"Yahoo task failed: {e}")
         send_to_dead_letter("fetch_yahoo_stocks", (symbols,), {}, e)
         raise
@@ -198,10 +201,10 @@ def fetch_binance_cryptos_task(self, symbols=None, limit=20):
                     processed = pipeline.process_raw_data(data, "binance", "crypto")
                     if processed.is_valid:
                         pipeline.save_to_database(processed)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError) as e:
                 logger.warning(f"Binance fetch failed for {symbol}: {e}")
         return {"symbols_processed": len(symbols)}
-    except Exception as e:
+    except (NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Binance task failed: {e}")
         raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
 
@@ -225,10 +228,10 @@ def fetch_coingecko_cryptos_task(self, symbols=None, limit=20):
                     processed = pipeline.process_raw_data(data, "coingecko", "crypto")
                     if processed.is_valid:
                         pipeline.save_to_database(processed)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError) as e:
                 logger.warning(f"CoinGecko fetch failed for {symbol}: {e}")
         return {"symbols_processed": len(symbols)}
-    except Exception as e:
+    except (NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"CoinGecko task failed: {e}")
         raise self.retry(exc=e, countdown=120 * (2**self.request.retries))
 
@@ -252,10 +255,10 @@ def fetch_unified_crypto_task(self, symbols=None):
                     if processed.is_valid:
                         pipeline.save_to_database(processed)
                         logger.info(f"Updated unified crypto for {symbol}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError) as e:
                 logger.warning(f"Unified crypto failed for {symbol}: {e}")
         return {"symbols_processed": len(symbols)}
-    except Exception as e:
+    except (NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Unified crypto task failed: {e}")
         raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
 
@@ -285,10 +288,10 @@ def calculate_indicators_task(self, symbols=None, period=200):
                 processed = pipeline.process_raw_data(data, "internal", "stock")
                 if processed.is_valid:
                     logger.debug(f"Calculated indicators for {symbol}")
-            except Exception as e:
+            except (ValueError, KeyError, TypeError) as e:
                 logger.warning(f"Indicator calc failed for {symbol}: {e}")
         return {"symbols_processed": len(symbols), "period": period}
-    except Exception as e:
+    except (ValueError, DatabaseError) as e:
         logger.error(f"Calculate indicators task failed: {e}")
         raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
 
@@ -305,7 +308,7 @@ def cleanup_old_data_task(self, days=365):
         deleted, _ = AssetPricesHistoric.objects.filter(timestamp__lt=cutoff).delete()
         logger.info(f"Cleaned up {deleted} old price records")
         return {"records_deleted": deleted}
-    except Exception as e:
+    except (DatabaseError, OperationalError) as e:
         logger.error(f"Cleanup task failed: {e}")
         raise
 
@@ -318,7 +321,7 @@ def health_check_task(self):
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
         return {"status": "healthy", "timestamp": datetime.now().isoformat()}
-    except Exception as e:
+    except (DatabaseError, OperationalError) as e:
         return {
             "status": "unhealthy",
             "error": str(e),
@@ -344,10 +347,10 @@ def fetch_stock_prices_task(self, symbols=None, count=50):
                     processed = pipeline.process_raw_data(data, "finnhub", "stock")
                     if processed.is_valid:
                         pipeline.save_to_database(processed)
-            except Exception as e:
+            except (ValueError, KeyError, TypeError) as e:
                 logger.warning(f"Finnhub fetch failed for {symbol}: {e}")
         return {"symbols_processed": len(symbols)}
-    except Exception as e:
+    except (NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Stock prices task failed: {e}")
         raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
 
@@ -363,7 +366,7 @@ def fetch_news_task(self, query=None, category=None, count=50):
         news_data = scraper.get_latest_news(query=query, category=category, limit=count)
         logger.info(f"Fetched {len(news_data) if news_data else 0} news articles")
         return {"articles_fetched": len(news_data) if news_data else 0}
-    except Exception as e:
+    except (NetworkError, TimeoutException, ValueError) as e:
         logger.error(f"News task failed: {e}")
         raise self.retry(exc=e, countdown=120 * (2**self.request.retries))
 
@@ -381,10 +384,10 @@ def cache_warming_task(self, symbols=None):
         for symbol in symbols:
             try:
                 cache.set("price", symbol, {"status": "warmed"}, ttl=3600)
-            except Exception as e:
+            except (CacheError, ValueError) as e:
                 logger.warning(f"Cache warming failed for {symbol}: {e}")
         return {"symbols_warmed": len(symbols)}
-    except Exception as e:
+    except (ImportError, CacheError) as e:
         logger.error(f"Cache warming task failed: {e}")
         raise
 

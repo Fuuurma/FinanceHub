@@ -334,8 +334,8 @@ export default function PortfoliosPage() {
         portfolioId={selectedPortfolioId || ''}
         onImportComplete={() => {
           if (selectedPortfolioId) {
-            fetchHoldings(selectedPortfolioId)
-            fetchTransactions(selectedPortfolioId)
+            fetchHoldings()
+            fetchTransactions()
             fetchPortfolios()
           }
         }}
