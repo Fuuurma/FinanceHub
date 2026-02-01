@@ -40,11 +40,16 @@ export function OptionsChainView({ symbol, currentPrice }: OptionsChainViewProps
   const fetchChain = async () => {
     setLoading(true);
     try {
-      const response = await api.post('/options/chain', {
-        ...params,
-        strikes: strikes,
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/options/chain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...params,
+          strikes: strikes,
+        }),
       });
-      setChain(response.chain || []);
+      const data = await response.json();
+      setChain(data.chain || []);
     } catch (error) {
       console.error('Error fetching option chain:', error);
     }

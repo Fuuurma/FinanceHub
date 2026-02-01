@@ -333,10 +333,10 @@ export function OrderBook({
                     />
                   </div>
                   <div className="text-lg font-mono font-bold">
-                    {imbalance?.toFixed(3) ?? 'N/A'}
+                    {imbalance !== null && imbalance !== undefined ? imbalance.toFixed(3) : 'N/A'}
                   </div>
                   <Badge variant="secondary">
-                    {getImbalanceLabel(imbalance)}
+                    {imbalance !== null && imbalance !== undefined ? getImbalanceLabel(imbalance) : 'N/A'}
                   </Badge>
                 </div>
               </div>

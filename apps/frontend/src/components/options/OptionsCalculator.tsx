@@ -37,8 +37,13 @@ export function OptionsCalculator({ symbol = 'AAPL', currentPrice = 150 }: Optio
   const handleCalculate = async () => {
     setLoading(true);
     try {
-      const response = await api.post('/options/calculate', params);
-      setResult(response);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/options/calculate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      const data = await response.json();
+      setResult(data);
     } catch (error) {
       console.error('Error calculating option:', error);
     }

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ExternalLink, MessageSquare, Twitter, Reddit } from 'lucide-react'
+import { ExternalLink, MessageSquare, Twitter, MessageSquare } from 'lucide-react'
 
 interface SocialPost {
   id: string
@@ -89,8 +89,8 @@ export function SocialFeed({ posts, filter = 'all', onFilterChange, onPostClick,
                 'rounded-none border-b-2 border-t-2 border-x-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent px-4 py-2 font-black uppercase text-xs flex items-center gap-2'
               )}
             >
-              <Reddit className="h-3 w-3" aria-hidden="true" />
-              Reddit
+              <MessageSquare className="h-3 w-3" aria-hidden="true" />
+              MessageSquare
             </TabsTrigger>
           </TabsList>
 
@@ -119,7 +119,7 @@ export function SocialFeed({ posts, filter = 'all', onFilterChange, onPostClick,
                         {post.platform === 'twitter' ? (
                           <Twitter className="h-4 w-4 text-blue-500" aria-hidden="true" />
                         ) : (
-                          <Reddit className="h-4 w-4 text-orange-500" aria-hidden="true" />
+                          <MessageSquare className="h-4 w-4 text-orange-500" aria-hidden="true" />
                         )}
                       </div>
                       

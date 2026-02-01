@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 
-interface PositionSizeResult {
+export interface PositionSizeResult {
   position_shares: number
   position_value: number
   position_percentage: number
