@@ -38,7 +38,7 @@
 | **MIES** | 🟢 Active | Design mockups | Today | None | ⏳ Read Phase 1 tasks |
 | **GRACE** | ⚠️ Overdue | QA planning | Yesterday | Report overdue | 🔴 URGENT - Respond now |
 | **HADI** | 🟢 Active | Accessibility | Today | None | ⏳ Read Phase 1 tasks |
-| **Linus** | 🔴 Silent | (unknown) | Jan 29 | 🚨 72h silent | 🔴 URGENT - Respond now |
+| **Linus** | 🟢 Active | C-036 Paper Trading Backend - Completed | Now | None | - |
 | **Guido** | 🟢 Active | C-037 Social Sentiment Backend | Now | None | - |
 | **Turing** | 🟢 Active | C-036 Paper Trading Frontend | Now | None | - |
 
@@ -198,6 +198,26 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 ---
 
+### Linus - Feb 1, 2026 2:15 PM
+**Status:** 🟢 Active
+**Current Task:** C-036 Paper Trading Backend - COMPLETED ✅
+**Progress:** 
+- ✅ Created PaperPosition model
+- ✅ Created PaperTradingOrder model with full order lifecycle
+- ✅ Built PaperTradingEngine with market/limit order execution
+- ✅ Added WebSocket consumer for real-time updates
+- ✅ Extended API with positions, orders, cancel, limit order endpoints
+- ✅ Created database migration
+- ✅ Wrote comprehensive unit tests
+**Blockers:** None
+**Next Steps:**
+1. Await Charo security review
+2. Coordinate with Turing on API integration
+3. Fix any issues from QA testing
+**Coordination:** ✅ Turing - APIs ready for frontend integration
+
+---
+
 ### Turing - Feb 1, 2026 5:30 PM
 **Status:** 🟢 Active
 **Current Task:** C-036 Paper Trading Frontend Enhancement
@@ -273,7 +293,7 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 - None (all Phase 1 tasks assigned)
 
 ### In Progress:
-- C-036 Paper Trading: Linus (backend), Turing (frontend) - ⏳ Awaiting coder response
+- C-036 Paper Trading: Linus (backend) - ✅ Complete | Turing (frontend) - 🟢 In Progress
 - C-037 Social Sentiment: Guido (backend) - 🟢 Fixing implementation issues, Turing awaiting API
 - Phase 1 Design: MIES - 🟢 Starting this week
 - Phase 1 QA Planning: GRACE - ⚠️ Overdue
