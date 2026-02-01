@@ -244,4 +244,5 @@ logs/
 .cache/
 *.cache
 .tmp/
-tmp/
+tmp/# ATLAS Clawdbot status reports - contain sensitive tokens
+apps/backend/src/investments/services/daily news/
