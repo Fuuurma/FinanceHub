@@ -4,65 +4,29 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Wallet, TrendingUp, TrendingDown, RefreshCw, Trophy, Target,
-  DollarSign, PieChart, BarChart3
+  DollarSign, PieChart, BarChart3, Wifi, WifiOff
 } from 'lucide-react'
-import { apiClient } from '@/lib/api/client'
+import { usePaperTrading } from './usePaperTrading'
 
 interface PaperPortfolioSummaryProps {
   onRefresh?: () => void
   className?: string
 }
 
-interface Position {
-  symbol: string
-  name: string
-  quantity: number
-  avg_price: number
-  current_price: number
-  market_value: number
-  cost_basis: number
-  profit_loss: number
-  profit_loss_pct: number
-}
-
-interface PortfolioSummary {
-  cash_balance: number
-  portfolio_value: number
-  total_value: number
-  total_return: number
-  positions: Position[]
-  total_trades: number
-  win_rate: number
-  winning_trades: number
-  losing_trades: number
-}
-
 export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSummaryProps) {
-  const [loading, setLoading] = React.useState(true)
-  const [summary, setSummary] = React.useState<PortfolioSummary | null>(null)
+  const { portfolio, isLoading, isConnected, refreshPortfolio } = usePaperTrading()
 
-  const fetchSummary = React.useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await apiClient.get<{ summary: PortfolioSummary }>('/paper-trading/account')
-      setSummary(data.summary)
-    } catch (error) {
-      console.error('Failed to fetch portfolio:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
 
-  React.useEffect(() => {
-    fetchSummary()
-  }, [fetchSummary])
+  const formatPercent = (value: number) =>
+    `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className={cn('rounded-none border-2 border-foreground', className)}>
         <CardHeader className="border-b-2 border-foreground">
@@ -76,7 +40,7 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
     )
   }
 
-  if (!summary) {
+  if (!portfolio) {
     return (
       <Card className={cn('rounded-none border-2 border-foreground', className)}>
         <CardContent className="p-12 text-center">
@@ -100,12 +64,6 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
     )
   }
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-
-  const formatPercent = (value: number) =>
-    `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
-
   return (
     <Card className={cn('rounded-none border-2 border-foreground', className)}>
       <CardHeader className="border-b-2 border-foreground">
@@ -113,11 +71,18 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
           <CardTitle className="font-black uppercase flex items-center gap-2">
             <PieChart className="h-5 w-5" />
             Portfolio Summary
+            <span className="ml-2" title={isConnected ? "Connected" : "Disconnected"}>
+              {isConnected ? (
+                <Wifi className="h-4 w-4 text-green-500" />
+              ) : (
+                <WifiOff className="h-4 w-4 text-red-500" />
+              )}
+            </span>
           </CardTitle>
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchSummary}
+            onClick={refreshPortfolio}
             className="rounded-none border-2 font-bold uppercase"
           >
             <RefreshCw className="h-4 w-4" />
@@ -154,28 +119,28 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
                   <Wallet className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs font-bold uppercase text-muted-foreground">Cash</span>
                 </div>
-                <p className="font-mono text-xl font-black">{formatCurrency(summary.cash_balance)}</p>
+                <p className="font-mono text-xl font-black">{formatCurrency(portfolio.cash_balance)}</p>
               </div>
               <div className="border-2 border-foreground p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs font-bold uppercase text-muted-foreground">Portfolio</span>
                 </div>
-                <p className="font-mono text-xl font-black">{formatCurrency(summary.portfolio_value)}</p>
+                <p className="font-mono text-xl font-black">{formatCurrency(portfolio.portfolio_value)}</p>
               </div>
               <div className="border-2 border-foreground p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs font-bold uppercase text-muted-foreground">Total Value</span>
                 </div>
-                <p className="font-mono text-xl font-black">{formatCurrency(summary.total_value)}</p>
+                <p className="font-mono text-xl font-black">{formatCurrency(portfolio.total_value)}</p>
               </div>
               <div className={cn(
                 'border-2 border-foreground p-4',
-                summary.total_return >= 0 ? 'bg-green-50' : 'bg-red-50'
+                portfolio.total_return >= 0 ? 'bg-green-50' : 'bg-red-50'
               )}>
                 <div className="flex items-center gap-2 mb-2">
-                  {summary.total_return >= 0 ? (
+                  {portfolio.total_return >= 0 ? (
                     <TrendingUp className="h-4 w-4 text-green-600" />
                   ) : (
                     <TrendingDown className="h-4 w-4 text-red-600" />
@@ -184,16 +149,16 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
                 </div>
                 <p className={cn(
                   'font-mono text-xl font-black',
-                  summary.total_return >= 0 ? 'text-green-600' : 'text-red-600'
+                  portfolio.total_return >= 0 ? 'text-green-600' : 'text-red-600'
                 )}>
-                  {formatPercent(summary.total_return)}
+                  {formatPercent(portfolio.total_return)}
                 </p>
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="positions">
-            {summary.positions.length === 0 ? (
+            {portfolio.positions.length === 0 ? (
               <div className="border-2 border-foreground p-8 text-center">
                 <p className="font-mono text-sm text-muted-foreground">No positions yet</p>
               </div>
@@ -207,11 +172,11 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
                       <th className="text-right p-3 font-black uppercase">Avg Price</th>
                       <th className="text-right p-3 font-black uppercase">Current</th>
                       <th className="text-right p-3 font-black uppercase">Value</th>
-                      <th className="text-right p-3 font-black uppercase">P&L</th>
+                      <th className="text-right p-3 font-black uppercase">P/L</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {summary.positions.map((pos) => (
+                    {portfolio.positions.map((pos) => (
                       <tr key={pos.symbol} className="border-b border-border last:border-0">
                         <td className="p-3">
                           <div>
@@ -245,32 +210,28 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
               <div className="border-2 border-foreground p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Target className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs font-bold uppercase text-muted-foreground">Total Trades</span>
+                  <span className="text-xs font-bold uppercase text-muted-foreground">Day Change</span>
                 </div>
-                <p className="font-mono text-2xl font-black">{summary.total_trades}</p>
-              </div>
-              <div className="border-2 border-foreground p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Trophy className="h-4 w-4 text-green-600" />
-                  <span className="text-xs font-bold uppercase text-muted-foreground">Win Rate</span>
-                </div>
-                <p className="font-mono text-2xl font-black text-green-600">
-                  {summary.win_rate.toFixed(1)}%
+                <p className={cn(
+                  'font-mono text-2xl font-black',
+                  (portfolio.day_change || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                )}>
+                  {formatPercent(portfolio.day_change || 0)}
                 </p>
               </div>
               <div className="border-2 border-foreground p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                  <span className="text-xs font-bold uppercase text-muted-foreground">Wins</span>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-bold uppercase text-muted-foreground">Positions</span>
                 </div>
-                <p className="font-mono text-2xl font-black text-green-600">{summary.winning_trades}</p>
+                <p className="font-mono text-2xl font-black">{portfolio.positions?.length || 0}</p>
               </div>
               <div className="border-2 border-foreground p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingDown className="h-4 w-4 text-red-600" />
-                  <span className="text-xs font-bold uppercase text-muted-foreground">Losses</span>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-bold uppercase text-muted-foreground">Cash Balance</span>
                 </div>
-                <p className="font-mono text-2xl font-black text-red-600">{summary.losing_trades}</p>
+                <p className="font-mono text-2xl font-black">{formatCurrency(portfolio.cash_balance)}</p>
               </div>
             </div>
           </TabsContent>

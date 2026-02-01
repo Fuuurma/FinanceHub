@@ -51,7 +51,13 @@ def register(request, payload: RegisterIn):
         extra={"user_id": str(user.id), "username": user.username},
     )
 
-    return RegisterOut.from_orm(user)
+    return RegisterOut(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+    )
 
 
 # Protected: Profile

@@ -44,7 +44,8 @@ class RegisterOut(BaseModel):
     message: str = "User successfully registered. Please log in."
 
     class Config:
-        schema_extra = {
+        from_attributes = True
+        json_schema_extra = {
             "example": {
                 "id": "a1b2c3d4-...",
                 "username": "sergi",
