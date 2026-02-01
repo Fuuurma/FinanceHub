@@ -19,8 +19,8 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from apps.backend.src.users.models.token_blacklist import BlacklistedToken
-from apps.backend.src.users.services.token_service import TokenService
+from src.users.models.token_blacklist import BlacklistedToken
+from src.users.services.token_service import TokenService
 
 User = get_user_model()
 

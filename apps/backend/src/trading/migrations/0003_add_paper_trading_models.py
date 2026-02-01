@@ -167,7 +167,7 @@ class Migration(migrations.Migration):
                     "id",
                     models.UUIDField(
                         primary_key=True,
-                        default=utils.helpers.uuid_model.UUIDModel.generate_uuid,
+                        default=uuid.uuid4,
                     ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -204,7 +204,7 @@ class Migration(migrations.Migration):
                     "id",
                     models.UUIDField(
                         primary_key=True,
-                        default=utils.helpers.uuid_model.UUIDModel.generate_uuid,
+                        default=uuid.uuid4,
                     ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),

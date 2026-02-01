@@ -11,7 +11,7 @@ Status: TEMPLATE - Needs completion
 
 import pytest
 from decimal import Decimal, ROUND_HALF_UP
-from apps.backend.src.utils.financial import (
+from src.utils.financial import (
     to_decimal,
     safe_add,
     safe_subtract,
