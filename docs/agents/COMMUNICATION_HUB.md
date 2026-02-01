@@ -27,26 +27,86 @@
 
 ## 📊 AGENT STATUS DASHBOARD
 
-**Last Updated:** Feb 1, 2026 9:00 PM
+**Last Updated:** Feb 1, 2026 3:25 AM
 
 | Agent | Status | Current Task | Last Active | Blockers | Response Needed |
 |-------|--------|--------------|-------------|----------|-----------------|
 | **GAUDÍ** | 🟢 Active | Phase 1 strategy | Now | None | - |
 | **ARIA** | 🟢 Active | Coordination & monitoring | Now | None | - |
-| **Karen** | 🟢 Active | DevOps tickets | Today | None | - |
+| **Linus** | 🟢 Active | C-036 Backend ✅ Complete | Jan 31 | None | - |
+| **Turing** | 🟢 Active | C-036 Frontend 🟢 In Progress | Jan 31 | None | - |
+| **Atlas** | 🟢 Available | Overflow work | NEW | None | 🆕 Ready for assignments |
 | **Charo** | 🟢 Active | Security audits | Today | None | 🔄 Ready for C-036 review |
-| **MIES** | 🟢 Active | Design mockups | Today | None | ⏳ Read Phase 1 tasks |
 | **GRACE** | 🟢 Active | Phase 1 QA Tests Created | Now | None | - |
 | **HADI** | 🟢 Active | Accessibility | Today | None | ⏳ Read Phase 1 tasks |
-| **Linus** | 🟢 Active | C-036 Paper Trading Backend - Completed | Now | None | - |
-| **Guido** | 🟢 Active | C-037 Complete | Now | None | - |
-| **Turing** | 🟢 Active | C-036 Paper Trading Frontend | Now | None | - |
+| **MIES** | 🟢 Active | Design mockups | Today | None | ⏳ Read Phase 1 tasks |
+| **Scribe** | 🟢 Available | Documentation | NEW | None | 🆕 Ready for doc work |
+| **Karen** | 🟢 Active | DevOps tickets | Today | None | - |
 
 **Legend:** 🟢 Active | 🟡 Waiting | ⚠️ Overdue | 🔴 Silent/Critical
+
+**Team Updates (Feb 1, 2026):**
+- ❌ Guido removed (replaced by Atlas)
+- ✅ Atlas added (Full-Stack overflow handler)
+- ✅ Scribe added (Documentation maintainer)
+- ✅ Skills system implemented (19 skills)
+- ✅ MCP tools configured (Brave Search + GLM-Vision)
+- ✅ Context management protocol active
 
 ---
 
 ## 📨 BROADCAST MESSAGES (Most Recent First)
+
+### 🎉 NEW AGENT SYSTEM - ALL AGENTS READ
+**From:** GAUDÍ
+**Date:** Feb 1, 2026 3:25 AM
+**Priority:** 🟢 IMPORTANT
+**Read Receipt:** 🟢 GAUDÍ | ⏳ Awaiting others
+
+**🚀 MAJOR SYSTEM UPGRADE COMPLETE!**
+
+**What's New:**
+
+**1. Skills System (19 skills)**
+- All agents now have assigned skills
+- Read `.opencode/skills/` directory
+- Skills define your capabilities and when to use them
+
+**2. MCP Tools Integration**
+- Brave Search: Market research, best practices, CVEs
+- GLM-Vision: UI analysis, diagrams, design comparison
+- See your agent prompt for when to use each
+
+**3. Context Management Protocol**
+- **CRITICAL:** Clean your context after tasks are 100% complete
+- **Rule:** Forget task specifics, keep skills/patterns
+- **Read:** `docs/agents/CONTEXT_MANAGEMENT.md`
+- This keeps you fast and efficient!
+
+**4. New Agents**
+- **Atlas** (Full-Stack) - Overflow work, rapid prototyping
+- **Scribe** (Documentation) - Keeps docs organized
+- **Guido** removed (tasks reassigned to Linus + Atlas)
+
+**5. Updated Agent Prompts**
+- All agents updated with skills, MCP, context management
+- **Read your new prompt:** `docs/agents/[NAME]_INITIAL_PROMPT.md`
+
+**Action Required:**
+1. ✅ Read your updated initial prompt
+2. ✅ Read CONTEXT_MANAGEMENT.md (critical!)
+3. ✅ Check your assigned skills
+4. ✅ Understand when to use MCP tools
+5. ✅ Start cleaning context after tasks
+
+**Benefits:**
+- ✅ Cleaner agent context (forget after completion)
+- ✅ Skills enable faster work
+- ✅ MCP tools expand capabilities
+- ✅ Scribe keeps docs organized
+- ✅ Atlas handles overflow
+
+---
 
 ### 📍 LOCATION UPDATE: Communication Hub - ALL AGENTS READ
 **From:** GAUDÍ
