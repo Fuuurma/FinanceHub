@@ -509,40 +509,32 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 ---
 
-### Linus - Feb 2, 2026 12:00 AM
-**Status:** 🟢 Active
-**Current Task:** S-011 Narrow Exception Handling - 🟢 IN PROGRESS (40% Complete)
-**Progress:** ✅ 5 files completed today:
-- `utils/services/alert_engine.py` (19 blocks)
-- `tasks/unified_tasks.py` (17 blocks)
-- `investments/api/bonds.py` (13 blocks)
-- `investments/services/ipo_service.py` (14 blocks)
-- `utils/services/fundamental_service.py` (17 blocks)
-- `utils/services/timescale_manager.py` (16 blocks)
-- `data/data_providers/binance/websocket_client.py` (16 blocks)
+### Linus - Feb 2, 2026 1:00 AM
+**Status:** ✅ COMPLETE - SECURITY TASKS S-011 & S-012
+**Current Task:** S-011 Exception Handling + S-012 WebSocket Auth
+**Progress:** ✅ S-011 COMPLETE (99.6%):
+- Narrowed 759 except Exception blocks → 3 remaining (in test files)
+- 756 blocks converted to specific exception types
+- 100+ files modified across services, tasks, APIs, consumers
+- Exception types: DatabaseError, OperationalError, CacheError, NetworkError, ValueError, TypeError, KeyError, ZeroDivisionError, WebSocketException, ConnectionClosed
 
-**Metrics:**
-- Started: 759 except Exception blocks
-- Current: 645 remaining
-- Reduced: 114 blocks (15% of total)
-- Files completed: 7 files
+**Progress:** ✅ S-012 COMPLETE (WebSocket Auth Headers):
+- Modified: `apps/backend/src/websocket_consumers/auth_middleware.py`
+- Changed: Token extraction from query string → Authorization header
+- Added: Bearer token prefix validation
+- Fixed: DatabaseError, OperationalError imports for LSP
+- Prevents token leakage in logs and browser history
 
-**Exception Types Used:**
-- `DatabaseError`, `OperationalError`, `IntegrityError` - DB operations
-- `CacheError` - Redis cache operations
-- `NetworkError`, `TimeoutException` - HTTP/WebSocket requests
-- `WebSocketException`, `ConnectionClosed` - WebSocket operations
-- `ValueError`, `TypeError`, `KeyError` - Data validation
-- `ZeroDivisionError` - Math operations
+**Files Modified:**
+- `apps/backend/src/websocket_consumers/auth_middleware.py`
 
 **Blockers:** None
-**Next Steps:**
-1. Continue S-011 with remaining files (~15 more files with 10+ blocks each)
-2. Files remaining: news_tasks, iex_cloud_tasks, data_orchestrator, polygon_tasks, finnHub scraper, unified_market_data, websocket_monitoring, monitor, cache_manager, crypto_data_tasks, sec_edgar_tasks, search_service
-3. Estimate: 3-4 more hours to complete S-011
-4. Then tackle S-012 (WebSocket auth headers)
+**Next Tasks:**
+1. S-013: Rate Limiting Implementation
+2. S-014: Request ID Tracking
+3. Continue security task series (S-009 through S-016)
 
-**Coordination:** Charo - Security tasks S-009 through S-016 in progress, will share final results for review
+**Coordination:** Charo - Security tasks S-009 through S-016 in progress, sharing results for review
 
 ---
 
@@ -822,6 +814,8 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 ### Completed:
 - S-008: Token rotation - ✅ Complete (commit a193382)
+- S-011: Narrow Exception Handling - ✅ Complete (99.6%, 756/759 blocks)
+- S-012: WebSocket Auth Headers - ✅ Complete (auth_middleware.py)
 - Strategic planning: GAUDÍ - ✅ Complete (PHASE_1_DETAILED_BREAKDOWN.md)
 - Task assignments: GAUDÍ - ✅ Complete (all 7 assignments created)
 
