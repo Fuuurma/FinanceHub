@@ -4,13 +4,22 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Wallet, TrendingUp, TrendingDown, RefreshCw, Trophy, Target,
-  DollarSign, PieChart, BarChart3, Wifi, WifiOff
+  DollarSign, PieChart, BarChart3, Wifi, WifiOff, XCircle
 } from 'lucide-react'
 import { usePaperTrading } from './usePaperTrading'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface PaperPortfolioSummaryProps {
   onRefresh?: () => void
@@ -18,13 +27,37 @@ interface PaperPortfolioSummaryProps {
 }
 
 export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSummaryProps) {
-  const { portfolio, isLoading, isConnected, refreshPortfolio } = usePaperTrading()
+  const { portfolio, isLoading, isConnected, refreshPortfolio, closePosition } = usePaperTrading()
+  const [closeDialogOpen, setCloseDialogOpen] = React.useState(false)
+  const [positionToClose, setPositionToClose] = React.useState<{ symbol: string; quantity: number; marketValue: number } | null>(null)
+  const [closing, setClosing] = React.useState(false)
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
 
   const formatPercent = (value: number) =>
     `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
+
+  const handleClosePosition = async () => {
+    if (!positionToClose) return
+    setClosing(true)
+    try {
+      await closePosition(positionToClose.symbol)
+      setCloseDialogOpen(false)
+      setPositionToClose(null)
+    } finally {
+      setClosing(false)
+    }
+  }
+
+  const openCloseDialog = (pos: { symbol: string; name?: string; quantity: number; market_value: number }) => {
+    setPositionToClose({
+      symbol: pos.symbol,
+      quantity: pos.quantity,
+      marketValue: pos.market_value,
+    })
+    setCloseDialogOpen(true)
+  }
 
   if (isLoading) {
     return (
@@ -173,6 +206,7 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
                       <th className="text-right p-3 font-black uppercase">Current</th>
                       <th className="text-right p-3 font-black uppercase">Value</th>
                       <th className="text-right p-3 font-black uppercase">P/L</th>
+                      <th className="text-center p-3 font-black uppercase">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -196,6 +230,17 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
                           <span className="block text-xs">
                             {formatPercent(pos.profit_loss_pct)}
                           </span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openCloseDialog(pos)}
+                            className="rounded-none border-2 font-bold uppercase text-xs hover:bg-red-50 hover:border-red-500 hover:text-red-600"
+                          >
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Close
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -237,6 +282,70 @@ export function PaperPortfolioSummary({ onRefresh, className }: PaperPortfolioSu
           </TabsContent>
         </Tabs>
       </CardContent>
+
+      <Dialog open={closeDialogOpen} onOpenChange={setCloseDialogOpen}>
+        <DialogContent className="rounded-none border-2 border-foreground max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-black uppercase flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-red-600" />
+              Close Position
+            </DialogTitle>
+            <DialogDescription className="font-mono text-xs">
+              This will sell all shares of this position at market price.
+            </DialogDescription>
+          </DialogHeader>
+
+          {positionToClose && (
+            <div className="space-y-4">
+              <div className="border-2 border-foreground p-4 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground font-mono text-sm">Symbol</span>
+                  <span className="font-black uppercase">{positionToClose.symbol}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground font-mono text-sm">Quantity</span>
+                  <span className="font-mono">{positionToClose.quantity.toFixed(4)}</span>
+                </div>
+                <div className="flex justify-between border-t border-border pt-2">
+                  <span className="text-muted-foreground font-mono text-sm font-bold">Market Value</span>
+                  <span className="font-mono font-bold">{formatCurrency(positionToClose.marketValue)}</span>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-500 p-3">
+                <p className="text-yellow-700 font-mono text-xs">
+                  This action cannot be undone. The position will be sold at the current market price.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCloseDialogOpen(false)}
+              className="rounded-none border-2 font-black uppercase"
+              disabled={closing}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleClosePosition}
+              className="rounded-none border-2 font-black uppercase bg-red-600 hover:bg-red-700 border-red-600"
+              disabled={closing}
+            >
+              {closing ? (
+                <>
+                  <span className="animate-spin mr-2">⟳</span>
+                  Closing...
+                </>
+              ) : (
+                'Close Position'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
