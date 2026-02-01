@@ -126,7 +126,7 @@ def fetch_stock_fundamentals_iex(self, symbol: str) -> Dict[str, Any]:
             "has_peers": bool(data["peers"] and isinstance(data["peers"], list)),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching fundamentals for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -198,7 +198,7 @@ def fetch_key_stats_iex(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching key stats for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -237,7 +237,7 @@ def fetch_analyst_estimates_iex(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching estimates for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -278,7 +278,7 @@ def fetch_peers_iex(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching peers for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -327,7 +327,7 @@ def fetch_market_movers_iex(self, list_type: str = "mostactive") -> Dict[str, An
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching market movers: {e}")
         raise self.retry(exc=e)
 
@@ -366,7 +366,7 @@ def fetch_insider_transactions_iex(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching insider transactions for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -405,7 +405,7 @@ def fetch_institutional_ownership_iex(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching institutional ownership for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -444,7 +444,7 @@ def fetch_fund_ownership_iex(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching fund ownership for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -483,7 +483,7 @@ def fetch_board_members_iex(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching board members for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -545,7 +545,7 @@ def fetch_iex_quote(self, symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching quote for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -587,7 +587,7 @@ def sync_iex_cloud_provider_status() -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error checking IEX Cloud status: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -609,7 +609,7 @@ def fetch_stocks_batch_iex(self, symbols: List[str]) -> Dict[str, Any]:
             try:
                 fetch_stock_fundamentals_iex.delay(symbol)
                 queued += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Failed to queue fetch for {symbol}: {e}")
                 continue
 
@@ -620,7 +620,7 @@ def fetch_stocks_batch_iex(self, symbols: List[str]) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error in batch fetch: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -658,6 +658,6 @@ def fetch_sector_performance_iex(self) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching sector performance: {e}")
         raise self.retry(exc=e)

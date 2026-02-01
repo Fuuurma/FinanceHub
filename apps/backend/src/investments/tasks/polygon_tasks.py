@@ -124,7 +124,7 @@ def fetch_stock_trades(self, symbol: str, days: int = 30) -> Dict[str, Any]:
             ),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching trades/quotes for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -223,7 +223,7 @@ def fetch_options_chain(
                         )
                         contracts_saved += 1
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.debug(
                     f"Error processing contract {contract_data.get('ticker')}: {e}"
                 )
@@ -237,7 +237,7 @@ def fetch_options_chain(
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching options chain for {underlying_symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -300,7 +300,7 @@ def fetch_option_snapshot(self, option_symbol: str) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching option snapshot for {option_symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -376,7 +376,7 @@ def fetch_technical_indicators(
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching {indicator} for {symbol}: {e}")
         raise self.retry(exc=e)
 
@@ -424,7 +424,7 @@ def fetch_gainers_losers(
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching {direction} for {market}: {e}")
         raise self.retry(exc=e)
 
@@ -495,7 +495,7 @@ def fetch_market_snapshots(self, tickers: Optional[List[str]] = None) -> Dict[st
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching market snapshots: {e}")
         raise self.retry(exc=e)
 
@@ -540,7 +540,7 @@ def sync_polygon_io_provider_status() -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error checking Polygon.io status: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -569,7 +569,7 @@ def fetch_stocks_batch(
                 result = fetch_stock_trades.delay(ticker, days=historical_days)
                 processed += 1
                 successful += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Failed to queue fetch for {ticker}: {e}")
                 failed += 1
                 continue
@@ -582,7 +582,7 @@ def fetch_stocks_batch(
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error in batch stock fetch: {e}")
         return {"status": "error", "message": str(e)}
 
@@ -606,7 +606,7 @@ def fetch_all_options_chains(self) -> Dict[str, Any]:
             try:
                 fetch_options_chain.delay(symbol)
                 queued += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
                 logger.error(f"Failed to queue options chain for {symbol}: {e}")
                 continue
 
@@ -616,6 +616,6 @@ def fetch_all_options_chains(self) -> Dict[str, Any]:
             "timestamp": timezone.now().isoformat(),
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException) as e:
         logger.error(f"Error fetching all options chains: {e}")
         return {"status": "error", "message": str(e)}
