@@ -157,7 +157,7 @@ async def optimize_portfolio(request, data: OptimizeRequest):
                 "interpretation": result.interpretation,
             }
         )
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         raise ServiceException(f"Optimization failed: {str(e)}")
 
 
@@ -212,7 +212,7 @@ async def backtest_strategy(request, data: BacktestRequest):
                 "interpretation": result.interpretation,
             }
         )
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         raise ServiceException(f"Backtest failed: {str(e)}")
 
 
@@ -268,5 +268,5 @@ async def compare_strategies(request, data: CompareStrategiesRequest):
         )
     except ValidationException:
         raise
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         raise ServiceException(f"Strategy comparison failed: {str(e)}")

@@ -72,7 +72,7 @@ class BrokerService:
                 connection.last_error = "Connection test failed"
             connection.save()
             return success, connection.last_error
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             error_msg = str(e)
             connection.status = "error"
             connection.last_error = error_msg
@@ -113,7 +113,7 @@ class BrokerService:
             connection.save()
             sync_log.mark_completed()
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             sync_log.mark_failed(str(e))
             logger.error(f"Portfolio sync failed: {e}")
 

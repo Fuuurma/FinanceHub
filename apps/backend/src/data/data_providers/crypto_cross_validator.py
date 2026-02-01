@@ -178,7 +178,7 @@ class CryptoCrossValidator:
             
             logger.info(f"Validated {symbol}: confidence={result.overall_confidence:.2f}, source={result.recommended_source}")
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error validating {symbol}: {str(e)}")
         
         return result
@@ -205,7 +205,7 @@ class CryptoCrossValidator:
                 'symbol': coin_data.get('symbol', '').upper()
             }
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching CoinGecko data for {symbol}: {str(e)}")
             return None
     
@@ -231,7 +231,7 @@ class CryptoCrossValidator:
                 'symbol': quote.get('symbol')
             }
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching CoinMarketCap data for {symbol}: {str(e)}")
             return None
     

@@ -229,7 +229,7 @@ Be specific about amounts and actions.
             "report_type": report_type,
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Report generation failed: {e}")
 
         # Create failed report record
@@ -287,7 +287,7 @@ def generate_all_user_reports(self):
                     report_type="portfolio_report",
                 )
                 generated += 1
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 failed += 1
                 logger.error(
                     f"Failed to queue report for portfolio {portfolio.id}: {e}"
@@ -389,7 +389,7 @@ Be concise and actionable.
         logger.info(f"Generated watchlist report for {watchlist_id}")
         return {"status": "success", "report_id": str(report.id)}
 
-    except Exception as e:
+    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
         logger.error(f"Watchlist report generation failed: {e}")
         raise self.retry(exc=e)
 

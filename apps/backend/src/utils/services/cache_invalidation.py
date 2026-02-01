@@ -105,7 +105,7 @@ class CacheInvalidator:
             if keys:
                 cache.delete_many(keys)
                 logger.debug(f"Invalidated {len(keys)} keys matching: {pattern}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.warning(f"Failed to invalidate pattern {pattern}: {e}")
 
     @staticmethod

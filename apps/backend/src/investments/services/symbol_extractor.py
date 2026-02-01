@@ -189,7 +189,7 @@ class SymbolExtractor:
 
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error loading symbols from database: {e}")
             return False
 

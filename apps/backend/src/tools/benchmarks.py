@@ -157,7 +157,7 @@ class PerformanceBenchmark:
             
             return result
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error benchmarking key rotation: {str(e)}")
             return {'error': str(e), 'passes': False}
     
@@ -189,7 +189,7 @@ class PerformanceBenchmark:
                     fetch_times.append(elapsed)
                     success_count += 1
                     
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                     logger.error(f"Error fetching {symbol}: {str(e)}")
                     continue
             
@@ -210,7 +210,7 @@ class PerformanceBenchmark:
             
             return result
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error benchmarking {provider_name} fetch: {str(e)}")
             return {'error': str(e), 'passes': False}
     

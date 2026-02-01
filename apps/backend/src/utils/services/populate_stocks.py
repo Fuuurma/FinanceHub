@@ -270,7 +270,7 @@ def populate_stocks_sync():
                             if info.get("totalRevenue")
                             else None,
                         )
-                    except Exception as e:
+                    except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                         # If creation fails (e.g., multi-table inheritance issue), continue without StockAsset
                         logger.warning(
                             f"  Warning: Could not create StockAsset for {symbol}: {e}"
@@ -356,7 +356,7 @@ def populate_stocks_sync():
                 f"[{i + 1}/{total}] {symbol}: {info.get('longName', symbol)} - {len(hist)} prices"
             )
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"[{i + 1}/{total}] ERROR {symbol}: {e}")
             continue
 

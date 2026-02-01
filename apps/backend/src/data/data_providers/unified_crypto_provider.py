@@ -205,7 +205,7 @@ class UnifiedCryptoProvider:
                     self._update_provider_health('coinmarketcap', True)
                     return data
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching {symbol} from {provider}: {str(e)}")
             self._update_provider_health(provider, False)
         
@@ -234,7 +234,7 @@ class UnifiedCryptoProvider:
                 'description': coin_data.get('description', {}).get('en', '')
             }
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"CoinGecko fetch error: {str(e)}")
             return None
     
@@ -262,7 +262,7 @@ class UnifiedCryptoProvider:
                 'description': quote.get('description', '')
             }
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"CoinMarketCap fetch error: {str(e)}")
             return None
     

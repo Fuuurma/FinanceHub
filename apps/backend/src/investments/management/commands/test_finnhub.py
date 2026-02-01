@@ -143,7 +143,7 @@ class Command(BaseCommand):
 
             self.stdout.write(f"  ✓ Saved {count} news articles\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(f"  ✗ Error fetching news: {e}\n")
 
     def fetch_indicators(self, scraper, asset, provider):
@@ -205,7 +205,7 @@ class Command(BaseCommand):
 
             self.stdout.write("  ✓ Technical indicators saved\n")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(f"  ✗ Error fetching indicators: {e}\n")
 
     def calculate_sma_signal(self, asset, current_sma: Decimal) -> str:

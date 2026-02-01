@@ -84,7 +84,7 @@ class BaseAPIFetcher(ABC):
                 api_key.record_success()
                 return response_data
                 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 response_time = (timezone.now() - start_time).total_seconds() * 1000
                 last_error = e
                 
@@ -129,5 +129,5 @@ class BaseAPIFetcher(ABC):
                 error_message=error_message[:1000],
                 request_params=request_params or {}
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Failed to log API call: {str(e)}")

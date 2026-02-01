@@ -140,7 +140,7 @@ class AlertService:
                 return self._check_portfolio_alert(alert)
             else:
                 return False
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error checking alert {alert.id}: {e}")
             return False
 
@@ -275,7 +275,7 @@ class AlertService:
 
             return trigger
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error triggering alert {alert.id}: {e}")
             return None
 

@@ -193,7 +193,7 @@ class Command(BaseCommand):
                                         },
                                     )
                                     count += 1
-                                except Exception as e:
+                                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                                     logger.error(f"Error saving data point: {e}")
 
                         status = "Created" if created else "Updated"
@@ -205,7 +205,7 @@ class Command(BaseCommand):
                             self.style.WARNING(f"  ⚠ No observations found")
                         )
 
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                     self.stdout.write(self.style.ERROR(f"  ✗ Error: {e}"))
                     logger.error(f"Error processing {series_id}: {e}")
 

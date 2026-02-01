@@ -85,7 +85,7 @@ class RedditSentimentAnalyzer:
 
             return posts[:limit]
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching Reddit posts: {e}")
             return []
 
@@ -222,6 +222,6 @@ class RedditSentimentAnalyzer:
                 :limit
             ]
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error getting Reddit trending: {e}")
             return []

@@ -306,14 +306,14 @@ class BondCalculatorService:
             result.current_yield = self.current_yield(
                 face_value, coupon_rate, current_price
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Current yield error: {e}")
 
         try:
             result.ytm = self.yield_to_maturity(
                 face_value, coupon_rate, current_price, years_to_maturity, frequency
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"YTM error: {e}")
 
         try:
@@ -324,7 +324,7 @@ class BondCalculatorService:
                 years_to_maturity,
                 frequency,
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Bond price error: {e}")
 
         return result

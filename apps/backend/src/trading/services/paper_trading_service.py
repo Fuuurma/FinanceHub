@@ -55,7 +55,7 @@ class PaperTradingService:
             current_price = self.market_data.get_current_price(asset_symbol)
             if current_price is None:
                 return {"success": False, "error": "Price not available"}
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             return {"success": False, "error": f"Error fetching price: {str(e)}"}
 
         trade_value = Decimal(str(current_price)) * quantity
@@ -119,7 +119,7 @@ class PaperTradingService:
             current_price = self.market_data.get_current_price(asset_symbol)
             if current_price is None:
                 return {"success": False, "error": "Price not available"}
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             return {"success": False, "error": f"Error fetching price: {str(e)}"}
 
         trade_value = Decimal(str(current_price)) * quantity

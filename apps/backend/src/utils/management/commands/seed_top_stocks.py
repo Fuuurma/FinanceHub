@@ -181,7 +181,7 @@ class Command(BaseCommand):
             except requests.exceptions.RequestException as e:
                 self.stdout.write(self.style.ERROR(f"Request failed: {e}"))
                 break
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                 self.stdout.write(self.style.ERROR(f"Error processing batch: {e}"))
                 break
 
@@ -308,6 +308,6 @@ class Command(BaseCommand):
                     asset.exchanges.add(*exchanges_to_add)
 
                 return "created"
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             self.stdout.write(self.style.WARNING(f"Error saving {ticker}: {e}"))
             return "skipped"

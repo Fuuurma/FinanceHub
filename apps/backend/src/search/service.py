@@ -153,7 +153,7 @@ class SearchIndexer:
             
             return results, metadata
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Search error for query '{query}': {str(e)}")
             return [], self._get_error_metadata(str(e), start_time)
     
@@ -524,7 +524,7 @@ class AdvancedSearchIndexer(SearchIndexer):
             
             return search_results, metadata
         
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Meilisearch error: {str(e)}, falling back to basic search")
             return super().search(*args, **kwargs)
 

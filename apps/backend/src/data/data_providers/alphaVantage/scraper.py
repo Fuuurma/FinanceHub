@@ -168,7 +168,7 @@ class AlphaVantageScraper(BaseAPIFetcher):
                     else:
                         results[symbol] = False
                         logger.warning(f"No data for {symbol}")
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                     results[symbol] = False
                     logger.error(f"Error fetching {symbol}: {str(e)}")
         return results
@@ -242,7 +242,7 @@ class AlphaVantageScraper(BaseAPIFetcher):
                 else:
                     logger.warning(f"No data for {symbol}")
                     return False
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error saving {symbol}: {str(e)}")
             return False
 

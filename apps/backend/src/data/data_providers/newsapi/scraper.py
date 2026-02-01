@@ -294,14 +294,14 @@ class NewsAPIScraper(BaseAPIFetcher):
                     )
                     count += 1
 
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                     logger.debug(f"Error saving article: {str(e)}")
                     continue
 
             logger.info(f"Saved {count} news articles for query: {query}")
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching/saving news: {str(e)}")
             return False
 

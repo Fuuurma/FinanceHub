@@ -15,7 +15,7 @@ def recover_rate_limited_keys():
             manager = APIKeyManager(provider)
             recovered = manager.recover_rate_limited_keys()
             total_recovered += recovered
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error recovering keys for {provider}: {str(e)}")
     
     logger.info(f"Recovered {total_recovered} rate-limited keys")
@@ -46,5 +46,5 @@ def generate_health_report():
             from django.core.cache import cache
             cache.set(f"api_health:{provider}", report, 3600)
             
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error generating health report for {provider}: {str(e)}")

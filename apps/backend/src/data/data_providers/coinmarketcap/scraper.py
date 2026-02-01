@@ -183,7 +183,7 @@ class CoinMarketCapScraper(BaseAPIFetcher):
             logger.info(f"Successfully fetched and saved data for crypto {symbol}")
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching/saving crypto {symbol}: {str(e)}")
             return False
 
@@ -268,7 +268,7 @@ class CoinMarketCapScraper(BaseAPIFetcher):
 
             logger.info(f"Saved data for crypto asset {symbol} (created: {created})")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error saving crypto asset {symbol} to DB: {str(e)}")
 
     async def get_popular_cryptos(self, limit: int = 100) -> List[str]:

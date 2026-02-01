@@ -670,14 +670,14 @@ class PolygonIOScraper(BaseAPIFetcher):
                         volume=float(bar.get("v", 0)),
                     )
                     count += 1
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
                     logger.debug(f"Error saving price point for {ticker}: {str(e)}")
                     continue
 
             logger.info(f"Saved {count} historical prices for {ticker}")
             return True
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, NetworkError, TimeoutException, DatabaseError) as e:
             logger.error(f"Error fetching/saving stock {ticker}: {str(e)}")
             return False
 
