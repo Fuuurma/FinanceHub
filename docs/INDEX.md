@@ -88,32 +88,16 @@ Competitive analysis, feature gaps, and strategic direction.
 ---
 
 ## 💻 Development
-- [ARCHITECTURAL_ORDERS.md](architecture/ARCHITECTURAL_ORDERS.md) - Architectural decisions
-- [ARCHITECTURAL_ISSUE_DOUBLE_EXCHANGE_TABLES.md](architecture/ARCHITECTURAL_ISSUE_DOUBLE_EXCHANGE_TABLES.md) - Known issue documentation
-- [INFRASTRUCTURE_CLARIFICATION_PLAN.md](architecture/INFRASTRUCTURE_CLARIFICATION_PLAN.md) - Infrastructure clarifications
-
----
-
-## 🎨 Design
-
-UI/UX design system, guidelines, and component patterns.
-
-### Design System
-- [DESIGN_SYSTEM.md](design/DESIGN_SYSTEM.md) - Complete design system documentation
-- [DESIGN_STANDARDIZATION_PLAN.md](design/DESIGN_STANDARDIZATION_PLAN.md) - Unification recommendations
-- [ACCESSIBILITY_REVIEW.md](design/ACCESSIBILITY_REVIEW.md) - WCAG 2.1 AA checklist
-- [COMPONENT_USAGE_AUDIT.md](design/COMPONENT_USAGE_AUDIT.md) - Component pattern analysis
-- [MIES_DESIGN_SYSTEM_AUDIT_REPORT.md](design/MIES_DESIGN_SYSTEM_AUDIT_REPORT.md) - Final audit report
-- [BRUTALIST_COMPONENT_VARIANTS.md](design/BRUTALIST_COMPONENT_VARIANTS.md) - Implementation proposal
-- [UI_REFACTORING_PROPOSAL.md](design/UI_REFACTORING_PROPOSAL.md) - Refactoring opportunities
-- [DESIGN_SYSTEM_GOVERNANCE.md](design/DESIGN_SYSTEM_GOVERNANCE.md) - Governance policies
-- [COMPONENT_STATUS_INVENTORY.md](design/COMPONENT_STATUS_INVENTORY.md) - Live component inventory
-
----
-
-## 💻 Development
 
 Development guides, implementation documentation, and best practices.
+
+### Standardized Guides (Portfolio-Wide)
+- **[development-guides/](../../development-guides/README.md)** - Standardized development documentation for all projects
+  - [00-INTRODUCTION.md](../../development-guides/00-INTRODUCTION.md) - Development principles
+  - [01-BACKEND-DEVELOPMENT.md](../../development-guides/01-BACKEND-DEVELOPMENT.md) - Django Ninja patterns
+  - [02-FRONTEND-DEVELOPMENT.md](../../development-guides/02-FRONTEND-DEVELOPMENT.md) - Next.js patterns
+  - [06-CODE-STANDARDS.md](../../development-guides/06-CODE-STANDARDS.md) - Naming conventions
+  - [Cheatsheets](../../development-guides/cheatsheets/) - Quick reference guides
 
 ### Getting Started
 - [ONBOARDING.md](references/ONBOARDING.md) - Team member onboarding guide

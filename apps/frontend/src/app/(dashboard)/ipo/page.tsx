@@ -20,8 +20,10 @@ interface IPOData {
   actual_price: number | null
   deal_size: number | null
   expected_date: string | null
+  listed_date: string | null
+  ipo_day_change_pct: number | null
   status: string
-  sector: string
+  sector: string | null
   industry: string
   lead_underwriter: string
 }
@@ -282,8 +284,8 @@ export function IPOCalendarPage() {
                         <TableRow key={ipo.id}>
                           <TableCell className="font-medium">{ipo.company_name}</TableCell>
                           <TableCell>{ipo.ticker}</TableCell>
-                          <TableCell>{formatDate(ipo.listed_date)}</TableCell>
-                          <TableCell>{formatCurrency(ipo.actual_price) || '-'}</TableCell>
+                          <TableCell>{formatDate(ipo.listed_date || '-')}</TableCell>
+                          <TableCell>{ipo.actual_price ? formatCurrency(ipo.actual_price) : '-'}</TableCell>
                           <TableCell className={cn(ipo.ipo_day_change_pct && ipo.ipo_day_change_pct > 0 ? 'text-green-500' : ipo.ipo_day_change_pct && ipo.ipo_day_change_pct < 0 ? 'text-red-500' : '')}>
                             {ipo.ipo_day_change_pct ? formatPercent(ipo.ipo_day_change_pct / 100) : '-'}
                           </TableCell>

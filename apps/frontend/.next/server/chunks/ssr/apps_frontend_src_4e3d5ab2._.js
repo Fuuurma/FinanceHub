@@ -1,0 +1,3 @@
+module.exports=[67884,a=>{"use strict";var b=a.i(43420);a.s(["X",()=>b.default])},65366,a=>{"use strict";var b=a.i(7807);a.s(["alertsApi",0,{list:a=>b.apiClient.get("/alerts/",{params:{limit:50,offset:0,...a}}),get:a=>b.apiClient.get(`/alerts/${a}`),create:a=>b.apiClient.post("/alerts/",a),update:(a,c)=>b.apiClient.put(`/alerts/${a}`,c),delete:a=>b.apiClient.delete(`/alerts/${a}`),enable:a=>b.apiClient.post(`/alerts/${a}/enable`,{}),disable:a=>b.apiClient.post(`/alerts/${a}/disable`,{}),getHistory:(a,c=20)=>b.apiClient.get(`/alerts/${a}/history`,{params:{limit:c}}),getStats:()=>b.apiClient.get("/alerts/stats"),test:a=>b.apiClient.post(`/alerts/${a}/test`,{})}])}];
+
+//# sourceMappingURL=apps_frontend_src_4e3d5ab2._.js.map

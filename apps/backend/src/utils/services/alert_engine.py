@@ -3,6 +3,9 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from decimal import Decimal
 from django.utils import timezone
+from django.db import DatabaseError
+from redis import RedisError as CacheError
+from httpx import NetworkError, TimeoutException
 
 from utils.helpers.logger.logger import get_logger
 from utils.services.cache_manager import get_cache_manager
@@ -53,10 +56,10 @@ class AlertEngine:
 
                         logger.info(f"Alert triggered: {alert.name} ({alert.symbol})")
 
-                except Exception as e:
+                except (ValueError, TypeError, KeyError) as e:
                     logger.error(f"Error checking alert {alert.id}: {e}")
 
-        except Exception as e:
+        except (DatabaseError, CacheError) as e:
             logger.error(f"Error in check_all_alerts: {e}")
 
         return triggered_alerts
@@ -118,7 +121,7 @@ class AlertEngine:
                 for alert in alerts_list
             ]
 
-        except Exception as e:
+        except (DatabaseError, CacheError) as e:
             logger.error(f"Error getting active alerts: {e}")
             return []
 
@@ -146,7 +149,7 @@ class AlertEngine:
                 logger.warning(f"Unknown alert type: {alert.alert_type}")
                 return False
 
-        except Exception as e:
+        except (ValueError, AttributeError) as e:
             logger.error(f"Error checking alert {alert.id}: {e}")
             return False
 
@@ -165,7 +168,7 @@ class AlertEngine:
             price = to_decimal(response.data.get("price", 0))
             return alert.should_trigger(price)
 
-        except Exception as e:
+        except (NetworkError, TimeoutException, ValueError, KeyError) as e:
             logger.error(f"Error checking price alert: {e}")
             return False
 
@@ -200,7 +203,13 @@ class AlertEngine:
             percent_change = ((current_price - previous_price) / previous_price) * 100
             return alert.should_trigger(percent_change)
 
-        except Exception as e:
+        except (
+            NetworkError,
+            TimeoutException,
+            ValueError,
+            KeyError,
+            ZeroDivisionError,
+        ) as e:
             logger.error(f"Error checking percentage alert: {e}")
             return False
 
@@ -232,7 +241,7 @@ class AlertEngine:
 
             return False
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError) as e:
             logger.error(f"Error checking RSI alert: {e}")
             return False
 
@@ -265,7 +274,7 @@ class AlertEngine:
 
             return alert.should_trigger(macd_val - signal_val)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError) as e:
             logger.error(f"Error checking MACD alert: {e}")
             return False
 
@@ -299,7 +308,7 @@ class AlertEngine:
 
             return current_volume >= (avg_volume * threshold_multiplier)
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, ZeroDivisionError) as e:
             logger.error(f"Error checking volume alert: {e}")
             return False
 
@@ -335,7 +344,7 @@ class AlertEngine:
 
             return False
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError) as e:
             logger.error(f"Error checking Bollinger alert: {e}")
             return False
 
@@ -354,13 +363,13 @@ class AlertEngine:
             for channel in alert.delivery_channels:
                 try:
                     await self._send_notification(history, channel)
-                except Exception as e:
+                except (NetworkError, TimeoutException, ValueError) as e:
                     logger.error(f"Error sending notification via {channel}: {e}")
 
             history.notification_sent = True
             history.save(update_fields=["notification_sent"])
 
-        except Exception as e:
+        except (DatabaseError, ValueError) as e:
             logger.error(f"Error triggering alert {alert.id}: {e}")
 
     async def _send_notification(self, history: AlertHistory, channel: str):
@@ -380,7 +389,7 @@ class AlertEngine:
             notification.sent_at = timezone.now()
             notification.save(update_fields=["status", "sent_at"])
 
-        except Exception as e:
+        except (DatabaseError, ValueError) as e:
             logger.error(f"Error sending notification: {e}")
             notification.status = "failed"
             notification.error_message = str(e)
@@ -413,10 +422,10 @@ class AlertEngine:
                             await callback(alert_data)
                         else:
                             callback(alert_data)
-                    except Exception as e:
+                    except (TypeError, ValueError) as e:
                         logger.error(f"Error in WebSocket callback: {e}")
 
-        except Exception as e:
+        except (NetworkError, TimeoutException) as e:
             logger.error(f"Error sending WebSocket notification: {e}")
             raise
 
@@ -438,7 +447,7 @@ This is an automated message from FinanceHub.
             notification.metadata = {"subject": subject, "body": body}
             notification.save(update_fields=["metadata"])
 
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             logger.error(f"Error preparing email notification: {e}")
             raise
 
@@ -453,7 +462,7 @@ This is an automated message from FinanceHub.
             }
             notification.save(update_fields=["metadata"])
 
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             logger.error(f"Error preparing push notification: {e}")
             raise
 
@@ -496,7 +505,7 @@ This is an automated message from FinanceHub.
 
             return alert
 
-        except Exception as e:
+        except (DatabaseError, ValueError) as e:
             logger.error(f"Error creating alert: {e}")
             raise
 
@@ -570,7 +579,7 @@ This is an automated message from FinanceHub.
         try:
             await self.cache_manager.invalidate_pattern("active_alerts_")
             await self.cache_manager.invalidate_pattern("alerts_")
-        except Exception as e:
+        except CacheError as e:
             logger.error(f"Error invalidating cache: {e}")
 
     def get_alert_statistics(self, user_id: str) -> Dict[str, Any]:

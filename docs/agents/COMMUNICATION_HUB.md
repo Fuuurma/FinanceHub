@@ -39,7 +39,7 @@
 | **Charo** | 🟢 Active | Security audits | Today | None | 🔄 Ready for C-036 review |
 | **GRACE** | 🟢 Active | Phase 1 QA Tests Created | Now | None | - |
 | **HADI** | 🟢 Active | Accessibility | Today | None | ⏳ Read Phase 1 tasks |
-| **MIES** | 🟢 Active | Design mockups | Today | None | ⏳ Read Phase 1 tasks |
+| **MIES** | 🟢 Active | Design implementation review | Now | None | - |
 | **Scribe** | 🟢 Available | Documentation | NEW | None | 🆕 Ready for doc work |
 | **Karen** | 🟢 Active | DevOps tickets | Today | None | - |
 
