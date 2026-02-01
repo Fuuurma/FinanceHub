@@ -545,27 +545,27 @@ Phase 1 strategic planning is COMPLETE. Task assignments have been created.
 
 ---
 
-### Turing - Feb 1, 2026 7:30 PM
+### Turing - Feb 1, 2026 8:00 PM
 **Status:** 🟢 Active
-**Current Task:** C-036 Paper Trading Frontend - WebSocket Integration
-**Progress:** ✅ WebSocket real-time updates added
+**Current Task:** C-036 Paper Trading Frontend - Close Position Feature
+**Progress:** ✅ Close Position button complete
 **Completed:**
 1. ✅ PaperPerformanceChart - Portfolio performance chart with S&P 500 benchmark
 2. ✅ usePaperTrading hook - WebSocket integration for real-time updates
 3. ✅ OrderConfirmationDialog - Order review modal
 4. ✅ Enhanced PaperTradeForm - Market/Limit/Stop orders with validation
-5. ✅ PaperPortfolioSummary - Integrated WebSocket for live updates
+5. ✅ PaperPortfolioSummary - WebSocket + Close Position button
 **Real-time Features:**
 - ✅ Portfolio value updates via WebSocket
 - ✅ Connection status indicator (Wifi/WifiOff icons)
-- ✅ Auto-reconnection with heartbeat
+- ✅ Close Position button with confirmation dialog
+**Acceptance Criteria Progress:** 7/12 complete
 **Blockers:** None
 **Next Steps:**
-1. Add "Close Position" button functionality
-2. Write component tests (Jest/React Testing Library)
-3. Coordinate with Linus on API data structures matching
-4. HADI accessibility audit
-**Coordination:** ✅ Linus - APIs ready, WebSocket consumer exists
+1. Write component tests (Jest/React Testing Library)
+2. Coordinate with Linus on API data structures matching
+3. HADI accessibility audit
+**Coordination:** ✅ Linus - APIs ready, awaiting backend test
 
 ---
 
