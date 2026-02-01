@@ -2,6 +2,7 @@ from typing import List, Dict, Optional, Any
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.utils import timezone
+from django.db import DatabaseError, OperationalError, IntegrityError
 
 
 class IPOCalendarService:
@@ -56,7 +57,7 @@ class IPOCalendarService:
                     "exchange": exchange,
                 },
             }
-        except Exception as e:
+        except (DatabaseError, OperationalError) as e:
             return {"ipos": [], "total_count": 0, "error": str(e)}
 
     def get_recent_ipos(
@@ -81,7 +82,7 @@ class IPOCalendarService:
                 "total_count": total_count,
                 "period_days": days_back,
             }
-        except Exception as e:
+        except (DatabaseError, OperationalError) as e:
             return {"ipos": [], "total_count": 0, "error": str(e)}
 
     def get_ipo_detail(self, ipo_id: int) -> Dict:
@@ -92,7 +93,7 @@ class IPOCalendarService:
             return self._format_ipo(ipo)
         except IPOCalendar.DoesNotExist:
             return {"error": "IPO not found"}
-        except Exception as e:
+        except (DatabaseError, OperationalError) as e:
             return {"error": str(e)}
 
     def _format_ipo(self, ipo) -> Dict:
@@ -147,7 +148,7 @@ class IPOCalendarService:
                 .distinct()
             )
             return [{"sector": s} for s in sorted(set(sectors)) if s]
-        except Exception:
+        except (DatabaseError, OperationalError):
             return []
 
     def get_exchanges(self) -> List[Dict]:
@@ -160,7 +161,7 @@ class IPOCalendarService:
                 .distinct()
             )
             return [{"exchange": e} for e in sorted(set(exchanges)) if e]
-        except Exception:
+        except (DatabaseError, OperationalError):
             return []
 
     def get_stats(self) -> Dict:
@@ -192,7 +193,7 @@ class IPOCalendarService:
                 "this_month_count": this_month,
                 "last_30_days_listed": last_30_days,
             }
-        except Exception:
+        except (DatabaseError, OperationalError):
             return {
                 "upcoming_count": 0,
                 "this_week_count": 0,
@@ -213,7 +214,7 @@ class IPOCalendarService:
                 "added": created,
                 "message": "Added to watchlist" if created else "Already in watchlist",
             }
-        except Exception as e:
+        except (DatabaseError, IntegrityError) as e:
             return {"success": False, "error": str(e)}
 
     def remove_from_watchlist(self, user_id: int, ipo_id: int) -> Dict:
@@ -231,7 +232,7 @@ class IPOCalendarService:
                 if deleted > 0
                 else "Not in watchlist",
             }
-        except Exception as e:
+        except (DatabaseError, OperationalError) as e:
             return {"success": False, "error": str(e)}
 
     def get_watchlist(self, user_id: int) -> List[Dict]:
@@ -262,7 +263,7 @@ class IPOCalendarService:
                     )
 
             return watchlist
-        except Exception:
+        except (DatabaseError, OperationalError):
             return []
 
     def create_alert(
@@ -287,7 +288,7 @@ class IPOCalendarService:
             )
 
             return {"success": True, "id": alert.id, "alert_type": alert_type}
-        except Exception as e:
+        except (DatabaseError, IntegrityError) as e:
             return {"success": False, "error": str(e)}
 
     def get_alerts(self, user_id: int) -> List[Dict]:
@@ -312,7 +313,7 @@ class IPOCalendarService:
                 }
                 for a in alerts
             ]
-        except Exception:
+        except (DatabaseError, OperationalError):
             return []
 
     def delete_alert(self, user_id: int, alert_id: int) -> Dict:
@@ -321,7 +322,7 @@ class IPOCalendarService:
 
             deleted = IPOAlert.objects.filter(id=alert_id, user_id=user_id).delete()
             return {"success": True, "deleted": deleted[0] > 0}
-        except Exception as e:
+        except (DatabaseError, OperationalError) as e:
             return {"success": False, "error": str(e)}
 
     def get_spacs(
@@ -367,7 +368,7 @@ class IPOCalendarService:
             ]
 
             return {"spacs": spac_data, "total_count": total_count}
-        except Exception as e:
+        except (DatabaseError, OperationalError) as e:
             return {"spacs": [], "total_count": 0, "error": str(e)}
 
     def get_calendar_summary(self, months: int = 3) -> Dict:
@@ -415,5 +416,5 @@ class IPOCalendarService:
                 "total_upcoming": qs.count(),
                 "period_months": months,
             }
-        except Exception as e:
+        except (DatabaseError, OperationalError) as e:
             return {"summary": {}, "total_upcoming": 0, "error": str(e)}

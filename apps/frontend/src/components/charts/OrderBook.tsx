@@ -141,18 +141,18 @@ export function OrderBook({
               {symbol && <Badge variant="secondary">{symbol}</Badge>}
             </CardTitle>
             <CardDescription className="flex items-center gap-3 mt-1">
-              <span className="flex items-center gap-1">
-                Spread: <span className="font-mono font-medium">{formatCurrency(spread)}</span>
-                <span className="text-muted-foreground">({spreadPct?.toFixed(3)}%)</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <DollarSign className="h-3 w-3" />
-                Imbalance:
-                <span className={cn('font-mono font-medium px-1 rounded', getImbalanceColor(imbalance))}>
-                  {imbalance?.toFixed(3) ?? 'N/A'}
+                <span className="flex items-center gap-1">
+                  Spread: <span className="font-mono font-medium">{spread ? formatCurrency(spread) : '-'}</span>
+                  <span className="text-muted-foreground">({spreadPct?.toFixed(3)}%)</span>
                 </span>
-                <span className="text-muted-foreground">({getImbalanceLabel(imbalance)})</span>
-              </span>
+                <span className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  Imbalance:
+                  <span className={cn('font-mono font-medium px-1 rounded', imbalance !== null && imbalance !== undefined ? getImbalanceColor(imbalance) : '')}>
+                    {imbalance !== null && imbalance !== undefined ? imbalance.toFixed(3) : 'N/A'}
+                  </span>
+                  <span className="text-muted-foreground">({imbalance !== null && imbalance !== undefined ? getImbalanceLabel(imbalance) : 'N/A'})</span>
+                </span>
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -326,7 +326,7 @@ export function OrderBook({
                 <div className="flex items-center gap-4">
                   <div className="flex-1 h-4 rounded-full bg-gray-200 overflow-hidden">
                     <div
-                      className={cn('h-full transition-all', getImbalanceColor(imbalance))}
+                      className={cn('h-full transition-all', imbalance !== null && imbalance !== undefined ? getImbalanceColor(imbalance) : '')}
                       style={{
                         width: `${((imbalance ?? 0) + 1) * 50}%`,
                       }}

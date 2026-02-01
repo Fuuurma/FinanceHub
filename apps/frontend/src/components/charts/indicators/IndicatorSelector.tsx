@@ -10,11 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-export type IndicatorType = 
+export type IndicatorType =
   | 'sma' | 'ema' | 'wma' | 'rsi' | 'macd' | 'bollinger_bands'
   | 'atr' | 'obv' | 'stochastic' | 'williams_r' | 'cci' | 'momentum' | 'roc';
 
-interface Indicator {
+export interface Indicator {
   id: string;
   type: IndicatorType;
   period: number;
