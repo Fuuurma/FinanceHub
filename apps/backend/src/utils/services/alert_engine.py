@@ -323,9 +323,9 @@ class AlertEngine:
                 return False
 
             current = bollinger_data[-1]
-            close_price = float(current.get("close", 0))
-            upper_band = float(current.get("upper_band", 0))
-            lower_band = float(current.get("lower_band", 0))
+            close_price = to_decimal(current.get("close", 0))
+            upper_band = to_decimal(current.get("upper_band", 0))
+            lower_band = to_decimal(current.get("lower_band", 0))
 
             if alert.alert_type == AlertType.BOLLINGER_BREACH:
                 if upper_band > 0 and close_price >= upper_band:
